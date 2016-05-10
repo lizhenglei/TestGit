@@ -1,0 +1,65 @@
+<div v-view-setup="RedCheckCtrl" v-init="init()">
+	<div v-page v-transition="native" title="我要提款">
+		<div class="box_cont">
+			<div class="zz_cont"
+				style="margin-left: 0px; margin-right: 0px; padding: 0px; width: 100%;">
+				<b class="bookTitle" style="padding: 0px; margin: 0px; width: 100%;padding-left: 15%;">
+					<li class="inner" id="inner" class="selectTitle"
+					v-click="selectTitle('inner')">我收到的 					</li>
+					<li class="cross" id="cross" v-click="selectTitle('cross')">
+						我发出的 				</li>
+					<div class="d1"
+						style="height: 10px; width: 100%; background: white; float: left;">
+						<div class="d3"
+							style="height: 2px; width: 7%; background: white; float: left"></div>
+						<div class="d2"
+							style="height: 2px; width: 20%; background: #0084ff; float: left"></div>
+					</div>
+				</b>
+			</div>
+			</div>
+			<div style="height: 25px;margin-top: 5px;">
+			<input class="butn1" style="border: 1px solid #f18903;margin-right: 4%;margin-left: 8%;background-color:#f18903;color:#fff;width:55px;border-radius: 5px;" type="button"   value="全部"  v-click="changesele(2)">
+			<input class="butn2" style="border: 1px solid #f18903;color:#f18903;width:55px;  background-color: white; border-radius: 5px;" type="button"   value="现金"  v-click="changesele(1)">
+			<input class="butn1" style="border: 1px solid #f18903;margin-right: 4%;margin-left: 4%;color:#f18903;width:58px;  background-color: white; border-radius: 5px;" type="button"   value="充值缴费"  v-click="changesele(2)">
+			<input class="butn2" style="border: 1px solid #f18903;color:#f18903;width:58px;  background-color: white; border-radius: 5px;" type="button"   value="商户消费"  v-click="changesele(1)">
+			</div>
+			<div class="yhj"  style="background-color:white;background:0">
+				<div class="yhj_top" style="  background-color: #f18903;  color: white;  border-radius: 5px;" >
+					<span class="left f98973" style="  color: white;margin-left:-2%;text-align: center;width:35%; padding-top: 8%;font-size:15px;line-height:25px"><font class="fontsize2">五元</font>
+					<br>现金红包
+					<font class="fontsize1"></font><br/>
+					</span>
+					<span class="right" style="    height: 70px;width: 50%;margin-bottom: 20px;padding-right: 5%;  padding-left: 8%;  margin-top: 20px;padding-top: 0px;border-left: 1px solid white;">
+					<span class="kal" style="font-size:15px;margin-left: -20%;">系统发放
+					 </span>
+					 <span class="fleft" style=" height: 20px; width: 35px;margin-left:1px;  float: right;
+					 text-align: center;border: 1px solid white;  background: #f18903;  color: white;
+					 border-radius: 5px;line-height: 20px;"  v-click="lingqu()">领取</span>
+					 <br/>
+					  <br/>
+					 <span class="kall" style="font-size:15px;  margin-left: -60%;" >有效期{{card.tranDate}}
+					 </span>
+					 </span>
+				</div>
+			</div>
+	</div>
+</div>
+<script>
+RedCheckCtrl.$inject = [ "$scope", "$remote", "$targets", "$filter",
+			"$context" ];
+	function RedCheckCtrl($scope, $remote, $targets, $filter, $context) {
+		$scope.init = function() {
+			
+		}
+		$scope.gotoper=function(){
+			$scope.goto("PRed","PPer");
+		}
+		$scope.gotopub=function(){
+			$scope.goto("PRed","PPub");
+		}
+		$scope.tocheck=function(){
+
+		}
+	}
+</script>

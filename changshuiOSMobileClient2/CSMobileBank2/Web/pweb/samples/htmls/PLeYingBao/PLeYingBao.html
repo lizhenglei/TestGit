@@ -1,0 +1,330 @@
+<div v-view-setup="PLeYingBaoCtrl" v-init="init()">
+	<!-- 第一个碎片页:乐盈宝视图 -->
+	<div class="background" v-page v-transition="native" title="乐盈宝">
+		<div class="banner"
+			style="background-color: #f5f5f5; border-bottom: 1px solid #cccccc;padding-right: 0px;height:90px">
+			<div>
+				<div style="text-align: right;  padding-right: 15px;">
+					<img style="height: 20px" src="images/lybwenhao.png"
+						v-click="toLeYingBaoInfo();">
+				</div>
+				<div style="float:left"><img style="height: 20px;  margin-top: -5px;" src="images/lybshouyi.png"></div>
+				<div style="float: left; width: 35%; padding-left: 2px;">
+					<div style="color: #666666; font-size: 14px; margin-bottom: 20px;"
+						v-click="toHisIncome()">昨日收益（元）</div>
+					<div style="color: #f18903; font-size: 25px;"
+						v-click="toHisIncome()">{{LastDayIncome|number:2}}</div>
+				</div>
+				<div style="float: left;width: 55%;  text-align: center;">
+					<div style="color: #666666; font-size: 14px; margin-bottom: 20px;"><img style="height: 20px; margin-top: -5px;" src="images/lybjine.png">总金额（元）</div>
+					<div style="color: #f18903; font-size: 25px;">{{balance|number:2}}</div>
+				</div>
+			</div>
+		</div>
+		<div
+			style="background: none; font-weight: bold; font-size: 15px; padding: 10px 0 10px 15px;background-color: white;">七日年化收益率（%）</div>
+		<div style="width: 95%; padding-left: 5%;background-color: white;"
+			v-click="toHissir()">
+			<div style="width: 97%">
+				<canvas id="canvas"></canvas>
+			</div>
+		</div>
+		<div class="content3" style="padding-top: 0px;height:55px;  margin: 0px;margin-right: 0px;width: 100%;background-color: white;">
+			<!-- 点击进入【累计收益】页面 -->
+			<div class="content3_3_right" v-click="toHisIncome()"
+				style="width: 49%;border-bottom: 1px solid #cccccc;border-top: 1px solid #cccccc;border-right: 1px solid #cccccc;">
+				<!-- 点击进入【累计收益】页面 -->
+				<div class="content3_3_right_1" style="  padding-top: 5px;  padding-left: 10%;">累计收益(元）</div>
+				<div class="content3_3_right_2" style="  padding-left: 10%;  color: #f18903;">{{totIncome|number:2}}</div>
+			</div>
+			<!-- 点击进入【万份收益】页面-->
+			<div class="content3_3_left" v-click="toHisUnit()"
+				style="width: 50%;border-top: 1px solid #cccccc;border-bottom: 1px solid #cccccc;">
+				<div class="content3_3_right_1" style="  padding-top: 5px;  padding-left: 10%;">万份收益（元）</div>
+				<div class="content3_3_right_2" style="  padding-left: 10%;  color: #f18903;">{{todayHQ.IncomeUnit}}</div>
+			</div>
+
+		</div>
+		<!-- 点击进入【交易明细查询】页面 -->
+		<div class="content3_3_left" style="width: 99%;height:55px;margin-bottom: 3%;border-bottom: 1px solid #cccccc;background-color: white;">
+			<div style="  float: left;margin-top: 5px;margin-left: 10%;" ><img style="height: 25px;  margin-top: 10%;" src="images/lybxiaoren.png"></div>
+			<div class="content3_3_left_2" style="float:left;font-size:20px;padding-top:10px;padding-left:2%;" v-show="accountNo!='未签约'">{{accountNo|encryptAcNo}}</div>
+			<div class="content3_3_left_2" style="float:left;font-size:20px;padding-top:10px;padding-left:2%;" v-show="accountNo =='未签约'">{{accountNo}}</div>
+			<div style="  float: left;  margin-left: -105px;margin-top: 30px;" v-click="gotoDZ()" v-show="accountNo!='未签约'">自动转入设置</div>
+			<div style="float:right;margin-top:1%;  margin-right: 10%;"><img  v-click="toQuery()" style="height:25px;margin-top: 10%;" src="images/lybjiaoyi.png"><div style="margin-left:-25%;">交易记录</div></div>
+		</div>
+		<div class="content4">
+			<div class="content4_left" v-click="transIn()">购买</div>
+			<div class="content4_right" v-click="transOut()">赎回</div>
+<!-- 			<div style="margin-bottom:10px" class="content4_right" v-click="gotoDZ()">自动转入</div> -->
+		</div>
+		<div style="width:100%;height:40px"></div>
+			<div style="width:100%;height:40px"></div>
+	</div>
+	<!-- 第二个碎片页:累计收益页面 -->
+	<div v-page v-transition="native" title="累计收益">
+		<div class="bg_box">
+			<div class="box_cont">
+				<div class="center">累计收益（元）</div>
+				<div class="prossOuter" v-repeat="dl in detailList">
+					<div class="prossInner"
+						style="width: {{dl.amount*100/maxAmount&amp;amp;">
+						<span class="left">{{dl.tranDate|formatDate}}</span> <span
+							class="right">{{dl.amount}}</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 第三个碎片页:万份收益页面 -->
+	<div v-page v-transition="native" title="万份收益">
+		<div class="bg_box">
+			<div class="box_cont">
+				<div class="center">近一月万份收益（元）</div>
+				<div class="prossOuter" v-repeat="hq in hangQing">
+					<div class="prossInner"
+						style="width: {{hq.IncomeUnit*100/maxUnit&amp;amp;">
+						<span class="left">{{hq.tranDate|formatDate}}</span> <span
+							class="right">{{hq.IncomeUnit}}</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 第四个碎片页:七日年化收益率页面 -->
+	<div v-page v-transition="native" title="七日年化收益率">
+		<div class="bg_box">
+			<div class="box_cont">
+				<div class="center">近一月年化收益率（%）</div>
+				<div class="prossOuter" v-repeat="hq in hangQing">
+					<div class="prossInner"
+						style="width: {{hq.SevenIncomeRate*100/maxSIRate&amp;amp;">
+						<span class="left">{{hq.tranDate|formatDate}}</span> <span
+							class="right">{{hq.SevenIncomeRate*100|FloatTwo}}</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 第五个碎片页:乐盈宝介绍页面 -->
+	<div v-page v-transition="native" title="乐盈宝">
+		<div class="bg_box">
+			<div class="box_cont">
+				<div class="zz_cont">
+					<li style="border-bottom: 1px solid #eeeeee">1、什么是乐盈宝?</li>
+					<li class="lineheight1">答：乐盈宝是我行为个人用户推出的通过余额进行基金支付的服务。把资金转入乐盈宝即是向基金公司等机构购买相应理财产品。乐盈宝首期支持诺安基金旗下的货币基金。
+					</li>
+					<div class="j-heightb"></div>
+					<li style="border-bottom: 1px solid #eeeeee">2、乐盈宝收益什么时候会显示？</li>
+					<li class="lineheight1">答：当天15:00之前转入的资金在第二个工作日由基金公司进行份额确认，对已确认的份额，预计会在下一工作日的17点左右发放收益。15:00后转入的资金会顺延1个工作日确认。举例：周一15:00前转入乐盈宝的资金，基金公司会在周二确认份额，周三17点前将周二的收益发放到乐盈宝内。双休日及国家法定假期，基金公司不进行份额确认。
+					</li>
+					<div class="j-heightb"></div>
+					<li style="border-bottom: 1px solid #eeeeee">3、乐盈宝有没有风险?</li>
+					<li class="lineheight1">答：您通过乐盈宝购买的是基金公司的货币基金，货币基金主要用于投资国债、银行存款等安全性高、收益稳定的有价证券。总体来看，货币基金作为基金产品的一种，理论上存在亏损可能，但从历史数据来看收益稳定风险极小，其本金出现亏损的可能性很低。但收益会受投资市场的波动而上下浮动。我行提醒您，虽然货币基金风险较低，但购买前请确认您已充分了解该产品。您需具备投资低风险基金品种的风险承受能力，因此通过乐盈宝购买货币基金的相关交易时，系统默认您为最低风险承受能力类型。如您不具备最低风险承受能力，请勿做该等投资。
+					</li>
+					<div class="j-heightb"></div>
+					<li style="border-bottom: 1px solid #eeeeee">4、乐盈宝最低可以转入多少钱？</li>
+					<li class="lineheight1">答：余额宝转入单笔金额≥0.01元。根据基金行业历史经验，建议您持有100元以上。</li>
+					<div class="j-heightb"></div>
+					<li style="border-bottom: 1px solid #eeeeee">5、用什么方式可以把钱转入乐盈宝？</li>
+					<li class="lineheight1">答：只需一张我行的银行卡就可以转入乐盈宝。</li>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<script>
+PLeYingBaoCtrl.$inject = ["$scope","$remote","$targets","$filter","$context","$chartService"];
+function PLeYingBaoCtrl($scope,$remote,$targets,$filter,$context,$chartService){
+	$scope.init=function(){
+		//查询客户证件号
+		$remote.post("/pmobile/ActListQry.do",{},function(data){
+			$scope.acList=data;
+			var par={
+				"beginDate":$scope.getDate(new Date(),-31),//"20150201",
+				"endDate":$scope.getDate(new Date(),-1),//"20150301",
+				"pageSize":30,
+				"currentIndex":1
+			}
+			var params={
+					"accNo":$scope.acList.IdNo,
+					"idType":"01",
+					"accType":2,
+					"flag":0
+			}
+			//查询乐赢宝行情信息
+			$remote.post("/pmobile/QueryLYBHqInfo.do",par,function(data2){
+				//临时数组变量，用于存储倒序的收益列表
+				var temp=[];
+				vx.forEach(data2.List,function(item,index){
+					temp[data2.List.length-index-1]=item;
+				});
+				$scope.hangQing=temp;
+				$scope.todayHQ=$scope.hangQing[0];
+				var tempList={};
+				var testArray=[];
+				//把数据源封装为：{"05-12":4.3425}
+				vx.forEach(data2.List,function(item,index){
+					if(data2.List.length-1-index<7){
+						var key=item.tranDate.substring(4,6)+"-"+item.tranDate.substring(6);
+						tempList[key]=(item.SevenIncomeRate*100).toFixed(4);
+						testArray[data2.List.length-1-index]=(item.SevenIncomeRate*100).toFixed(4);
+					}else{
+						return false;
+					}
+				});
+				//testArray.sort().reverse();
+				testArray.sort(function(a,b){return parseFloat(a)<parseFloat(b)?1:-1});
+				var params={
+						"data":tempList,//数据源
+						"pointDot":false,//是否显示节点
+						"pointDotRadius":4,//节点大小-半径
+						"scaleStartValue":testArray[6]-0.5,//Y轴起始值
+						"scaleSteps":3,//Y轴刻度个数
+						"scaleStepWidth":((testArray[0]-testArray[6]+0.7)/3).toFixed(4),//Y轴跨度
+						"tooltipFillColor":"#008aff",//标注背景色
+						"showTooltips":false,//点击显示标注
+						"fillColor":"#d8edf4",//阴影填充色
+						"strokeColor" : "#008aff",//曲线颜色
+						"pointColor" : "yellow",//节点颜色
+						"pointStrokeColor" : "#008aff",//节点边框颜色
+						"pointHighlightFill" : "green",//选中节点颜色
+						"pointHighlightStroke" : "blue",//选中节点边框颜色
+						"widther" : "5px",
+				};
+				$chartService.line(document.getElementById("canvas"), params); 
+			}); 
+			//乐盈宝签约信息查询
+			$remote.post("/pmobile/QueryLYBInfo.do",params,function(data3){
+				if(data3._RejCode){
+					if(data3.flag==0){
+						$scope.noBrief=true;
+						$scope.totIncome=0;
+						$scope.LastDayIncome="--";
+						$scope.accountNo="未签约";
+						$scope.balance=0;
+					}else{
+						$scope.noBrief=false;
+						//查询客户信息
+						$remote.post("/pmobile/QueryLYBCustInfo.do",params,function(data4){
+								$scope.leYBInfo=data4;
+								$scope.totIncome=$scope.leYBInfo.totIncome;
+								$scope.LastDayIncome=$scope.leYBInfo.LastDayIncome;
+								$scope.accountNo=$scope.leYBInfo.accountNo;
+								$scope.balance=$scope.leYBInfo.balance;
+								$scope.prdCode=data4.prdCode;
+						});
+						
+					}
+				}
+			});
+		});
+		
+	}
+	//去往转入页面
+	$scope.transIn=function(){
+		if($scope.noBrief){//未签约 --传送首次购买标示
+			$context.setJson({"firstFlag":1});
+		}else{
+			$context.setJson({"firstFlag":0});
+		}
+		if($scope.accountNo.substr(0,12)==623071010106){
+			NativeCall.toast("签约卡号为电子账号，请到直销银行执行相关操作");
+			return false;
+		}
+		$context.setJson({"acNo":$scope.accountNo,"PLYBAmount":$scope.balance});
+		$scope.goto("PLeYingBao","LYBTransIn");
+	}
+	//去往转出页面
+	$scope.transOut=function(){
+			if($scope.accountNo.substr(0,12)==623071010106){
+				NativeCall.toast("签约卡号为电子账号，请到直销银行执行相关操作");
+				return false;
+			}
+			if(parseInt($scope.balance)==0){
+				NativeCall.toast("可转出金额为0");
+			}else{
+				$context.setJson({"acNo":$scope.accountNo,"prdCode":$scope.prdCode,"PLYBAmount":$scope.balance});
+				$scope.goto("PLeYingBao","LYBTransOut");
+			}
+	}
+	//去往自动转入页面 
+	$scope.gotoDZ=function(){
+		$context.setJson({"acNo":$scope.accountNo,"prdCode":$scope.prdCode});
+		$scope.goto("PLeYingBao","PLyinbaoZDkk");
+	}
+	//跳转到交易明细查询页面
+	$scope.toQuery=function(){
+		if(!$scope.noBrief){
+			//跳转到交易明细查询页面
+			$context.setJson({"acNo":$scope.accountNo});
+			$scope.goto("PLeYingBao","LYBtransQry");
+		}
+	}
+	//跳转到七日年化收益率页面
+	$scope.toHissir=function(){
+		var temp=[];
+		vx.forEach($scope.hangQing,function(item){
+			temp.push(item.SevenIncomeRate)
+		});
+		//temp.sort().reverse();
+		temp.sort(function(a,b){return parseFloat(a)<parseFloat(b)?1:-1});
+		$scope.maxSIRate=temp[0];
+		$targets("content","#4");
+	}
+	//跳转到乐盈宝详情页
+	$scope.toLeYingBaoInfo=function(){
+		$targets("content","#5");
+	}
+	//跳转到万份收益页面
+	$scope.toHisUnit=function(){
+		var temp=[];
+		vx.forEach($scope.hangQing,function(item){
+			temp.push(item.IncomeUnit)
+		});
+		temp.sort(function(a,b){return parseFloat(a)<parseFloat(b)?1:-1});
+		$scope.maxUnit=temp[0];
+		$targets("content","#3");
+	}
+	//跳转到累计收益页面
+	$scope.toHisIncome=function(){
+		$targets("content","#2");
+		if(!$scope.noBrief){
+			var prs={
+					"accNo":$scope.acList.IdNo,
+					"idType":"01",
+					"accType":2,
+					"amtDir":2,
+					"BeginDate":$scope.getDate(new Date(),-31),
+					"EndDate":$scope.getDate(new Date(),-1),
+					"pageSize":30,
+					"currentIndex":1
+			};
+			var temp=[];
+			//七日累计收益---暂无数据
+			$remote.post("/pmobile/QueryLYBMxInfo.do",prs,function(data5){
+				$scope.detailList=data5.List;
+				
+				//日期排序
+				vx.forEach($scope.detailList,function(item){
+					temp.push(item.amount)
+				});
+				temp.sort(function(a,b){return parseFloat(a)<parseFloat(b)?1:-1});
+				$scope.maxAmount=temp[0];
+			});	
+			
+		}
+	}
+	//跳转到确认页面
+	$scope.toConfirm=function(){
+		$targets("content","#3");
+	}
+	//跳转到结果页
+	$scope.toResult=function(){
+		$targets("content","#4");
+	}
+}
+</script>

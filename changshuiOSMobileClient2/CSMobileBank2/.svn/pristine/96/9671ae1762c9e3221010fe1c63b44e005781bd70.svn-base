@@ -1,0 +1,192 @@
+<div v-view-setup="zxyyCtrl" v-init="init()">
+	<div  class="bg_box" v-page v-transition="native" title="在线预约">
+		<div class="box_cont">
+			<div class="j-heightb"></div>
+			<div class="bcfff1 zczl_cont background1" style="text-align:center;padding:10px 0 10px 0;vertical-align:middle;" v-click="toAddAccount()">
+				<img src="images/tj.png" /><span style="font-size:16px; padding-left:10px;display:inline-block;height:100%;vertical-align:middle;">新增预约</span>
+			</div>
+		</div>
+		<div class = "box_cont">
+			<div class="zz_cont">
+				  <ul>
+				  <div class="delete"><a href=""><img style="width:16px;height:16px;" src="images/d.png" /></a></div>
+						<li><em>预约机构：</em><i>{{il.PayeeAcName}}</i></li>
+						<li><em>预约时间：</em><i>{{il.PayeeAcNo}}</i></li>
+				  </ul>
+		    </div>
+		</div>
+		<div class = "box_cont">
+			<div class="zz_cont">
+				  <ul>
+				  <div class="delete"><a href=""><img style="width:16px;height:16px;" src="images/d.png" /></a></div>
+						<li><em>预约机构：</em><i>{{il.PayeeAcName}}</i></li>
+						<li><em>预约时间：</em><i>{{il.PayeeAcNo}}</i></li>
+				  </ul>
+		    </div>
+		</div>
+		<div class = "box_cont">
+			<div class="zz_cont">
+				  <ul>
+				  <div class="delete"><a href=""><img style="width:16px;height:16px;" src="images/d.png" /></a></div>
+						<li><em>预约机构：</em><i>{{il.PayeeAcName}}</i></li>
+						<li><em>预约时间：</em><i>{{il.PayeeAcNo}}</i></li>
+				  </ul>
+		    </div>
+		</div>
+		<div class = "box_cont">
+			<div class="zz_cont">
+				  <ul>
+				  <div class="delete"><a href=""><img style="width:16px;height:16px;" src="images/d.png" /></a></div>
+						<li><em>预约机构：</em><i>{{il.PayeeAcName}}</i></li>
+						<li><em>预约时间：</em><i>{{il.PayeeAcNo}}</i></li>
+				  </ul>
+		    </div>
+		</div>
+		<div class = "box_cont">
+			<div class="zz_cont">
+				  <ul>
+				  <div class="delete"><a href=""><img style="width:16px;height:16px;" src="images/d.png" /></a></div>
+						<li><em>预约机构：</em><i>{{il.PayeeAcName}}</i></li>
+						<li><em>预约时间：</em><i>{{il.PayeeAcNo}}</i></li>
+				  </ul>
+		    </div>
+		</div>
+	</div>
+	<div  class="bg_box" v-page>
+		<div class="box_cont">
+			<div class="zz_cont">
+					<ul>
+						<li>
+							<em>所在省：</em>
+							<i>
+								<select  v-change="" v-model="province" name="province" v-options="" >
+									<option selected="selected">江苏省</option>
+								</select>
+							</i>
+						</li>
+						<li>
+							<em>所在市：</em>
+							<i>
+								<select v-model="city" name="city" v-options="" >
+									<option selected="selected">常熟市</option>
+								</select>
+							</i>
+						</li>
+						<li>
+							<em>所在区：</em>
+							<i> 
+								<select v-model="city" name="city" v-options="" >
+									<option selected="selected">虞山镇</option>
+								</select>
+							</i>
+						</li>
+					</ul>
+			</div>
+			<div  class="zz_cont">
+			<input type="button" class="button_1" name="button" value="查询机构" v-click="queryKw()"></div>			
+		</div>
+	</div>
+	<div  class="bg_box" v-page>
+		<div class="box_cont">
+			<div class="zz_cont">
+					<ul>
+						<li>
+							<em>机构名：</em>
+							<i>
+								<select  v-change="" v-model="province" name="province" v-options="" >
+									<option selected="selected">机构1</option>
+								</select>
+							</i>
+						</li>
+						<li>
+							<em>预约日期</em>
+							<i>
+								<select v-model="city" name="city" v-options="" >
+									<option selected="selected">日期1</option>
+								</select>
+							</i>
+						</li>
+						<li>
+							<em>预约时间</em>
+							<i>
+								<select v-model="city" name="city" v-options="" >
+									<option selected="selected">时间1</option>
+								</select>
+							</i>
+						</li>
+						<li>
+							<em>预约类型</em>
+							<i>
+								<select v-model="city" name="city" v-options="" >
+									<option selected="selected">普通 </option>
+									<option>大额 </option>
+								</select>
+							</i>
+						</li>
+						<li>
+							<em>身份证</em>
+							<i> 
+								<input type="text"  placeholder="请输入身份证" name="keyWord" v-model="keyWord" class="y_srk"/>
+							</i>
+						</li>
+						<li>
+							<em>手机号</em>
+							<i> 
+								<input type="text"  placeholder="请输入手机号" name="keyWord" v-model="keyWord" class="y_srk"/>
+							</i>
+						</li>
+						<li>
+							<em>是否接收短信</em>
+							<i> 
+								<span class="radio">
+									<input type="radio" class="radio" v-model="transType" name="transType" value="1"
+									v-click="selected(15)"  selected="selected"/>是</span> 
+								<span class="radio">
+									<input type="radio" class="radio" v-model="transType" name="transType" value="2"
+									v-click="selected(45)" />否</span> <span class="radio">
+							</i>
+						</li>
+					</ul>
+			</div>
+			<div  class="zz_cont">
+			<input type="button" class="button_1" name="button" value="预约" v-click="doit()"></div>			
+		</div>
+	</div>
+	<div  class="bg_box" v-page>
+		<div class="box_cont">
+			<div class="zz_cont">
+				<div class="cc_img">
+					<img src="images/cg_img.png" style="width:120px;height:120px"/>
+					 交易成功
+				</div>
+				<div class="transtime" >交易时间</div>
+				<div class="resultForm">
+					<ul>
+						<li><em>预约人：</em><i>44444444444444444</i></li>
+						<li><em>预约手机号：</em><i>22222222222</i></li>
+						<li><em>预约号：</em>111111111<i></i></li>
+						<li><em>电子回单号：</em><i>{{InnerResult.ECIPSerNo}}</i></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div style="width:100%;height:40px;"></div>
+</div>
+<script>
+zxyyCtrl.$inject = ["$scope","$remote","$targets","$context","$timeout"];
+function zxyyCtrl($scope,$remote,$targets,$context,$timeout){
+	$scope.init=function(){
+	
+	}
+	$scope.toAddAccount = function(){
+		$targets("content","#2");
+	};
+	$scope.queryKw = function(){
+		$targets("content","#3");
+	};
+	$scope.doit = function(){
+		$targets("content","#4");
+	};
+}
+</script>

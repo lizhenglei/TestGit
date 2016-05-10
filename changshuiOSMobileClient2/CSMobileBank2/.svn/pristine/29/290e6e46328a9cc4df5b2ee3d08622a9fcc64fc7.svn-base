@@ -1,0 +1,179 @@
+<div v-view-setup="jzlcdetailCtrl" v-init="init()">
+	<div class="background" v-page v-transition="native" title="历史净值">
+	<form name="transInput" class="bg_box">
+	<div class="box_cont">
+		<div class="zz_cont">
+					<ul>
+						<li><em>付款账号：</em> <i>
+								<select v-change="getCardInfo()"
+								v-model="payCard" name="payCard"
+								v-options="ac.AcNo1 for ac in acList">
+							</select> </i></li>
+						
+					<li>
+							<em>开始日期：</em>
+							<i  style="padding-top:8px">
+								<input type="date" name="beginDate" placeholder="请选择开始日期" v-model="beginDate" ui-calendar='{"maxView":3,"todayBtn":1,"minView":2,"autoclose": true,"format": "yyyy-mm-dd"}' class="y_srk" readonly>
+							</i>
+						</li>
+						<li>
+							<em>结束日期：</em>
+							<i  style="padding-top:8px">
+								<input type="date" name="endDate" placeholder="请选择结束日期" v-model="endDate" ui-calendar='{"maxView":3,"todayBtn":1,"minView":2,"autoclose": true,"format": "yyyy-mm-dd"}' class="y_srk" readonly>
+							</i>
+					</li>
+					</ul>
+					 <div class="zz_cont">
+		     			<input type="submit"  class="button_1" name="Submit" value="查询" v-click="show()">
+		 		   </div>
+		</div>
+<!-- 		<div class="zz_cont" style="background-color:white"> -->
+			
+<!-- 		</div> -->
+			<div class="bg_box" v-show="fl==1">
+				<div style="margin-top:10px;" class=" showborder1">
+			   		   <ul >
+						<li>
+							<em style="width: 40%;  text-align: center">清算日</em>
+							<i style="width: 60%;  font-weight: bold;font-size:16px;color:#565656; text-align:center">
+								参考净值
+							</i>
+						</li>
+					  </ul>
+		   		 </div>
+			</div>
+			<div class="bg_box" v-show="fl==1" v-more-page="payee in payeeList">
+				<div style="margin-top:10px;" class=" showborder1">
+			   		   <ul >
+						<li>
+							<em style="width: 40%;  text-align: center">{{payee.PblsDt|formatDate}}</em>
+							<i style="width: 60%; font-weight: bold;font-size:16px;color:#565656; text-align:center">
+								{{payee.NetPrdctAmt|number:2}}
+							</i>
+						</li>
+					  </ul>
+		   		 </div>
+			</div>
+			<div >
+	     <input type="submit" id="nextButton"  class="button_1" name="Submit" value="查看更多" v-click="PAGE.moreNextPage()">
+	</div>
+				</div>
+		</form>
+	</div>
+</div>
+<script>
+jzlcdetailCtrl.$inject = [ "$scope", "$remote", "$targets", "$filter",
+			"$context","$chartService"];
+	function jzlcdetailCtrl($scope, $remote, $targets, $filter, $context,$chartService ) {
+		$scope.init = function() {
+			$scope.fl=0;
+			$remote.post("/pmobile/GenTimeStamp.do",{},function(data){
+				var serviceTime=data._sysDate;
+				$scope.beginDate=$scope.formartDate(serviceTime,-365,"-");
+				$scope.endDate=$scope.formartDate(serviceTime,0,"-");
+			});
+			$scope.jzlc=$context.getJson().jzlc;
+			$remote.post("/pmobile/ActListQry.do",{},function(data){
+				//过滤器json添加一个acno1的字段，这里写麻烦了 可以用循环写
+				$scope.acList=data.AcList;
+				var filterFn=$filter("filter");
+				$scope.acList=filterFn($scope.acList,function(obj,text){
+					if(obj.AcNo != undefined){
+						obj.AcNo1=obj.AcNo.substring(0,4)+"****"+ obj.AcNo.substring(obj.AcNo.length-4);
+						obj.AcNo2=obj.AcNo1;
+						if(obj.AcAlias.length>4){
+							obj.AcNo1=obj.AcNo1+" / "+obj.AcAlias.substring(0,4)+"...";
+						}else if(obj.AcAlias.length<=4&&obj.AcAlias.length>0){
+							obj.AcNo1=obj.AcNo1+" / "+obj.AcAlias;
+						}else{
+							obj.AcNo1=obj.AcNo1;
+						}
+						if($scope.innerParam){
+							if($scope.innerParam.payCardAcNo==obj.AcNo){
+								$scope.payCard=obj;
+							}
+						}else{
+							var f=$context.getJson().toselectAcNo;//传送过来点击中的信用卡的卡号
+							if(f){
+								//在打开页面显示点击的信用卡卡号
+								if(f==obj.AcNo){
+									$scope.payCard=obj;
+								}
+							}
+						}
+						return true;
+					}
+				});
+				$scope.mobileNo=data.MobilePhone;
+				if(vx.isEmpty($scope.payCard)){
+					$scope.payCard=$scope.acList[0];
+				}
+				$scope.getCardInfo();
+			});
+		}
+		$scope.getCardInfo=function(){
+			var cardNo=$scope.payCard.AcNo;
+			//查询余额
+			$remote.post("/pmobile/ActBalQry.do",{"AcNo":cardNo},function(data){
+				$scope.cardInfo=data;
+				$scope.balance=data.AvailBal;
+			});
+			//转给本人时，过滤掉当前选中的付款账号
+			if($scope.acList){
+				var temp=[];
+				vx.forEach($scope.acList,function(item){
+					if($scope.payCard.AcNo!=item.AcNo){
+						temp.push(item);
+					}
+				});
+				$scope.rAcList=temp;
+				if($scope.rAcList){
+					$scope.selfRCard=$scope.rAcList[0];
+				}
+			}
+		}
+		$scope.show=function(){
+			if($scope.beginDate>$scope.endDate){
+				NativeCall.toast("开始日期不能大于结束日期");
+				return false;
+			}
+			$scope.fl=0;
+			$scope.yy = $scope.beginDate.substr(0, 4);
+			$scope.mm = $scope.beginDate.substr(5, 2);
+			$scope.dd = $scope.beginDate.substr(8, 2);
+			$scope.beginDate1 = $scope.yy  + $scope.mm  + $scope.dd;
+			$scope.yy1 = $scope.endDate.substr(0, 4);
+			$scope.mm1 = $scope.endDate.substr(5, 2);
+			$scope.dd1 = $scope.endDate.substr(8, 2);
+			$scope.endDate1 = $scope.yy1  + $scope.mm1  + $scope.dd1;
+			var pa={
+					"TACd":$scope.jzlc.TACd,
+					"PrdctCd":$scope.jzlc.PrdctCd,
+					"BegDt":$scope.beginDate1,
+					"EndDt":$scope.endDate1,
+					"LoctStr":1,
+					"QryLnNum":10
+			}
+			$remote.post("/pmobile/LsjzQuery.do",pa,function(data){
+				$scope.fl=1;
+				$scope.payeeList=data.List;
+				$scope.totalnumber = data.totalNum;
+			});
+		}
+		$scope.morepage = function(qishi,zhongzhi,zengliang,list){
+			$scope.start=1;//不是第一次进入
+			var formData = {
+					"TACd":$scope.jzlc.TACd,
+					"PrdctCd":$scope.jzlc.PrdctCd,
+					"BegDt":$scope.beginDate1,
+					"EndDt":$scope.endDate1,
+					"LoctStr":qishi/10+1,
+					"QryLnNum":10
+			};
+			$remote.post("/pmobile/LsjzQuery.do", formData, function(data) {
+				$scope.payeeList=data.List;
+				$scope.totalnumber = data.totalNum;
+			});
+		};
+	}
+</script>

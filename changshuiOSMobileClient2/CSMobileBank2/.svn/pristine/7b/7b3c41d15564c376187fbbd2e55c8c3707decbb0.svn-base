@@ -1,0 +1,28 @@
+
+
+[
+       {"AcNo": "6229934201501027", 
+         "AcName": "贝璇",
+         "AliasName":"6229934110201501027",
+    	 "BankAcType":"03",
+    	 "BankAcTypeName":"借记卡",
+    	 "AcType":"D",
+    	 "TrsName":"SubActsQry",
+        "Balance":"81,762.38",
+        "AvailBal":"81,762.38"
+       }
+       ,
+       {"AcNo": "6223855800000031", 
+         "AcName": "贝璇",
+         "AliasName":"6223855800000031",
+    	 "BankAcType":"04",
+    	 "BankAcTypeName":"借记卡",
+    	 "AcType":"C",
+    	 "TrsName":"AcctInfoPayee",
+        "Balance":"9,999.00",
+        "AvailBal":"9,999.00"
+       }
+
+]
+
+

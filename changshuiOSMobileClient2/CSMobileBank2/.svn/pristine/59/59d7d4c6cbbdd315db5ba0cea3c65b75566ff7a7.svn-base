@@ -1,0 +1,333 @@
+<div v-view-setup="PCLTransQryCtrl" v-init="init()">
+	<!-- 理财明细 -->
+	<div class="bg_box" v-page v-transition="native" title="理财明细">
+		<div class="box_cont">
+			<div class="zz_cont">
+			      <ul>
+						<li>
+							<em>账号：</em>
+							<i>
+								<select v-model="queryAc" name="queryAc" v-options="ac.AcNo1 for ac in acList" >
+								</select>
+							</i>
+						</li>
+						<li>
+								<em>开始日期：</em>
+								<i style="padding-top:8px">
+									<input type="date" name="beginDate" id="beginDate" placeholder="请选择开始日期" v-model="beginDate"  style="height:20px;margin-top:10px" class="y_srk" >
+								</i>
+							</li>
+							<li>
+								<em>结束日期：</em>
+								<i style="padding-top:8px">
+									<input type="date" name="endDate" id="endDate" placeholder="请选择结束日期" v-model="endDate" style="height:20px;margin-top:10px" class="y_srk">
+								</i>
+							</li>
+						<li>
+							<em>理财品种：</em>
+							<i>
+								<select v-change="changeFC()" v-model="financType" name="financType" v-options="ft.financName for ft in financTypeList" >
+								</select>
+							</i>
+						</li>
+						<li v-show="fl">
+							<em>交易类型：</em>
+							<i>
+								<select  v-model="transType" name="transType" v-options="tt.typeName for tt in transTypeList" >
+								</select>
+							</i>
+						</li>
+				 </ul>
+				<div style="margin-bottom:15px;">
+		     		<input type="submit"  class="button_1" name="Submit" value="查询" v-click="toQuery()">
+		     	</div>
+		    </div>
+		</div>
+	<!-- 
+		<div v-repeat="detail in detailList">
+			<div style="margin-top:10px;" class=" showborder1">
+			      <ul >
+						<li>
+							<em v-show="showFlag=='LiJin'" style="width:45%;">{{detail.PrdctNm}}<br/><span style="font-size:14px;color:#666; font-weight:normal">{{detail.OrigTxnDt|formatDate}}</span></em>
+							<em  v-show="showFlag=='TTL'" style="width:45%;">{{detail.prdName}}<br/><span style="font-size:14px;color:#666; font-weight:normal">{{detail.tranDate}}</span></em>
+							<i style="width:55%;" v-show="showFlag=='TTL'">{{detail.tranAmount|number:2}}<br/><span style="font-size:14px;color:#666">{{detail.tranType|ttlTransClassFilter}}</span></i>
+							<i style="width:55%;" v-show="showFlag=='LiJin'">{{detail.OrigAplyAmt|number:2}}<br/><span style="font-size:14px;color:#666">{{detail.FormrTxnNm}}{{detail.TxnStNm}}</span></i>
+						</li>
+						<li><em></em></li>
+				  </ul>
+		    </div>
+		</div>
+	-->
+	<div class="bg_box"  v-more-page="detail in detailList" >
+		<div style="margin-top:10px;" class=" showborder1">
+			      <ul>
+						<li>
+							<em v-show="showFlag=='LiJin'" style="width:45%;">{{detail.PrdctNm}}<br/><span style="font-size:14px;color:#666; font-weight:normal">{{detail.OrigTxnDt|formatDate}}</span></em>
+							<em  v-show="showFlag=='TTL'" style="width:45%;">{{detail.PrdctNm}}<br/><span style="font-size:14px;color:#666; font-weight:normal">{{detail.OrigTxnDt|formatDate}}</span></em>
+<!-- 							<i style="width:55%;" v-show="showFlag=='TTL'">{{detail.tranAmount|number:2}}<br/><span style="font-size:14px;color:#666">{{detail.tranType|ttlTransClassFilter}}</span></i> -->
+							<i style="width:55%;" v-show="showFlag=='TTL'">{{detail.OrigAplyAmt|number:2}}<br/><span style="font-size:14px;color:#666">{{detail.tranTypeName}}</span></i>
+							<i style="width:55%;" v-show="showFlag=='LiJin'">{{detail.OrigAplyAmt|number:2}}<br/><span style="font-size:14px;color:#666">{{detail.FormrTxnNm}}{{detail.TxnStNm}}</span></i>
+<!-- 							<em v-show="showFlag=='JingZhi'" style="width:45%;">{{detail.PrdctNm}}<br/><span style="font-size:14px;color:#666; font-weight:normal">{{detail.OrigTxnDt|formatDate}}</span></em> -->
+<!-- 							<i style="width:55%;" v-show="showFlag=='JingZhi'">{{detail.OrigAplyAmt|number:2}}<br/><span style="font-size:14px;color:#666">{{detail.FormrTxnNm}}-{{detail.TxnStNm}}</span></i> -->
+							<li v-show="showFlag=='JingZhi'"><em style="width: 60%;">{{detail.PrdctNm}}</em><i style="width: 30%;font-size:14px;color:#666"">{{detail.OrigTxnDt|formatDate}}</i></li>
+							<li v-show="showFlag=='JingZhi'"><em style="width: 60%;font-size:14px;color:#666; font-weight:normal">{{detail.OrigAplyAmt|number:2}}</em><i style="width: 30%;">{{detail.FormrTxnNm}}-{{detail.TxnStNm}}</i></li>
+						</li>
+						<li><em></em></li>
+				  </ul>
+		    </div>
+	</div>
+	<div >
+	     <input type="submit" id="nextButton"  class="button_1" name="Submit" value="查看更多" v-click="PAGE.moreNextPage()">
+	</div>
+	
+	</div>
+	<div class="zz_cont"><img src="images/ts.png" />
+		    <font class="tishi">
+				温馨提示</br>
+			</font>
+				&nbsp;&nbsp;1、您可查询近一年指定时间段内的理财交易明细。</br>
+				&nbsp;&nbsp;2、可查询的时间间隔为90天内的理财产品。</br>
+			<div style="font-size:12px; line-height:16px; color:#929292;"> </div>
+	 </div>
+	 <div style="width:100%;height:40px;"></div>
+</div>
+<script>
+PCLTransQryCtrl.$inject = ["$scope","$remote","$targets","$filter"];
+function PCLTransQryCtrl($scope,$remote,$targets,$filter){
+	$scope.init=function(){
+		//查询借记卡
+		$remote.post("/pmobile/ActListQry.do",{},function(data){
+			$scope.acList=data.AcList;
+			var filterFn=$filter("filter");
+			$scope.acList=filterFn($scope.acList,function(obj,text){
+				if(obj.AcNo != undefined){
+					obj.AcNo1=obj.AcNo.substring(0,4)+"****"+ obj.AcNo.substring(obj.AcNo.length-4)
+					if(obj.AcAlias.length>4){
+						obj.AcNo1=obj.AcNo1+" / "+obj.AcAlias.substring(0,4)+"...";
+					}else if(obj.AcAlias.length<=4&&obj.AcAlias.length>0){
+						obj.AcNo1=obj.AcNo1+" / "+obj.AcAlias;
+					}else{
+						obj.AcNo1=obj.AcNo1;
+					}
+					return true;
+				}
+			});
+			$scope.queryAc=$scope.acList[0];
+		});
+		//获取理财品种和交易类型
+		$remote.get("data/PCLTransQry/PCLTransQry.json", {}, function(data) {
+			$scope.financTypeList=data;
+			$scope.financType=$scope.financTypeList[0];
+			$scope.changeFC();
+		});
+		//获取服务器当前时间
+		$remote.post("/pmobile/GenTimeStamp.do",{},function(data){
+			var serviceTime=data._sysDate;
+			$scope.endDate=$scope.formartDate(serviceTime,0,"-");
+		});
+		
+		//获取服务器当前时间
+		$remote.post("/pmobile/GenTimeStampAdd.do",{"type":"M","amount":"-3"},function(data){
+			var serviceTime=data._sysDate;
+			$scope.beginDate=$scope.formartDate(serviceTime,0,"-");
+		});
+	}
+	//改变理财类型
+	$scope.changeFC=function(){
+		$scope.transTypeList=$scope.financType.transType;
+		$scope.transType=$scope.transTypeList[0];
+		//$scope.changeTransType();
+		if($scope.financType.financName=='常乐理财'||$scope.financType.financName=='净值理财'){
+			$scope.fl=false;
+		}else{
+			$scope.fl=true;
+		}
+	}
+	//过滤List
+	$scope.changeTransType = function(){
+		var temp = $scope.transType.typeCode;
+		var List=[];
+		if(temp==1){
+			vx.forEach($scope.detailList,function(item){
+				if(item.OrigTxnCd=="100200"){//
+					item.tranTypeName = "购买";
+					List.push(item);
+				}
+			});
+		}else if(temp==2){
+			vx.forEach($scope.detailList,function(item){
+				if(item.OrigTxnCd=="100219"){//撤销
+					item.tranTypeName = "撤销";
+					List.push(item);
+				}
+			});
+		}else if(temp==3){
+			vx.forEach($scope.detailList,function(item){
+				if(item.OrigTxnCd=="100265"){//赎回
+					item.tranTypeName = "赎回";
+					List.push(item);
+				}
+			});
+		}
+		if(temp!=0){
+			$scope.detailList=List;//筛选后的列表
+		}
+		
+	}
+	
+	//查询交易明细
+	$scope.toQuery=function(){
+		$scope.detailList=[];
+		if($scope.financType.financName=="常乐理财"){
+			var params1={
+				"CstId":$scope.queryAc.AcNo,
+				"BegDt":$scope.formartDate($scope.beginDate,0),
+				"EndDt":$scope.formartDate($scope.endDate,0),
+				"PrdctTplCd":"1102",
+				"pageSize":10,
+				"currentIndex":1
+			};
+			//查询粒金理财交易明细
+			$remote.post("/pmobile/MyPrdMx.do",params1,function(data){
+				$scope.detailList=data.List;
+				$scope.showFlag='LiJin';
+				$scope.totalnumber = data.totalNum;
+			},function(data){
+					$scope.alert(data.jsonError);
+					$scope.detailList=[];
+					return data.jsonError;
+			});
+			
+		}else if($scope.financType.financName=="天天利理财"){
+			var params2={
+					"CstId":$scope.queryAc.AcNo,
+					"BegDt":$scope.formartDate($scope.beginDate,0),
+					"EndDt":$scope.formartDate($scope.endDate,0),
+					"PrdctTplCd":"1200",
+					"pageSize":10,
+					"currentIndex":1
+			};
+			//查询天天利交易明细
+			$remote.post("/pmobile/MyPrdMx.do",params2,function(data){
+				var List=[];
+				vx.forEach(data.List,function(item){
+					if(item.OrigTxnCd=="100200"||item.OrigTxnCd=="100219"||item.OrigTxnCd=="100265"){
+						if(item.OrigTxnCd=="100200"){//
+							item.tranTypeName = "购买";
+						}else if(item.OrigTxnCd=="100219"){//撤销
+							item.tranTypeName = "撤销";
+						}else if(item.OrigTxnCd=="100265"){//赎回
+							item.tranTypeName = "赎回";
+						}
+						List.push(item);
+					}
+				});
+				$scope.detailList=List;
+				$scope.changeTransType();//筛选符合要求的列表
+				$scope.showFlag='TTL';
+			},function(data){
+					$scope.alert(data.jsonError);
+					$scope.detailList=[];
+					return data.jsonError;
+			});
+		}else{
+			var params3={
+					"CstId":$scope.queryAc.AcNo,
+					"BegDt":$scope.formartDate($scope.beginDate,0),
+					"EndDt":$scope.formartDate($scope.endDate,0),
+					"PrdctTplCd":"1300",
+					"pageSize":10,
+					"currentIndex":1
+				};
+				//查询粒金理财交易明细
+				$remote.post("/pmobile/MyPrdMx.do",params3,function(data){
+					$scope.detailList=data.List;
+					$scope.showFlag='JingZhi';
+					$scope.totalnumber = data.totalNum;
+				},function(data){
+						$scope.alert(data.jsonError);
+						$scope.detailList=[];
+						return data.jsonError;
+				});
+		}
+	}
+	
+	
+	
+	$scope.morepage = function(qishi,zhongzhi,zengliang,list){
+		$scope.start=1;//不是第一次进入
+		if($scope.financType.financName=="常乐理财"){
+			var params1={
+				"CstId":$scope.queryAc.AcNo,
+				"BegDt":$scope.formartDate($scope.beginDate,0),
+				"EndDt":$scope.formartDate($scope.endDate,0),
+				"PrdctTplCd":"1102",
+				"pageSize":10,
+				"currentIndex":qishi/10+1
+			};
+			//查询粒金理财交易明细
+			$remote.post("/pmobile/MyPrdMx.do",params1,function(data){
+				$scope.detailList=data.List;
+				$scope.showFlag='LiJin';
+			},function(data){
+					$scope.alert(data.jsonError);
+					$scope.detailList=[];
+					return data.jsonError;
+			});
+			
+		}else if($scope.financType.financName=="天天利理财"){
+			var params2={
+					"AcNo":$scope.queryAc.AcNo,
+					"BeginDate":$scope.formartDate($scope.beginDate,0),
+					"EndDate":$scope.formartDate($scope.endDate,0),
+					"PrdctTplCd":"1200",
+					"pageSize":10,
+					"currentIndex":qishi/10+1
+			};
+			//查询天天利交易明细
+			$remote.post("/pmobile/QueryTTLTransMxInfo.do",params2,function(data){
+				var List=[];
+				vx.forEach(data.List,function(item){
+					if(item.OrigTxnCd=="100200"||item.OrigTxnCd=="100219"||item.OrigTxnCd=="100265"){
+						if(item.OrigTxnCd=="100200"){//
+							item.tranTypeName = "购买";
+						}else if(item.OrigTxnCd=="100219"){//撤销
+							item.tranTypeName = "撤销";
+						}else if(item.OrigTxnCd=="100265"){//赎回
+							item.tranTypeName = "赎回";
+						}
+						List.push(item);
+					}
+				});
+				$scope.detailList=List;
+				$scope.changeTransType();//筛选符合要求的列表
+				$scope.showFlag='TTL';
+			},function(data){
+					$scope.alert(data.jsonError);
+					$scope.detailList=[];
+					return data.jsonError;
+			});
+		}else{
+			var params3={
+					"CstId":$scope.queryAc.AcNo,
+					"BegDt":$scope.formartDate($scope.beginDate,0),
+					"EndDt":$scope.formartDate($scope.endDate,0),
+					"PrdctTplCd":"1300",
+					"pageSize":10,
+					"currentIndex":qishi/10+1
+				};
+				//查询粒金理财交易明细
+				$remote.post("/pmobile/MyPrdMx.do",params3,function(data){
+					$scope.detailList=data.List;
+					$scope.showFlag='JingZhi';
+				},function(data){
+						$scope.alert(data.jsonError);
+						$scope.detailList=[];
+						return data.jsonError;
+				});
+		}
+		
+		
+	};
+}
+</script>

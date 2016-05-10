@@ -1,0 +1,124 @@
+<div v-view-setup="MyOrderCtrl" v-init="init()">
+	<!-- 我的预约查询页面 -->
+	<div v-page v-transition="native" title="我的预约">
+		<form name="OrderInput" class="bg_box">
+			<div class="box_cont">
+			<div class="zz_cont">
+				
+				<ul>
+						<li v-show="!IsShow"><em>身份证号：</em><i><input type="text" id="IdNo" name="IdNo" v-model="IdNo" class="y_srk" placeholder="请输入身份证号码"/></i></li>
+						<li v-show="!IsShow"><em>手机号：</em><i><input type="tel" id="MobileNo" name="MobileNo" v-model="MobileNo" class="y_srk" placeholder="请输入手机号"/></i></li>
+						<li v-show="!IsShow"><em>手机动态码：</em>
+							<i>
+								<input type="tel" id="SmsCode" name="SmsCode" v-model="SmsCode" maxlength=6  class="y_srk_50" placeholder="请输入动态码"/>
+								<button class="inp_butt" v-sms="getDYcode()">获取动态码</button>
+							</i>
+						</li>
+				  </ul>
+			</div>
+			 <div v-show="!IsShow" class="zz_cont">
+		     		<input type="submit"  class="button_1" name="Submit" v-disabled="!SmsCode" value="查询" v-click="query()">
+		    </div>
+			</div>
+		</form>
+	</div>
+	<!-- 查询结果 -->
+	<div v-page>
+		<div class="creditcard_box">
+			<div class="zz_cont">
+				<div  v-repeat="order in OrderList" >
+					<ul>
+								<li><em>预约编号：</em><i style="width: 40%;">{{order.ReservationCode}}</i></li>
+								<li><em>预约网点：</em><i style="width: 40%;">{{order.InstNm}}</i></li>
+								<li><em>预约状态：</em><i>{{order.status}}</i></li>
+								<li><em>办理业务：</em><i>{{order.BkgTpNm}}</i></li>
+								<li v-show="order.BsnTp==1"><em>预约金额：</em><i>{{order.BkgAmt}}元</i></li>
+								<li><em>预约日期：</em><i>{{order.tranDate|formatDate}}</i></li>
+								<li><em>预约时间：</em><i>{{order.BkgTmRngDsc}}</i></li>
+				    </ul>
+					<div v-show="order.status!='已取消'&&order.ReservationCode" v-click="cancelOrder(order)">
+						<img style="top: 30px;left: 280px;height:60px;width:30px;margin-top: -105%;margin-left: 90%;" src="images/chexiao.png" />
+					</div>
+			    </div>
+			</div>
+		</div>
+	</div>
+</div>
+<script>
+MyOrderCtrl.$inject = ["$scope","$remote","$targets","$filter","$context","$timeout","$window"];
+function MyOrderCtrl($scope,$remote,$targets,$filter,$context,$timeout,$window){
+	$scope.init=function(){
+		$remote.post("/pmobile/UserIsLogin.do",{},function(data){
+			if(data.isLogin == 0){
+				$scope.IsShow = true;
+				$scope.query();
+			}else{
+				$scope.IsShow = false;
+			}
+		});
+		
+	}
+	//查询结果
+	$scope.query=function(){
+			if ($scope.IsShow == true){
+				var params={
+						"MblNo":$scope.MobileNo,
+						"IdentTp":$scope.IdNo
+				}
+				$remote.post("/pmobile/OrderQry.do",params,function(data){
+					$targets("content","#2");
+					if(data._RejCode=="000000"){
+						$scope.OrderList=data.List1;
+					}else{
+						$scope.alert(data._RejMessage);
+					}
+				});
+			}else{
+				$remote.post("/pmobile/SmsCodeValidateV1.do",{"SmsCode":$scope.SmsCode,"SerialNo":$scope.msmNo},function(data){
+					var params={
+							"MblNo":$scope.MobileNo,
+							"IdentTp":$scope.IdNo
+					}
+					$remote.post("/pmobile/OrderQry.do",params,function(data){
+						$targets("content","#2");
+						if(data._RejCode=="000000"){
+							$scope.OrderList=data.List1;
+						}else{
+							$scope.alert(data._RejMessage);
+						}
+					});
+				});
+			}
+	}
+	
+	//撤销预约
+	$scope.cancelOrder=function(obj){
+		$remote.post("/pmobile/getNewTokenName.do",{},function(data){
+			var param={
+					"serialNo":obj.ReservationCode,
+					"tranDate":obj.tranDate,
+					"_tokenName":data._tokenName
+			}
+			$scope.confirm("您是否撤销当前预约？",function(){
+				$remote.post("/pmobile/GeneralOrderCancel.do",param,function(data){
+					$scope.alert("撤销成功！");
+					$scope.query();
+				});
+			});
+		});
+	}
+	
+	//获取手机动态码
+	$scope.getDYcode=function(){
+		$scope.businessName="我的预约";
+		var params={
+				"BusinessName":$scope.businessName,
+				"MobileNo":$scope.MobileNo,
+				"ServiceCode":"PUM001001"
+		}
+		$remote.post("/pmobile/GenTokenNameV1.do",params,function(data){
+			$scope.msmNo=data.SerialNo;
+		});
+	}
+}
+</script>

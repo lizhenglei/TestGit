@@ -1,0 +1,53 @@
+<div v-view-setup="PFavorableMessageCtrl" v-init="init()">
+	<div v-page v-transition="native">
+		<div class="award" v-repeat="p in mesList">
+		<img style="width: 100%" v-show="p.StringImg" src="data:image/png;base64,{{p.StringImg}}" data-ke-src="data:image/png;base64,{{p.StringImg}}" v-click="toDetail(p)">
+		<ul v-click="toDetail(p)" style="font-size:16px ">{{p.Title}}
+			<a href="#" target="_blank" v-show="!p.StringImg"><img class="MesgImg" src="images/more.png"></a>
+		<ul>
+		</div>
+	</div>
+	<div v-page v-transition="native">
+		<div class="award">
+		<ul v-show="pInfo.Flag==1"><div id="innercontent"></div></ul>
+		<ul v-show="pInfo.Flag==0"><a href="{{pInfo.Url}}" >{{pInfo.Url}}</a></ul>
+	<!-- 		<span class="left"><img src="images/jp.png" /></span>
+			<span class="right">{{p.CONTENT}}<br/><font class="f98973 fontsize2">{{p.TITLE}}</font></span> -->
+		</div>
+	</div>
+</div>
+<script src="../../js/base64.js" type="text/javascript"></script>
+<script>
+PFavorableMessageCtrl.$inject = ["$scope","$remote","$targets"];
+function PFavorableMessageCtrl($scope,$remote,$targets){
+	
+	//页面初始化
+	$scope.init=function(){
+// 		var params={
+// 				"Href":window.location.href
+// 		}
+		
+		$remote.post("/pmobile/NewsContent.do",{},function(data){
+			$scope.mesList=data.Content;
+		});
+	}
+	
+	$scope.toDetail=function(p){
+		$scope.pInfo=p;
+		var content="InnerContent\="+$scope.pInfo.Content+"&@#$";
+		var flag="Flag\="+$scope.pInfo.Flag+"&@#$";
+		var url="Url\="+$scope.pInfo.Url;
+// 		var base64=new Base64();
+// 		var baseUrl=base64.encode(url);
+		var Str="samples/htmls/PFavorableMessage/PFavorableDetail.html?"+flag+content+url;
+		NativeCall.OpenHTML(Str);
+
+		//test by hl
+// 		var url="InnerContent\="+$scope.pInfo.Content;
+// 		var base64=new Base64();
+// 		var baseUrl=base64.encode(url);
+// 		window.location.href="/pmobile/samples/htmls/PFavorableMessage/PFavorableDetail.html?"+baseUrl;
+// 		$targets("content","#2");
+	}
+}
+</script>

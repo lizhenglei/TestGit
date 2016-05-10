@@ -1,0 +1,124 @@
+<div v-view-setup="AutoPaySettingCtrl" v-init="init()">
+	<!-- 信用卡自动还款变更 -->
+	<div class="bg_box" v-page v-transition="native" title="我的信用卡">
+		<div class="box_cont">
+			<div class="zz_cont">
+					<ul>
+						<li>
+							<em>自动还款：</em>
+							<i class="colff6">
+								<a v-click="switchChange()"><img src="images/l2.png" v-show="open" style="width:17%" />
+								<img src="images/l1.png" v-hide="open" style="width:17%" /></a>
+							</i>
+						</li>
+						<li v-show="open">
+							<em>付款人账号：</em>
+							<i>
+								<select name="payerAcNo" v-model="payerAcNo" v-options="p.AcNo1 for p in acList"></select>
+							</i>
+						</li>
+						<li v-show="open">
+							<em>还款方式：</em>
+							<i>
+								<select name="payType" v-model="payType" v-options="pt.name for pt in payTypeList">
+								</select>
+							</i>
+						</li>
+					</ul>
+			</div>
+		    
+		    <div class="zz_cont">
+		     		<input type="submit"  class="button_1" name="Submit" value="确认" v-click="toResult()">
+		    </div>
+		    <div class="zz_cont"><img src="images/ts.png" />
+			    <font class="tishi">
+					温馨提示</br>
+				</font>
+					&nbsp;&nbsp;为确保能成功进行自动还款，请在到期还款日之前申请或变更设置。 </br>
+				<div style="font-size:12px; line-height:16px; color:#929292;"> </div>
+		    </div>
+		</div>
+	</div>
+</div>
+<script>
+AutoPaySettingCtrl.$inject = ["$scope","$remote","$targets","$context","$filter"];
+function AutoPaySettingCtrl($scope,$remote,$targets,$context,$filter){
+	$scope.init=function(){
+		var g;
+		$scope.creditAcNo=$context.getJson().CreditNO;
+		$scope.autoSetFlag=$context.getJson().autoSet;
+		$scope.type=$context.getJson().moneychange;
+		$scope.fl=$context.getJson().fpay;
+		console.log($scope.type);
+		$remote.post("/pmobile/ActListQry.do",{},function(data){
+			console.log(data);
+			$scope.acList=data.PayerList;
+			var filterFn=$filter("filter");
+			$scope.acList=filterFn($scope.acList,function(obj,text){
+				if(obj.AcNo != undefined){
+					obj.AcNo1=obj.AcNo.substring(0,4)+"****"+ obj.AcNo.substring(obj.AcNo.length-4)
+					if(obj.AcAlias.length>4){
+						obj.AcNo1=obj.AcNo1+" / "+obj.AcAlias.substring(0,4)+"...";
+					}else if(obj.AcAlias.length<=4&&obj.AcAlias.length>0){
+						obj.AcNo1=obj.AcNo1+" / "+obj.AcAlias;
+					}else{
+						obj.AcNo1=obj.AcNo1;
+					}
+					return true;
+				}
+			});
+			vx.forEach($scope.acList,function(item,index){
+				if($scope.fl==item.AcNo)
+					 g=index;
+			});
+			$scope.payerAcNo=$scope.acList[g];
+		});
+		$scope.payTypeList=[
+								{
+									"name":"全额还款",
+									"value":"T"
+								},
+								{
+									"name":"最低额还款",
+									"value":"M"
+								}
+						];
+		var f;
+		vx.forEach($scope.payTypeList,function(item,index){
+			if($scope.type==item.name){
+				f=index;
+			}
+		});
+		$scope.payType=$scope.payTypeList[f];
+		$scope.open=true;
+	}
+	$scope.switchChange=function(){
+		$scope.open=!$scope.open;
+		$scope.flag=$scope.open?"":4;
+	}
+	$scope.toResult=function(){
+		//默认开启自动还款，flag值为undefined；或者选择为自动还款，flag值为空
+		if($scope.flag!=4){
+			$scope.flag=$scope.autoSetFlag?2:3;
+		}
+		$remote.post("/pmobile/getNewTokenName.do",{},function(data){
+			var tokenName=data._tokenName;
+			var params={
+					"AcNo":$scope.payerAcNo.AcNo,//还款账号
+					"repayCode":$scope.payType.value,//启用时送,T：全额 M：最低还款额
+					"flag":$scope.flag,//2：启用,查询接口返回有还款账号时送 3：启用,查询接口返回无还款账号时送 4：不启用
+					"CreditNo":$scope.creditAcNo,//信用卡卡号
+					"_tokenName":tokenName
+			};
+			$remote.post("/pmobile/AutoPayforProtocolMgmt.do",params,function(data){
+				if(data._RejCode=="000000"){
+					$scope.alert("自动还款信息维护成功！");
+					NativeCall.goBack();
+				}
+			});
+		});
+	}
+	
+	
+}
+</script>

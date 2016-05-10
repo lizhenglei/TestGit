@@ -1,0 +1,33 @@
+<div v-view-setup="AddressListCtrl" v-init="init()">
+	<div  class="bg_box" v-page v-transition="native">
+		<div class="box_cont">
+			<div class="zz_cont">
+					<ul>
+						<li>
+							<em>张三</em>
+							<i class="center">
+								13818328234
+							</i>
+						</li>
+						<li>
+							<em>李四</em>
+							<i class="center">
+								13818328234
+							</i>
+						</li>
+					</ul>
+			 </div>
+		</div>
+	</div>
+</div>
+<script>
+AddAccountCtrl.$inject = ["$scope","$remote","$targets"];
+function AddAccountCtrl($scope,$remote,$targets){
+	
+	$scope.init=function(){
+	
+	}
+	
+	
+}
+</script>

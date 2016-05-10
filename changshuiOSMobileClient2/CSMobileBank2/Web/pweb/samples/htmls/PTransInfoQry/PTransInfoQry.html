@@ -1,0 +1,294 @@
+<div v-view-setup="PTransInfoQryCtrl" v-init="init()">
+	<div v-page v-transition="native" title="交易明细">
+		<div class="bg_box">
+			<div class="box_cont">
+				<div class="zz_cont">
+				      <ul>
+							<li>
+								<em>账号：</em>
+								<i>
+									<select v-model="queryAc" name="queryAc" v-options="ac.AcNo1 for ac in acList" >
+									</select>
+								</i>
+							</li>
+							<li>
+								<em>开始日期：</em>
+								<i style="padding-top:8px">
+									<input type="date" name="beginDate" id="beginDate" placeholder="请选择开始日期" v-model="beginDate"  style="height:20px;margin-top:10px" class="y_srk" >
+								</i>
+							</li>
+							<li>
+								<em>结束日期：</em>
+								<i style="padding-top:8px">
+									<input type="date" name="endDate" id="beginDate" placeholder="请选择结束日期" v-model="endDate" style="height:20px;margin-top:10px" class="y_srk">
+								</i>
+							</li>
+							<li>
+								<em>交易类型：</em>
+								<i>
+									<select   v-model="transType" name="transType" v-options="tt.name for tt in transTypeList" >
+									</select>
+								</i>
+							</li>
+					 </ul>
+					<div>
+			     		<input type="submit"  class="button_1" name="Submit" value="查询" v-click="toResult()">
+			     		<input type="submit"  class="button_3" name="Submit" value="只查当日" v-click="toResult('today')">&nbsp;
+			     		<input type="submit" class="button_3" name="Submit" value="最近一月" v-click="toResult('month')">
+			     		<input type="submit" class="button_3 floatright" name="Submit" value="最近三月" v-click="toResult('threemonth')">
+			     	</div>
+			    </div>
+			    <!-- <div class="zz_cont">
+				      <ul>
+							<li><em>交易摘要：</em><i></i></li>
+							<li><em>金额：</em><i></i></li>
+							<li><em>账户余额：</em><i style="color:#ff6000;"></i></li>
+				            <li><em>交易时间：</em><i></i></li>
+					  </ul>
+			     </div> -->
+			</div>
+		</div>
+		<div v-more-page="transInfo in transInfoList">
+			     <div class="khh" v-click="toTransDetail(transInfo)">
+			     <div class="xiangq_img1"  ><a href="#"><img src="images/more.png"/></a></div>
+			      <ul v-show="finalCDFlag!='Mobile'">
+						<li><em style="width:65%">{{transInfo.tranbrief}}&nbsp;&nbsp;<b v-class="{'col8080':transInfo.CDFlag=='D','colbf07':transInfo.CDFlag=='C'}">{{transInfo.tranAmount|number:2|AddFlagFilter:transInfo.CDFlag=='C'}}元</b></em><i style="width:30%">{{transInfo.tranDate|formatDate}}</i></li>
+						<li><em style="width:65%">账户余额&nbsp;&nbsp;<b>{{transInfo.balance}}元</b></em><i style="width:30%;float:right;margin-right:5%">{{transInfo.tranTime|formatTime}}</i></li>
+				  </ul>
+				  <ul v-show="finalCDFlag=='Mobile'">
+				  	<div style="width:65%;float:left">
+					  	<li style="line-height: 50px">
+					  	<em style="width:100%">{{transInfo.tranbrief}}&nbsp;&nbsp;<b v-class="{'col8080':transInfo.CDFlag=='D','colbf07':transInfo.CDFlag=='C'}">{{transInfo.tranAmount|number:2|AddFlagFilter:transInfo.CDFlag=='C'}}元</b></em>
+					  	</li>
+					  	</div>
+					  	<div style="width:30%;float:right;margin-right:5%">
+					  	<li style="line-height: 25px">
+					  	<i style="width:100%">{{transInfo.tranDate|formatDate}}</i>
+					  	</li>
+					  	<li style="line-height: 25px">
+					  	<i style="width:100%">{{transInfo.tranTime|formatTime}}</i>
+					  	</li>
+				  	</div>
+<!-- 						<li><em style="width:65%">{{transInfo.tranbrief}}&nbsp;&nbsp;<b v-class="{'col8080':transInfo.CDFlag=='D','colbf07':transInfo.CDFlag=='C'}">{{transInfo.tranAmount|number:2|AddFlagFilter:transInfo.CDFlag=='C'}}元</b></em><i style="width:30%">{{transInfo.tranDate|formatDate}}</i></li> -->
+<!-- 						<li><em style="width:65%">账户余额&nbsp;&nbsp;<b>{{transInfo.balance}}元</b></em><i style="width:30%;float:right;margin-right:5%">{{transInfo.tranTime|formatTime}}</i></li> -->
+				  </ul>
+		    	</div>
+		</div>
+					<div >
+			     		<input type="submit" id="nextButton"  class="button_1" name="Submit" value="查看更多" v-click="PAGE.moreNextPage()">
+			     	</div>
+<!-- 		<div v-click="queryMore()" style="text-align: center"> -->
+<!-- 		    	<ul><li><a href="#"> -->
+<!-- 		    	{{message}} -->
+<!-- 		    	</a> -->
+<!-- 		    	</li></ul> -->
+<!-- 		    	</div> -->
+			<div class="zz_cont"><img src="images/ts.png" />
+		    <font class="tishi">
+				温馨提示</br>
+			</font>
+				&nbsp;&nbsp;1、您可以查询已添加账户的交易明细信息，请输入正确的查询条件。</br>
+				&nbsp;&nbsp;2、查询日期时间跨度最多为3个月。</br>
+				&nbsp;&nbsp;3、点击右上角<img style="background-color:#008de4;width:16px;margin-left:4px" src="images/feiyan.png" />，进入我的设置，可查询手机银行转账限额。</br>
+			<div style="font-size:12px; line-height:16px; color:#929292;"> </div>
+	 	  </div> 
+	</div>
+	
+	<!-- 交易明细详情页面 -->
+	<div  v-page  v-transition="native">
+			<div class="bg_box"   title="交易详情">
+				 <div class="box_cont">
+		     		 <div class="zz_cont">
+			    	  <ul>
+						<li v-show="trans.agentname&&trans.CDFlag=='D'"><em>收款人名称：</em><i>{{trans.agentname}}</i></li>
+						<li v-show="trans.agentname&&trans.CDFlag=='C'"><em >付款人名称：</em><i>{{trans.agentname}}</i></li>
+						<li v-show="trans.recAccountNo&&trans.CDFlag=='D'"><em >收款人账号：</em><i>{{trans.recAccountNo}}</i></li>
+						<li v-show="trans.recAccountNo&&trans.CDFlag=='C'"><em >付款人账号：</em><i>{{trans.recAccountNo}}</i></li>
+						<li><em>交易时间：</em><i>{{trans.tranDate|formatDate}}&nbsp;{{trans.tranTime|formatTime}}</i></li>
+						<li><em>交易金额：</em><i v-class="{'col8080':trans.CDFlag=='D','colbf07':trans.CDFlag=='C'}">{{trans.tranAmount|number:2|AddFlagFilter:trans.CDFlag=='C'}}元</i></li>
+						<li v-show="trans.balance!=''&&trans.balance!=null&&trans.balance!=undefined"><em>账户余额：</em><i>{{trans.balance}}元</i></li>
+						<li><em>交易摘要：</em><i>{{trans.tranbrief}}</i></li>
+			            <li v-show="trans.tranDescrition!=''&&trans.tranDescrition!=null&&trans.tranDescrition!=undefined"><em>交易备注：</em><i>{{trans.tranDescrition}}</i></li>
+						<li v-show="finalCDFlag=='Mobile'">
+						  	<em>电子回单号：</em><i style="word-break:break-all">{{trans.serialNo1}}</i>
+						</li>
+				 	 </ul>
+		      		 </div>
+		 		</div>
+			</div>
+	</div>
+	<div style="width:100%;height:40px;"></div>
+</div>
+<script>
+PTransInfoQryCtrl.$inject = ["$scope","$remote","$targets","$context","$filter"];
+function PTransInfoQryCtrl($scope,$remote,$targets,$context,$filter){
+	
+	$scope.init=function(){
+// 		$scope.message="";
+		$scope.selectedAc=$context.getJson().selectedAc;
+		$remote.post("/pmobile/ActListQry.do",{},function(data){
+			$scope.acList=data.AcList;
+			var filterFn=$filter("filter");
+			$scope.acList=filterFn($scope.acList,function(obj,text){
+				if(obj.AcNo != undefined){
+					obj.AcNo1=obj.AcNo.substring(0,4)+"****"+ obj.AcNo.substring(obj.AcNo.length-4)
+					if(obj.AcAlias.length>4){
+						obj.AcNo1=obj.AcNo1+" / "+obj.AcAlias.substring(0,4)+"...";
+					}else if(obj.AcAlias.length<=4&&obj.AcAlias.length>0){
+						obj.AcNo1=obj.AcNo1+" / "+obj.AcAlias;
+					}else{
+						obj.AcNo1=obj.AcNo1;
+					}
+					return true;
+				}
+			});
+			if($scope.selectedAc){
+				vx.forEach($scope.acList,function(item){
+					if($scope.selectedAc==item.AcNo){
+						$scope.queryAc=item;
+					}
+				});
+			}else{
+				$scope.queryAc=data.AcList[0];
+			}
+		});
+		
+		$scope.transTypeList=[
+						{
+							"name":"全部",
+							"cdFlag":""
+						},
+						{
+							"name":"转入",
+							"cdFlag":"C"
+						},
+						{
+							"name":"转出",
+							"cdFlag":"D"
+						},
+						{
+							"name":"手机转账",
+							"cdFlag":"Mobile"
+						}
+				];
+		$scope.transType=$scope.transTypeList[0];
+		
+		//获取服务器当前时间
+		$remote.post("/pmobile/GenTimeStamp.do",{},function(data){
+			var serviceTime=data._sysDate;
+			$scope.beginDate=$scope.formartDate(serviceTime,-7,"-");
+			$scope.endDate=$scope.formartDate(serviceTime,0,"-");
+			$scope.currentDate=$scope.endDate;
+		});
+		/* $scope.$watch('beginDate',function(newValue,oldValue){
+			$scope.endDate=$scope.getEndDate(newValue);
+		}); */
+		
+	}
+	//获取最大截止日期    --最大跨度三个月
+	$scope.getEndDate=function(beginDate){
+		if(!beginDate){
+			return;
+		}
+		var temps=beginDate.split("-");
+		var yyyy=parseInt(temps[0]);
+		var mm=parseInt(temps[1])+3;
+		var dd=temps[2];
+		if(mm>12){
+			mm=mm-12;
+			yyyy=yyyy+1;
+		}
+		$scope.endDateKD=yyyy+"-"+mm+"-"+dd;
+	}
+	//校验日历控件输入起始日期和结束日期的正确性
+	$scope.compareDate=function(){
+	}
+	$scope.aaaa =function(){
+		alert("sdfsdfdf");
+	}
+	//查询
+	$scope.toResult=function(id){
+// 		$scope.message="";
+		if(id=="today"){
+			$scope.beginDate=$scope.currentDate;
+		}else if(id=="month"){
+			$scope.beginDate=$scope.formartDate($scope.currentDate,-30,"-");
+		}else if(id=="threemonth"){
+			$scope.beginDate=$scope.formartDate($scope.currentDate,-90,"-");
+		}
+		var params={
+				"AcNo":$scope.queryAc.AcNo,
+				"BeginDate":$scope.formartDate($scope.beginDate,0),
+				"EndDate":$scope.formartDate($scope.endDate,0),
+				"CDFlag":$scope.transType.cdFlag,
+				"currentIndex":1
+			}
+		//为查看更多整理数据
+		$scope.finalcurrentIndex=1;
+		$scope.finalAcNo=$scope.queryAc.AcNo;
+		$scope.finalBeginDate=$scope.formartDate($scope.beginDate,0);
+		$scope.finalEndDate=$scope.formartDate($scope.endDate,0);
+		$scope.finalCDFlag=$scope.transType.cdFlag;
+		$remote.post("/pmobile/TransDetailQry.do",params,function(data){
+			if(data._RejCode="000000"){
+				$scope.transInfoList=data.List;
+				$scope.totalnumber = data.totalNum;//总条数
+// 				if($scope.transInfoList.length==10)
+// 					$scope.message="点击查看更多";
+			}
+		},function(data){
+			if(data.jsonError){
+				$scope.alert(data.jsonError);
+			}
+			$scope.transInfoList=[];
+		});
+	}
+	$scope.toTransDetail=function(transInfo){
+		$targets("content","#2");
+		$scope.trans=transInfo;
+		if(!vx.isEmpty($scope.trans.serialNo)){
+			$scope.trans.serialNo1 = $scope.trans.serialNo.substring(9,$scope.trans.serialNo.length);
+		}
+	}
+	
+// 	$scope.queryMore=function(){
+// 		$scope.message="";
+// 		$scope.finalcurrentIndex=$scope.finalcurrentIndex+1;
+// 		var params={
+// 				"AcNo":$scope.finalAcNo,
+// 				"BeginDate":$scope.finalBeginDate,
+// 				"EndDate":$scope.finalEndDate,
+// 				"CDFlag":$scope.finalCDFlag,
+// 				"currentIndex":$scope.finalcurrentIndex,
+// 				"List":$scope.transInfoList
+// 			}
+// 		$remote.post("/pmobile/TransDetailQry.do",params,function(data){
+// 			if(data._RejCode="000000"){
+// 				$scope.transInfoList=data.List;
+// 				console.log(data);
+// 				if($scope.transInfoList.length==$scope.finalcurrentIndex*10)
+// 					$scope.message="点击查看更多";
+// 			}
+// 		},function(data){
+// 			if(data.jsonError){
+// 				$scope.alert(data.jsonError);
+// 			}
+// 			$scope.transInfoList=[];
+// 		});
+// 	}
+	$scope.morepage = function(qishi,zhongzhi,zengliang,list){
+		$scope.start=1;//不是第一次进入
+		var formData = {
+				"AcNo":$scope.finalAcNo,
+				"BeginDate":$scope.finalBeginDate,
+				"EndDate":$scope.finalEndDate,
+				"CDFlag":$scope.finalCDFlag,
+				"currentIndex":qishi/10+1
+		};
+		$remote.post("/pmobile/TransDetailQry.do", formData, function(data) {
+			$scope.transInfoList=data.List;
+		});
+	};
+	
+}
+</script>

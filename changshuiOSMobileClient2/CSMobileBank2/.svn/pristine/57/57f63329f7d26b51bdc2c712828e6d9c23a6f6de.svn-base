@@ -1,0 +1,1097 @@
+<div v-view-setup="CrossTransferCtrl" v-init="init()">
+	<!-- 转账录入页面 -->
+	<div v-page v-transition="native" title="转给他行">
+		<form name="transInput" class="bg_box">
+			<div class="box_cont">
+
+				<div class="selected">
+					<span><img class="jindu" src="images/u1.png" /></span> <span><img
+						class="jindu" src="images/u2_1.png" /></span> <span><img
+						class="jindu" src="images/u3_1.png" /></span>
+				</div>
+				<div class="zz_cont">
+					<ul>
+						<li><em>付款账号：</em> <i> <select v-change="getCardInfo()"
+								v-model="payCard" name="payCard"
+								v-options="ac.AcNo1 for ac in acList">
+							</select>
+						</i></li>
+						<li><em>可用余额：</em> <i class="colff6"
+							ui-money='{"amounts":"balance"}'></i></li>
+						<!-- 						<li> -->
+						<!-- 							<em>币种：</em> -->
+						<!-- 							<i>{{cardInfo.CurrencyName}}</i> -->
+						<!-- 						</li> -->
+					</ul>
+				</div>
+
+				<div class="radio_cont" style="margin-left: 40px;">
+					<span class="radio"><input type="radio" class="radio"
+						v-model="transType" name="transType" value="1"
+						v-click="selected(15)" />跨行普通</span> <span class="radio"><input
+						type="radio" class="radio" v-model="transType" name="transType"
+						value="2" v-click="selected(45)" />跨行快速</span>
+					<!-- 					<span class="radio"><input type="radio" class="radio"  v-model="transType" name="transType" value="3" v-click="selected(80)"/>跨行银联</span> -->
+				</div>
+				<div class="tx_cont">
+					<div class="prompt_arr">
+						<img src="images/prompt_arr.png" />
+					</div>
+					<span v-show="transType==1">工作日2小时内到账，实际到账时间需询问收款开户行</span> <span
+						v-show="transType==2">7×24小时实时到账，转账金额单笔不能超过5万元</span> <span
+						v-show="transType==3">7×24小时实时到账，转账金额单笔不能超过2万元</span>
+				</div>
+				<div class="zz_cont">
+					<ul>
+						<li id="lastShowLi"><em>收款人账号：</em> <i> <input
+								type="text" v-focus="showLastTrans()"
+								v-blur="hideLastTrans('0')" v-change="isHide()"
+								placeholder="请输入收款人账号" name="rCard" v-model="rCard"
+								ui-num='{"maxlength":22,"hasDot":false,"tip":"收款卡号"}'
+								class="y_srk" required /> <span v-click="queryReciver()"><img
+									src="images/skr_icon.png" /></span> <!-- 								<div id="lasttrans" class="payeeList" style="display:none"> -->
+								<!-- <!-- 									<div class="tips" v-repeat=" l3 in last3List" v-click="selectedInput(l3)">{{l3.PayeeAcNo}}/{{l3.PayeeAcName}}</div> -->
+								<!-- 								<input name="l3" value="{{l3.PayeeAcNo}}/{{l3.PayeeAcName}}" v-repeat=" l3 in last3List" v-click="selectedInput(l3)" class="y_srk"/> -->
+								<!-- 								</div> -->
+						</i></li>
+						<li v-show="ShowOrHide"><em>&nbsp;</em> <i
+							style="width: 60%;">
+								<div v-repeat=" l3 in last3List"
+									style="border: 1px solid #ccc; border-top: none;">
+									<input type="text" class="tips" v-focus="selectedInput(l3)"
+										value="{{l3.PayeeAcName}}"
+										style="border: none; line-height: 25px; height: 25px; text-align: left" />
+									<input type="text" class="tips" v-focus="selectedInput(l3)"
+										value="{{l3.PayeeAcNo}}"
+										style="border: none; line-height: 25px; height: 25px; text-align: left" />
+								</div>
+						</i></li>
+						<li><em>收款人姓名：</em> <i class="colff6"> <input type="text"
+								placeholder="请输入收款人姓名" name="rName" v-model="rName"
+								class="y_srk" required />
+						</i></li>
+						<li v-show="transType==2"><em>收款银行：</em> <i class="colff6">
+								<input type="text" placeholder="未设置收款人银行" name="rBankName"
+								id="rBankName" v-model="rBankName" class="y_srk" readonly>
+								<span v-click="queryPayeeBank()"><img
+									src="images/ss_icon.png" /></span>
+						</i></li>
+						<li v-show="transType==1"><em>收款开户行：</em> <i class="colff6">
+								<input type="text" placeholder="未设置开户行" id="rkBankName"
+								name="rkBankName" v-model="rkBankName" class="y_srk" readonly>
+								<span v-click="queryKHbank()"><img
+									src="images/ss_icon.png" /></span>
+						</i></li>
+						<li><em>保存收款人：</em> <i class="colff6"> <input
+								type="checkbox" name="saveThis" v-model="saveThis"
+								class="checkbox">
+						</i></li>
+						<li><em>转账金额：</em> <i class="colff6"> <input type="text"
+								placeholder="请输入转账金额" name="amount" v-model="amount"
+								ui-num='{"maxlength":11,"hasDot":true,"tip":"转账金额"}'
+								class="y_srk" required>
+						</i></li>
+						<li style="border-bottom: none;"><em>转账用途：</em> <i
+							class="colff6"> <input type="text" placeholder="转账"
+								name="yongtu" v-model="yongtu" class="y_srk">
+						</i></li>
+					</ul>
+				</div>
+
+				<div class="zz_cont" v-show="transType==1">
+					<input type="button" class="button_1" name="button" value="下一步"
+						v-disabled="transInput.$invalid||!rkBankName"
+						v-click="toConfirm()">
+				</div>
+				<div class="zz_cont" v-show="transType==2">
+					<input type="button" class="button_1" name="button" value="下一步"
+						v-disabled="transInput.$invalid||!rBankName" v-click="toConfirm()">
+				</div>
+				<div class="zz_cont" v-show="transType==3">
+					<input type="button" class="button_1" name="button" value="下一步"
+						v-disabled="transInput.$invalid" v-click="toConfirm()">
+				</div>
+			</div>
+		</form>
+		<div class="zz_cont">
+			<img src="images/ts.png" /> <font class="tishi"> 温馨提示</br>
+			</font> &nbsp;&nbsp;点击右上角<img
+				style="background-color: #008de4; width: 16px; margin-left: 4px"
+				src="images/feiyan.png" />，进入我的设置，可查询手机银行转账限额。</br>
+			<div style="font-size: 12px; line-height: 16px; color: #929292;">
+			</div>
+		</div>
+	</div>
+
+	<!-- 转账确认页面 -->
+	<div v-page v-transition="native" title="转给他行">
+		<form name="transConfirm" class="bg_box">
+			<div class="box_cont">
+				<div class="selected">
+					<span><img class="jindu" src="images/u1.png" /></span> <span><img
+						class="jindu" src="images/u2.png" /></span> <span><img
+						class="jindu" src="images/u3_1.png" /></span>
+				</div>
+				<div class="zz_cont">
+					<ul>
+						<li><em>付款人账号：</em><i>{{payCard.AcNo1|accountNo}}</i></li>
+						<li><em>转账方式：</em><i>{{transTypeCN}}</i></li>
+						<li><em>收款人账号：</em><i>{{rCard|accountNo}}</i></li>
+						<li><em>收款人姓名：</em><i>{{rName}}</i></li>
+						<li v-show="transType==2"><em>收款银行：</em><i>{{rBankName}}</i></li>
+						<li v-show="transType==1"><em>收款开户行：</em><i
+							style="line-height: 20px;">{{rkBankName}}</i></li>
+						<li><em>转账金额：</em><i style="color: #ff6000;">{{amount|number:2}}元</i></li>
+						<li><em>金额大写：</em><i>{{amount|amount}}</i></li>
+						<li><em>应收手续费：</em><i>{{poundage.originalCharge|number:2}}元</i></li>
+						<li><em>实收手续费：</em><i style="color: red;">{{poundage.actualCharge|number:2}}元</i></li>
+						<li><em>转账用途：</em><i style="color: #ff6000;">{{yongtu}}</i></li>
+
+					</ul>
+				</div>
+				<div class="zz_cont">
+					<ul>
+						<li v-show="(authType==0&&Security=='07')||(transType==3)"><em>卡密码：</em>
+							<i><input id="cardpassword" v-model="cardpassword"
+								type="password" name="cardpassword" value="" class="y_srk"
+								placeholder="请输入密码" v-click="getPW()" readonly /></i></li>
+						<li v-show="authType==2"><em>手机动态码：</em> <i> <input
+								type="tel" id="dycode" name="dycode" v-model="dycode"
+								v-focus="windowScroll()" maxlength=6 class="y_srk_50"
+								placeholder="请输入动态码" />
+								<button id="anniu" class="inp_butt" v-sms="getDYcode()">获取动态码</button>
+						</i></li>
+						<li v-show="authType==0&&Security=='07'"><em>手机动态码：</em> <i>
+								<input type="tel" id="dycode" name="dycode" v-model="dycode"
+								v-focus="windowScroll()" maxlength=6 class="y_srk_50"
+								placeholder="请输入动态码" />
+								<button id="anniu" class="inp_butt" v-sms="getDYcode()">获取动态码</button>
+						</i></li>
+						<li v-show="authType==0&&Security=='05'"><em>音频Key密码：</em> <i><input
+								id="keypassword" type="password" name="keypassword"
+								v-model="keypassword" v-focus="windowScroll()" class="y_srk"
+								placeholder="请输入音频Key密码" /></i></li>
+					</ul>
+				</div>
+				<div v-show="authType==null">
+					<input type="submit" class="button_1" name="Submit"
+						v-disabled="!dycode||(buttonDis=='false')" value="确认"
+						v-click="toResult()">
+				</div>
+				<div v-show="authType==2">
+					<input type="submit" class="button_1" name="Submit"
+						v-disabled="!i||!dycode" value="确认" v-click="toResult()">
+				</div>
+				<div v-show="(authType==0&&Security=='07')">
+					<input type="submit" class="button_1" name="Submit"
+						v-disabled="!dycode||!i" value="确认" v-click="toResult()">
+				</div>
+				<div v-show="authType==0&&Security=='05'">
+					<input type="submit" class="button_1" name="Submit"
+						v-disabled='!keypassword' value="确认" v-click="toResult()">
+				</div>
+			</div>
+		</form>
+		<div class="zz_cont">
+			<img src="images/ts.png" /> <font class="tishi"> 温馨提示</br>
+			</font> &nbsp;&nbsp;点击右上角<img
+				style="background-color: #008de4; width: 16px; margin-left: 4px"
+				src="images/feiyan.png" />，进入我的设置，可查询手机银行转账限额。</br>
+			<div style="font-size: 12px; line-height: 16px; color: #929292;">
+			</div>
+		</div>
+	</div>
+
+
+	<!-- 转账结果页面 -->
+	<div v-page v-transition="native" data-back="false" title="转给他行">
+		<div class="bg_box">
+			<div class="box_cont">
+				<div class="selected">
+					<span><img class="jindu" src="images/u1.png" /></span> <span><img
+						class="jindu" src="images/u2.png" /></span> <span><img
+						class="jindu" src="images/u3.png" /></span>
+				</div>
+				<div class="zz_cont" style="line-height: 50px; margin-top: 20px;">
+					<div v-show="IsReward=='true'" class="maind" style="margin: 0px">
+						<div class="d1"
+							style="float: left; padding-left: 5px; width: 20%; padding-top: 20px">
+							<img src="images/cg_img.png" style="width: 60px; height: 60px" />
+						</div>
+						<div class="d2"
+							style="float: left; width: 50%; height: 70px; padding-top: 9%;">
+							<div
+								style="text-align: center; font-size: x-large; color: #0069c9">
+								交易成功</div>
+							<div class="transtime"
+								style="padding-bottom: 0px; padding-top: 10px; font-size: inherit;">{{CrossResult.TransDate}}</div>
+						</div>
+						<div class="d3"
+							style="padding-top: 25px; float: left; width: 20%; margin-left: -3%">
+							<img v-click="gotoRewardPage()" src="images/img_reward.gif"
+								style="width: 100px; height: 60px;" />
+						</div>
+					</div>
+					<div v-hide="IsReward=='true'">
+						<div class="d1"
+							style="float: left; padding-left: 50px;; width: 20%; padding-top: 20px">
+							<img src="images/cg_img.png" style="width: 60px; height: 60px" />
+						</div>
+						<div class="d2"
+							style="float: right; width: 50%; height: 70px; padding-top: 9%; padding-right: 30px">
+							<div
+								style="text-align: center; font-size: x-large; color: #0069c9">
+								交易成功</div>
+							<div class="transtime"
+								style="padding-bottom: 0px; padding-top: 10px; font-size: inherit;">{{CrossResult.TransDate}}</div>
+						</div>
+					</div>
+					<div class="resultForm">
+						<ul>
+							<li><em>付款人账号：</em><i>{{payCard.AcNo2|accountNo}}</i></li>
+							<li><em>收款人账号：</em><i>{{rCard|accountNo}}</i></li>
+							<li><em>收款人姓名：</em><i>{{rName}}</i></li>
+							<li><em>转账方式：</em><i>{{transTypeCN}}</i></li>
+							<li v-show="transType==2"><em>收款银行：</em><i>{{rBankName}}</i></li>
+							<li v-show="transType==1"><em>收款开户行：</em>
+								<div style="line-height: 20px;">{{rkBankName}}</div></li>
+							<li><em>交易金额：</em><i>{{amount|number:2}}元</i></li>
+							<li><em>电子回单号：</em><i>{{CrossResult.ECIPSerNo}}</i></li>
+							<li><em>转账用途：</em><i>{{yongtu}}</i></li>
+						</ul>
+					</div>
+					<div>
+						<div class="content4_left content4_button"
+							v-click="continueTrans()">继续转账</div>
+						<div class="content4_right content4_button"
+							v-click="toQueryTransInfo()">交易明细</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="zz_cont">
+			<img src="images/ts.png" /> <font class="tishi"> 温馨提示</br>
+			</font> &nbsp;&nbsp;1、您的转账交易受理成功！请通知对方查询收款账户到账情况，确认交易结果。</br> &nbsp;&nbsp;2、点击右上角<img
+				style="background-color: #008de4; width: 16px; margin-left: 4px"
+				src="images/feiyan.png" />，进入我的设置，可查询手机银行转账限额。</br>
+			<div style="font-size: 12px; line-height: 16px; color: #929292;">
+			</div>
+		</div>
+
+		<div style="width: 100%; height: 40px;"></div>
+	</div>
+</div>
+</div>
+<div style="width: 100%; height: 40px"></div>
+</div>
+<script>
+CrossTransferCtrl.$inject = ["$scope","$remote","$targets","$filter","$context","$timeout","$window"];
+function CrossTransferCtrl($scope,$remote,$targets,$filter,$context,$timeout,$window){
+	$scope.init=function(){
+		$scope.flg=15;
+		$scope.payee=$context.getJson().selectedPayee;
+		$scope.rkBank=$context.getJson().selectedKHbank;//跨行普通---开户行
+		$scope.rBank=$context.getJson().selectedpayeebank;//跨行快速--收款银行
+		$scope.crossParam=$context.getJson().crossParam;
+		$scope.buttonDis="false";
+		$scope.i=false;
+		console.log($scope.payee);
+		//判断是否选定收款人
+		if($scope.payee){
+			$scope.rCard=$scope.payee.PayeeAcNo;
+			$scope.rName=$scope.payee.PayeeAcName;
+			if($scope.payee.NormalPayeeBankName){
+				$scope.rkBankName=$scope.payee.NormalPayeeBankName;//普通转账收款人银行名称
+				$scope.rkBankNO=$scope.payee.NormalPayeeBankNo;//普通转账收款人的银行号
+				$('#rkBankName').css('color','#afafaf');
+			}
+			if($scope.payee.QuickPayeeBankName){
+				$scope.rBankName=$scope.payee.QuickPayeeBankName;//快速转账收款人银行名称
+				$scope.rBankNO=$scope.payee.QuickPayeeBankNo;//快速转账收款人的银行号
+				$('#rBankName').css('color','#afafaf');
+			}
+			
+		}else{
+			$scope.rCard=$scope.crossParam?$scope.crossParam.rCard:"";
+			$scope.rName=$scope.crossParam?$scope.crossParam.rName:"";
+		}
+		//判断是否选定开户行
+		if($scope.rkBank){
+			$scope.rkBankName=$scope.rkBank.BankName;
+			$scope.rkBankNO=$scope.rkBank.BankNo;
+		}else if($scope.crossParam&&!$scope.payee){
+			$scope.rkBankName=$scope.crossParam.rkBank?$scope.crossParam.rkBank.BankName:"";
+		}
+		//判断是否选定收款银行
+		if($scope.rBank){
+			$scope.rBankName=$scope.rBank.PayeeBankName;
+			$scope.rBankNO=$scope.rBank.EBankNo;
+		}else if($scope.crossParam&&!$scope.payee){
+			$scope.rBankName=$scope.crossParam.rBank?$scope.crossParam.rBank.PayeeBankName:"";
+		}
+		//初始化表单数据
+		$scope.transType=$scope.crossParam?$scope.crossParam.transType:"1";
+		$scope.saveThis=$scope.crossParam?$scope.crossParam.saveThis:true;
+		$scope.amount=$scope.crossParam?$scope.crossParam.amount:"";
+		//查询借记卡
+		$remote.post("/pmobile/ActListQry.do",{},function(data){
+			$scope.acList=data.PayerList;
+			var filterFn=$filter("filter");
+			$scope.acList=filterFn($scope.acList,function(obj,text){
+				
+				if(obj.AcNo != undefined){
+					obj.AcNo1=obj.AcNo.substring(0,4)+"****"+ obj.AcNo.substring(obj.AcNo.length-4)
+					obj.AcNo2=obj.AcNo1;
+					if(obj.AcAlias.length>4){
+						obj.AcNo1=obj.AcNo1+" / "+obj.AcAlias.substring(0,4)+"...";
+					}else if(obj.AcAlias.length<=4&&obj.AcAlias.length>0){
+						obj.AcNo1=obj.AcNo1+" / "+obj.AcAlias;
+					}else{
+						obj.AcNo1=obj.AcNo1;
+					}
+					if($scope.crossParam){
+						if($scope.crossParam.payCardAcNo==obj.AcNo){
+							$scope.payCard=obj;
+						}
+					}else{
+						var f=$context.getJson().toselectAcNo;//传送过来点击中的信用卡的卡号
+						if(f){
+							//在打开页面显示点击的信用卡卡号
+							if(f==obj.AcNo){
+								$scope.payCard=obj;
+							}
+						}
+					}
+					return true;
+				}
+			});
+			$scope.mobileNo=data.MobilePhone;
+			$scope.cifName=data.CifName;
+			if(vx.isEmpty($scope.payCard)){
+				$scope.payCard=$scope.acList[0];
+			}
+// 			if($scope.crossParam){
+// 				vx.forEach($scope.acList,function(item){
+// 					if($scope.crossParam.payCardAcNo==item.AcNo){
+// 						$scope.payCard=item;
+// 					}
+// 				});
+// 			}else{
+// 				var f=$context.getJson().toselectAcNo;//传送过来点击中的信用卡的卡号
+// 				if(f){
+// 					//在打开页面显示点击的信用卡卡号
+// 					vx.forEach($scope.acList,function(item){
+// 						if(f==item.AcNo){
+// 							$scope.payCard=item;
+// 						}
+// 					});
+// 				}else{
+// 					$scope.payCard=$scope.acList[0];
+// 				}
+			
+// 			}
+			$scope.getCardInfo();
+			//获取最后三笔转账(普通)
+			$remote.post("/pmobile/ReceiptRollQry.do",{"TransType":1},function(data){
+				$scope.last3ListN=data.List;
+			});
+			//获取最后三笔转账(快速)
+			$remote.post("/pmobile/ReceiptRollQry.do",{"TransType":6},function(data){
+				$scope.last3ListF=data.List;
+			});
+			//获取最后三笔转账(银联)
+			$remote.post("/pmobile/ReceiptRollQry.do",{"TransType":"Y"},function(data){
+				$scope.last3ListU=data.List;
+			});
+		});
+		
+	}
+	//监听滚动条滚动的高度
+	$window.onscroll=function(){
+		$scope.moveHeight=$(document).scrollTop();
+	}
+	//跳转到抽奖页面
+	$scope.gotoRewardPage=function(){
+		$context.clear();
+		if($scope.transType=="1"){
+			$scope.TransName="ffffff";
+		}else if($scope.transType=="2"){
+			$scope.TransName="gggggg";
+		}else if($scope.transType=="3"){
+			$scope.TransName="hhhhhh";
+		}
+		$remote.post("/pmobile/TransRewardsQry.do",{"TRANSNAME":$scope.TransName},function(data){
+			if(data.GAMETYPE=="0"){
+				var param={
+						"ReWardCount":data.REWARDCOUNT,"TransName":data.TRANSNAME,
+						"Count":data.COUNT,
+						"GameType":data.GAMETYPE,
+						"IsReward":data.ISREWARD,
+						
+						"UpDateTime":data.UPDATETIME
+				}
+				$context.setJson({"innerParam":param});
+				$scope.goto("LotteryDraw");
+			}else if(data.GAMETYPE=="2"){
+				var param={
+						"ReWardCount":data.REWARDCOUNT,"TransName":data.TRANSNAME,
+						"Count":data.COUNT,
+						"GameType":data.GAMETYPE,
+						"IsReward":data.ISREWARD,
+						
+						"UpDateTime":data.UPDATETIME
+				}
+				$context.setJson({"innerParam":param});
+				$scope.goto("GuaGuaLe");
+			}else if(data.GAMETYPE=="3"){
+				var param={
+						"ReWardCount":data.REWARDCOUNT,"TransName":data.TRANSNAME,
+						"Count":data.COUNT,
+						"GameType":data.GAMETYPE,
+						"IsReward":data.ISREWARD,
+						
+						"UpDateTime":data.UPDATETIME
+				}
+				$context.setJson({"innerParam":param});
+				$scope.goto("YaoYiYao");
+			}
+		});
+	}
+	//调用密码控件
+	$scope.getPW=function(){
+		$("#cardpassword").val("");
+		$scope.cardpassword="";
+		$scope.buttonDis="false";
+		var scrollHeight=$scope.getPWPosition($("#cardpassword").get(0));//定位当前密码输入栏位在文档中的位置
+		if(vx.isDefined($scope.moveHeight)){
+			scrollHeight=scrollHeight-$scope.moveHeight;//减去滚动条滚动的高度
+		}
+		$scope.getPassword(function(pwResponse){
+			var resJson=vx.fromJson(pwResponse);
+			if(resJson.Flag==0){
+				$("#cardpassword").val(resJson.passWord);
+			}else if(resJson.Flag==1){
+				$scope.miwen=resJson.passWord;
+				$scope.buttonDis = resJson.buttonDis;
+			}
+		},scrollHeight);
+	}
+	//迭代获取密码输入栏的位置
+	$scope.getPWPosition=function(e){
+		var y=0;
+		while(e!=null){
+			y+=e.offsetTop;
+			e=e.offsetParent;
+		}
+		return y;
+	}
+	//选择转账类型
+	$scope.selected=function(value){
+		$scope.amount="";
+		var leftPx=value+"%";
+		console.log(value);
+		$(".prompt_arr").css("left",leftPx);
+		$scope.flg=value;
+	}
+	//从最近三笔转账选定收款人
+	$scope.selectedInput=function(obj){
+		$scope.selectL3Payee=obj;
+		$scope.rCard=obj.PayeeAcNo;
+		$scope.rName=obj.PayeeAcName;
+		if($scope.transType==1){
+			$scope.rkBankName=obj.PayeeBankName;//普通转账收款人银行名称
+			$scope.rkBankNO=obj.PayeeBankNo;//普通转账收款人的银行号
+		}else if($scope.transType==2){
+			$scope.rBankName=obj.PayeeBankName;//快速转账收款人银行名称
+			$scope.rBankNO=obj.PayeeBankNo;//快速转账收款人的银行号
+		}
+	}
+	//显示最近三位联系人
+	$scope.showLastTrans=function(){
+		if($scope.transType=="1"){
+			$scope.last3List=$scope.last3ListN;
+		}else if($scope.transType=="2"){
+			$scope.last3List=$scope.last3ListF;
+		}else if($scope.transType=="3"){
+			$scope.last3List=$scope.last3ListU;
+		}
+		if(!$scope.rCard&&$scope.last3List!=""){
+			$scope.ShowOrHide = true;
+			$("#lastShowLi").addClass("noBottom");//去掉账号那一栏的底部border
+		}
+// 		if(!$scope.rCard&&$scope.last3List){
+// 			var item=$scope.last3List.length;
+// 			if(item){
+// 				$("#lastShowLi").css("height",35+30*item+"px");
+// 			}
+// 			$("#lasttrans").css("display","block");
+// 		}
+	}
+	//隐藏最近三位联系人
+	$scope.hideLastTrans=function(){
+		$timeout(function(){
+			$scope.ShowOrHide = false;
+			$("#lastShowLi").removeClass("noBottom");
+// 			$scope.rCard=data.PayeeAcNo;
+// 			$scope.rName= data.PayeeAcName;
+// 			$("#lastShowLi").css("height","auto");
+// 			$("#lasttrans").css("display","none");
+		},100);
+	}
+	//监听input框变化
+	$scope.isHide=function(){
+//		console.log($scope.rCard);
+		if($scope.rCard){
+			$scope.hideLastTrans();
+		}else{
+			$scope.showLastTrans();
+		}
+	}
+	//改变支付卡
+	$scope.getCardInfo=function(){
+		var cardNo=$scope.payCard.AcNo;
+		//查询余额
+		$remote.post("/pmobile/ActBalQry.do",{"AcNo":cardNo},function(data){
+			$scope.cardInfo=data;
+			$scope.balance=data.AvailBal;
+		});
+	}
+	//查询收款人
+	$scope.queryReciver=function(){
+		$scope.rCard=$scope.rCard+"";
+		//保存当前表单信息，从其他碎片页返回时使用，如查询收款人名册
+		var param={
+				"payCardAcNo":$scope.payCard.AcNo,
+				"transType":$scope.transType,
+				"saveThis":$scope.saveThis,
+				"yongtu":$scope.yongtu,
+				"rCard":$scope.rCard,
+				"rBank":$scope.rBank?$scope.rBank:"",
+				"rkBank":$scope.rkBank?$scope.rkBank:"",
+				"rName":$scope.rName,
+				"amount":$scope.amount
+		};
+		$context.setJson({"crossParam":param});
+		$context.setJson({"whoPBM":"cross","seleType":$scope.transType});//seleType：1-收款银行开户行；2-收款银行
+		$scope.goto("CrossTransfer","PayeeBook");
+	}
+	//查询开户行
+	$scope.queryKHbank=function(){
+		$scope.rCard=$scope.rCard+"";
+		var param={
+				"payCardAcNo":$scope.payCard.AcNo,
+				"transType":$scope.transType,
+				"saveThis":$scope.saveThis,
+				"yongtu":$scope.yongtu,
+				"rCard":$scope.rCard,
+				"rBank":$scope.rBank?$scope.rBank:"",
+				"rkBank":$scope.rkBank?$scope.rkBank:"",
+				"rName":$scope.rName,
+				"amount":$scope.amount
+		};
+		$context.setJson({"crossParam":param});
+		$context.setJson({"comeFrom":"CrossTransfer"});
+		$scope.goto("CrossTransfer","KHbank");
+	}
+	//查询收款银行
+	$scope.queryPayeeBank=function(){
+		$scope.rCard=$scope.rCard+"";
+		var param={
+				"payCardAcNo":$scope.payCard.AcNo,
+				"transType":$scope.transType,
+				"saveThis":$scope.saveThis,
+				"yongtu":$scope.yongtu,
+				"rCard":$scope.rCard,
+				"rBank":$scope.rBank?$scope.rBank:"",
+				"rkBank":$scope.rkBank?$scope.rkBank:"",
+				"rName":$scope.rName,
+				"amount":$scope.amount
+		};
+		$context.setJson({"crossParam":param});
+		$context.setJson({"comeFrom":"CrossTransfer"});
+		$scope.goto("CrossTransfer","PayeeBank");
+	}
+	//倒计时的回调函数
+	$scope.getDYcode=function(){
+		//跨行普通、跨行快速、跨行银联
+		$scope.businessName="跨行转账";
+		var params={
+				"BusinessName":$scope.businessName,
+				"MobileNo":$scope.mobileNo,
+				"ServiceCode":"DCA000007"
+		};
+		//获取手机动态码
+		$remote.post("/pmobile/GenTokenName.do",params,function(data){
+			$scope.msmNo=data.SerialNo;
+			$scope.i=true;
+		});
+	}
+	//继续转账
+	$scope.continueTrans=function(){
+		$context.clear();
+		$targets("content","#0");
+	}
+	//获取手机动态码
+	$scope.getMessageCode=function(){
+		$scope.getMseCode(function(pwResponse){
+			$("#dycode").val(pwResponse);
+			$scope.dycode=pwResponse;
+		});
+	}
+	//跳转到交易明细
+	$scope.toQueryTransInfo=function(){
+		console.log($scope.payCard.AcNo);
+		$context.setJson({"selectedAc":$scope.payCard.AcNo});
+		$scope.goto("CrossTransfer","PTransInfoQry");
+	}
+	//跳转到确认页面
+	$scope.toConfirm=function(){
+		//初始化确认页面
+		$scope.dycode="";
+		$("#cardpassword").val("");
+		$scope.cardpassword="";
+		$scope.miwen="";
+		$scope.keypassword="";
+		$("#anniu").text("获取动态码");
+		$("#anniu").css("background-color","#0084ff");
+		if($scope.flg == 15){
+			if($scope.rkBankName=="未设置开户行"){
+			   NativeCall.toast("请选择开户行！");
+			   return;
+			}
+		}
+		if($scope.flg == 45){
+		if($scope.rBankName=="未设置收款银行"){
+			 NativeCall.toast("请选择收款银行！");
+			 return;
+		}
+		}
+		if($scope.yongtu==null||$scope.yongtu==""){
+			$scope.yongtu="转账"
+		}
+		if(parseFloat($scope.amount)>parseFloat($scope.balance)){
+			NativeCall.toast("卡内余额不足！");
+			return;
+		}
+		var reg1=new RegExp(/^[\u4E00-\u9FA5A-Za-z ]+$/);//姓名只能是中文字符或者英文字符
+		if(!reg1.test($scope.rName)){
+			NativeCall.toast("姓名只能为汉字或字母");
+			return false;
+		}
+		if(parseFloat($scope.amount)==0){
+			NativeCall.toast("转账金额不能为0");
+			return false;
+		}
+		console.log($scope.amount);
+		if($scope.amount){
+			var pos=$scope.amount.toString().indexOf(".");
+		}else{
+			var pos=$scope.amount
+		}
+		if(pos>-1&&$scope.amount.length-pos>3){
+			NativeCall.toast("金额格式有误，小数点后只能有两位小数");
+			return false;
+		}
+		var reg=new RegExp(/^[\u4E00-\u9FA5A-Za-z0-9]+$/);//u4e00-u9fa5---只包含数字、字母、汉字
+		if(!reg.test($scope.yongtu)){
+			NativeCall.toast("用途格式只能为汉字、数字或字母");
+			return false;
+		}
+		if($scope.transType=="1"){
+			$scope.transTypeCN="跨行普通";
+			$scope.blackBookQry('cross');//黑名单校验,type值-cross
+			var params={
+					"TransType":1,
+					"Amount":$scope.amount,
+					"PayerAcNo":$scope.payCard.AcNo
+			};
+			//获取手续费
+			$remote.post("/pmobile/ChargeQry.do",params,function(data){
+				$scope.rCard=$scope.rCard+"";
+				console.log(data);
+				$scope.poundage=data;
+				$scope.ptParams={
+					"PayerAcNo":$scope.payCard.AcNo,
+					"PayerAcName":$scope.cifName,
+					"Amount":$scope.amount,
+					"PayeeAcNo":$scope.rCard,
+					"PayeeAcName":$scope.rName,
+					"Currency":$scope.cardInfo.Currency,
+					"PayeeBankNo":$scope.rkBankNO,
+					"PayeeBankName":$scope.rkBankName,
+					"Remark":$scope.yongtu,
+					"IsSave":$scope.saveThis?1:0,
+					"originalCharge":data.originalCharge,
+					"actualCharge":data.actualCharge,
+					"Balance":$scope.cardInfo.Balance
+				};
+				
+				//查询银行状态
+				$remote.post("/pmobile/BankStatusQry.do",{},function(data){
+				    if(data.State!="0"){
+						$scope.alert("人行清算系统非日间工作状态，本次提交交易将于"+data.NextDate+"发送");
+					} 
+				});
+				
+				$scope.crossTransConfirm($scope.ptParams);//发送跨行普通确认交易
+			});
+		}else if($scope.transType=="2"){
+			if(parseFloat($scope.amount)>50000){
+				NativeCall.toast("转账金额不能大于5万");
+				return;
+			}
+			$scope.transTypeCN="跨行快速";
+			$scope.blackBookQry('qcross');//黑名单校验,type值-qcross
+			var params={
+					"TransType":9,
+					"Amount":$scope.amount,
+					"PayerAcNo":$scope.payCard.AcNo
+			};
+			//获取手续费
+			$remote.post("/pmobile/ChargeQry.do",params,function(data){
+				$scope.poundage=data;
+				$scope.ptParams={
+					"PayerAcNo":$scope.payCard.AcNo,
+					"PayerAcName":$scope.cifName,
+					"Amount":$scope.amount,
+					"PayeeAcNo":$scope.rCard,
+					"PayeeAcName":$scope.rName,
+					"Currency":$scope.cardInfo.Currency,
+					"PayeeBankNo":$scope.rBankNO,
+					"PayeeBankName":$scope.rBankName,
+					"Remark":$scope.yongtu,
+					"IsSave":$scope.saveThis?1:0,
+					"originalCharge":data.originalCharge,
+					"actualCharge":data.actualCharge,
+					"remittanceFee":data.remittanceFee,
+					"Balance":$scope.cardInfo.Balance
+				};
+				//发送确认交易
+				$scope.quickTransConfirm($scope.ptParams);
+			});
+		}else{
+			$scope.transTypeCN="跨行银联";
+			$scope.blackBookQry('union');//黑名单校验,type值-union
+			var params={
+					"PayeeAcNo":$scope.rCard,
+					"Amount":$scope.amount,
+					"PayerAcNo":$scope.payCard.AcNo
+			};
+			//获取手续费
+			$remote.post("/pmobile/BankUnionChargeQry.do",params,function(data){
+				$scope.poundage=data;
+				$scope.ptParams={
+					"PayerAcNo":$scope.payCard.AcNo,
+					"Amount":$scope.amount,
+					"PayeeAcNo":$scope.rCard,
+					"PayeeAcName":$scope.rName,
+					"Remark":$scope.yongtu,
+					"IsSave":$scope.saveThis?1:0,
+					"originalCharge":data.originalCharge,
+					"actualCharge":data.actualCharge
+				};
+				//发送跨行银联确认交易
+				$scope.unitTransConfirm($scope.ptParams);
+			});
+		}
+	}
+	//跨行普通确认交易
+	$scope.crossTransConfirm=function(params){
+		//发送确认交易
+		$remote.post("/pmobile/BankCrossTransferConfirm.do",params,function(data){
+			$scope.authType=data.Flag;
+			$scope.Security=data.Security;
+			$scope._tokenName=data._tokenName;
+			if($scope.authType==2||($scope.authType==0&&$scope.Security=="07")){
+				$scope.getMessageCode();//启动监听手机动态码
+			}
+			if(data._RejCode=="ECIP0023"||data._RejCode=="ECIP0024"){
+				$scope.confirm("超过当前认证方式限额，是否切换认证方式为音频KEY？",function(){
+					$remote.post("/pmobile/ChannelAuthTypeUpd.do",{"security":"05"},function(data){
+						if(data._RejCode=="000000"){
+							$scope.changeClientInfo(vx.toJson({"Security":"05"}));//修改登录信息
+							$scope.crossTransConfirm(params);
+						}
+					});
+				},null);
+			}else{
+				if($scope.yongtu==null||$scope.yongtu==""){
+					$scope.yongtu="转账"
+				}
+				$targets("content","#2");
+			}
+			
+		});
+	}
+	//跨行快速确认交易
+	$scope.quickTransConfirm=function(params){
+		$remote.post("/pmobile/CrossQuickTransferConfirm.do",params,function(data){
+			$scope.authType=data.Flag;
+			$scope.Security=data.Security;
+			$scope._tokenName=data._tokenName;
+			if($scope.authType==2||($scope.authType==0&&$scope.Security=="07")){
+				$scope.getMessageCode();//启动监听手机动态码
+			}
+			if(data._RejCode=="ECIP0023"||data._RejCode=="ECIP0024"){
+				$scope.confirm("超过当前认证方式限额，是否切换认证方式为音频KEY？",function(){
+					$remote.post("/pmobile/ChannelAuthTypeUpd.do",{"security":"05"},function(data){
+						if(data._RejCode=="000000"){
+							$scope.changeClientInfo(vx.toJson({"Security":"05"}));//修改登录信息
+							$scope.quickTransConfirm(params);
+						}
+					});
+				},null);
+			}else{
+				if($scope.yongtu==null||$scope.yongtu==""){
+					$scope.yongtu="转账"
+				}
+				$targets("content","#2");
+			}
+		});
+	}
+	//跨行银联确认交易
+	$scope.unitTransConfirm=function(params){
+		$remote.post("/pmobile/BankUnionTransferConfirm.do",params,function(data){
+			$scope.authType=data.Flag;
+			$scope.Security=data.Security;
+			$scope._tokenName=data._tokenName;
+			if($scope.authType==2||($scope.authType==0&&$scope.Security=="07")){
+				$scope.getMessageCode();//启动监听手机动态码
+			}
+			if(data._RejCode=="ECIP0023"||data._RejCode=="ECIP0024"){
+				$scope.confirm("超过当前认证方式限额，是否切换认证方式为音频KEY？",function(){
+					$remote.post("/pmobile/ChannelAuthTypeUpd.do",{"security":"05"},function(data){
+						if(data._RejCode=="000000"){
+							$scope.changeClientInfo(vx.toJson({"Security":"05"}));//修改登录信息
+							$scope.unitTransConfirm(params);
+						}
+					});
+				},null);
+			}else{
+				if($scope.yongtu==null||$scope.yongtu==""){
+					$scope.yongtu="转账"
+				}
+				$targets("content","#2");
+			}
+		});
+	}
+	//转帐黑名单查询 
+	$scope.blackBookQry = function(typeName){
+		var params={
+				"PayeeAcNo":$scope.rCard,
+				"PayerAcNo":$scope.payCard.AcNo,
+				"PayerAcName":$scope.cifName,
+				"Amount":$scope.amount,
+				"crossTransType":typeName
+		}
+		$remote.post("/pmobile/blackBookQry.do",params,function(data){
+			$scope.Flag = data.flag;
+			$scope.ListType = data.List;
+			if($scope.Flag=='1'){
+				var Message = "";
+				for(var i = 0 ;i<$scope.ListType.length;i++){
+					Message += $scope.ListType[i].type;
+				}
+				if(vx.isEmpty(Message)){
+					Message +="本账号曾被举报涉嫌欺诈，请您提高警惕、谨慎汇款，以免造成不必要的财产损失！如有疑问，可拨打110进行咨询。";
+				}else{
+					Message +=":本账号曾被举报涉嫌欺诈，请您提高警惕、谨慎汇款，以免造成不必要的财产损失！如有疑问，可拨打110进行咨询。";
+				}
+				$scope.alert(Message);
+				$scope.alert(Message);
+				$scope.alert(Message);
+				
+			}
+		},function(data){
+			return data.jsonError;
+		});
+	}
+	//跳转到结果页
+	$scope.toResult=function(){
+		if($scope.transType=="1"){
+			$scope.TransName="ffffff";
+		}else if($scope.transType=="2"){
+			$scope.TransName="gggggg";
+		}else if($scope.transType=="3"){
+			$scope.TransName="hhhhhh";
+		}
+		$remote.post("/pmobile/TransRewardsQry.do",{"TRANSNAME":$scope.TransName},function(data){
+			$scope.IsReward=data.ISREWARD;
+		});
+		
+		//确定当前认证方式
+			if($scope.authType==0){
+				//音频key
+				if($scope.Security=="05"){
+					
+					//音频PKY制签名需要的数据，包括三种形式转账的所有字段
+					var inputData={"recAccountNo":$scope.rCard,"recAccountName":$scope.rName,"tranAmount":$scope.amount,
+							"accountNo":$scope.payCard.AcNo,"currencyType":$scope.RMBChange($scope.cardInfo.CurrencyName),"payUse":$scope.yongtu,"actualCharge":$scope.poundage.actualCharge,
+							"businessType":"C210","businessKind":"09001"};
+					var sourceField = "收款人账号#"+inputData.recAccountNo+"|收款人户名#"+inputData.recAccountName+"|转账金额#"+inputData.tranAmount+"|手续费金额#"+inputData.actualCharge
+							+"|付款人账号#"+inputData.accountNo;
+					
+					//组装签名所需数据
+					if($scope.transType=="1"){
+						//调用音频KEY字段转换xml格式的方法
+						var sinData = $scope.getSignSourceValue(sourceField,"币种#"+inputData.currencyType+"|用途#"+inputData.payUse+"|收款人开户行#"+$scope.rkBankName
+								+"|收款人开户行行号#"+$scope.rkBankNO);
+						var subData={"sinData":sinData,"YPKPassword":$scope.keypassword};
+						//通过原生调用音频key
+						$scope.getSignData(function(outputdata){
+							var signData=outputdata;
+							if(!signData){
+								$scope.keypassword="";
+								return false;
+							}
+							$scope.CrossNormalTrans(signData);
+						},vx.toJson(subData));
+						
+					}else if($scope.transType=="2"){
+						
+						//调用音频KEY字段转换xml格式的方法
+						var sinData = $scope.getSignSourceValue(sourceField,"币种#"+inputData.currencyType+"|用途#"+inputData.payUse+"|收款人开户行#"+$scope.rBankName
+								+"|收款人开户行行号#"+$scope.rBankNO+"|业务类型#"+inputData.businessType+"|业务种类#"+inputData.businessKind);
+						var subData={"sinData":sinData,"YPKPassword":$scope.keypassword};
+						//通过原生调用音频key
+						$scope.getSignData(function(outputdata){
+							var signData=outputdata;
+							if(!signData){
+								$scope.keypassword="";
+								return false;
+							}
+							$scope.CrossQuickTrans(signData);
+						},vx.toJson(subData));
+						
+					}else if($scope.transType=="3"){
+						//卡密码不能为空
+ 						if($("#cardpassword").attr("value")==""){
+ 						//	$scope.alert("卡密码不能为空");
+ 							NativeCall.toast("卡密码不能为空");
+							return false;
+ 						}
+						//调用音频KEY字段转换xml格式的方法
+						var sinData = $scope.getSignSourceValue(sourceField,"币种#"+inputData.currencyType+"|用途#"+inputData.payUse);
+						var subData={"sinData":sinData,"YPKPassword":$scope.keypassword};
+						//通过原生调用音频key
+						$scope.getSignData(function(outputdata){
+							var signData=outputdata;
+							if(!signData){
+								$scope.keypassword="";
+								return false;
+							}
+							$scope.CrossUnitTrans(signData);
+						},vx.toJson(subData));
+						
+					}
+					
+				}else if($scope.Security=="07"){//手机动态码+卡密码
+					//卡密码不能为空
+// 					if($("#cardpassword").attr("value")==""){
+// 						$scope.alert("卡密码不能为空");
+// 						return false;
+// 					}
+					$scope.ptParams.TrsPassword=$scope.miwen;
+					$scope.ptParams.SmsCode=$scope.dycode;
+					$scope.ptParams.SerialNo=$scope.msmNo;
+				}
+				
+			}else if($scope.authType==2){//手机动态码
+				$scope.ptParams.SmsCode=$scope.dycode;
+				$scope.ptParams.SerialNo=$scope.msmNo;
+				if($scope.transType=="3"){
+					if($scope.miwen==""||$scope.miwen==null||$scope.miwen==undefined){
+						NativeCall.toast("请输入交易密码！");
+						return;
+					}
+				}
+			}
+			
+			//跨行转账，非音频KEY认证方式
+			if($scope.transType=="1"&&($scope.Security!="05"||$scope.authType!=0)){//跨行普通
+				$scope.CrossNormalTrans();
+			}else if($scope.transType=="2"&&($scope.Security!="05"||$scope.authType!=0)){//跨行快速
+				$scope.CrossQuickTrans();
+			}else if($scope.transType=="3"&&($scope.Security!="05"||$scope.authType!=0)){//跨行银联
+				$scope.CrossUnitTrans();
+			}
+	}
+	//跨行普通转账
+	$scope.CrossNormalTrans=function(signData){
+		if(signData){
+			$scope.ptParams.SignData=signData;
+		}
+		$scope.ptParams._tokenName=$scope._tokenName;
+		$remote.post("/pmobile/BankCrossTransfer.do",$scope.ptParams,function(data){
+			console.log(data);
+			if(data._RejCode=="000000"){
+				$scope.CrossResult=data;
+				$targets("content","#3");
+				NativeCall.history = [];//清空历史，点击左上角返回时，可直接返回原生菜单
+				NativeCall.pages=[];
+			}
+		},function(data){
+			console.log(data);
+			if(data.jsonError){
+				$scope.alert(data.jsonError);
+			}
+			$("#cardpassword").val("");
+			$scope.miwen="";
+			$scope.keypassword="";
+			$scope.getToken();
+			return data.jsonError;
+		});
+	}
+	//跨行快速转账
+	$scope.CrossQuickTrans=function(signData){
+		if(signData){
+			$scope.ptParams.SignData=signData;
+		}
+		$scope.ptParams._tokenName=$scope._tokenName;
+		$remote.post("/pmobile/CrossQuickTransfer.do",$scope.ptParams,function(data){
+			console.log(data);
+			if(data._RejCode=="000000"){
+				$scope.CrossResult=data;
+				$targets("content","#3");
+				NativeCall.history = [];//清空历史，点击左上角返回时，可直接返回原生菜单
+				NativeCall.pages=[];
+			}
+		},function(data){
+			console.log(data);
+			if(data.jsonError){
+				$scope.alert(data.jsonError);
+			}
+			$("#cardpassword").val("");
+			$scope.miwen="";
+			$scope.keypassword="";
+			$scope.getToken();
+			return data.jsonError;
+		});
+	}
+	//跨行银联
+	$scope.CrossUnitTrans=function(signData){
+		if(signData){
+			$scope.ptParams.SignData=signData;
+		}
+		$scope.ptParams._tokenName=$scope._tokenName;
+		$scope.ptParams.TrsPassword=$scope.miwen;//密码
+		$remote.post("/pmobile/BankUnionTransfer.do",$scope.ptParams,function(data){
+			if(data._RejCode=="000000"){
+				$scope.CrossResult=data;
+				$targets("content","#3");
+				NativeCall.history = [];//清空历史，点击左上角返回时，可直接返回原生菜单
+				NativeCall.pages=[];
+			}
+		},function(data){
+			if(data.jsonError){
+				$scope.alert(data.jsonError);
+			}
+			$("#cardpassword").val("");
+			$scope.miwen="";
+			$scope.keypassword="";
+			$scope.getToken();
+			return data.jsonError;
+		});
+	}
+}
+</script>

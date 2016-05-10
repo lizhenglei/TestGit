@@ -1,0 +1,104 @@
+<div v-view-setup="PMedicalQryCtrl" v-init="init()">
+<!-- 	<div v-page> -->
+<!-- 		<div class="bg_box"> -->
+<!-- 			<div class="box_cont"> -->
+<!-- 				<div class="zz_cont"> -->
+<!-- 				      <ul> -->
+<!-- 				      		<li> -->
+<!-- 								<em>身份证号：</em> -->
+<!-- 								<i><input  id="idNo" type="text" name="idNo" v-model="idNo" class="y_srk" placeholder="请输入身份证号"/></i> -->
+<!-- 							</li> -->
+<!-- 					 </ul> -->
+<!-- 			    </div> -->
+			    
+<!-- 				<div> -->
+<!-- 					<input type="button" class="button_1" name="button" value="查询"  v-click="toConfirm()"> -->
+<!-- 				</div> -->
+			    
+<!-- 			</div> -->
+<!-- 		</div> -->
+<!-- 		<div class="zz_cont"><img src="images/ts.png" /> -->
+<!-- 		    <font class="tishi"> -->
+<!-- 				温馨提示</br> -->
+<!-- 			</font> -->
+<!-- 				&nbsp;&nbsp;您可查询自己名下的医保信息。</br> -->
+<!-- 			<div style="font-size:12px; line-height:16px; color:#929292;"> </div> -->
+<!-- 	   </div> -->
+<!-- 	</div> -->
+	
+	
+	<!-- 医保查询-->
+	<div v-page v-transition="native">
+		 <form name="transConfirm" class="bg_box">
+		    <div class="box_cont">
+		      
+		      <div class="zz_cont">
+			      <ul>
+						<li><em>医保编号：</em><i>{{Seq}}</i></li>
+						<li><em>账户预拨款：</em><i>{{EstimatedAmount}}</i></li>
+						<li><em>账户结转：</em><i>{{CarryOverAmount}}</i></li>
+			            <li><em>支出累计：</em><i style="color:red">{{TotalPayAmount}}</i></li>
+			            <li><em>医疗费累计：</em><i style="color:red">{{TotalFee}}</i></li>
+			            <li><em>现金累计：</em><i style="color:red">{{TotalFeeCash}}</i></li>
+						<li><em>当年门诊次数：</em><i>{{OutpatientCount}}</i></li>
+						<li><em>当年住院次数：</em><i>{{InHospitalCount}}</i></li>
+			            <li><em>最后交易时间：</em><i>{{LastTrsDate}}</i></li>
+			            <li><em>账户余额：</em><i style="color:red">{{Balance}}</i></li>
+			            <li><em>医保状态：</em><i>{{State}}</i></li>
+				  </ul>
+		       </div>
+		 </div>
+		 </form>
+	</div>
+</div>
+<script>
+PMedicalQryCtrl.$inject = ["$scope","$remote","$targets"];
+function PMedicalQryCtrl($scope,$remote,$targets){
+	
+	//页面初始化
+	$scope.init=function(){
+// 		$scope.idNo="325688488956895448";
+		
+		$scope.getClientState(function(response){
+			var vxJson=vx.fromJson(response);
+			if(vxJson.isLogin == true){
+				$scope.idNo=vxJson.Userinfo.IdNo;
+				$scope.toConfirm();
+			}
+			else{
+				$scope.idNo="";
+				NativeCall.toast("请登录后进行查询");
+			}
+		});
+	}
+	
+	$scope.toConfirm=function(){
+		
+		if (!$scope.idNo){
+			NativeCall.toast("请输入身份证号");
+			return false;
+		}
+		else if($scope.idNo.length!=18){
+			NativeCall.toast("输入的身份证号格式不正确");
+			return false;
+		}
+		//跳转到确认页面
+		$remote.post("/pmobile/HealthCareQry.do",{"IdNo":$scope.idNo},function(data){
+			$scope.Seq=data.Seq;
+			$scope.EstimatedAmount=data.EstimatedAmount;
+			$scope.CarryOverAmount=data.CarryOverAmount;
+			$scope.TotalPayAmount=data.TotalPayAmount;
+			$scope.TotalFee=data.TotalFee;
+			$scope.TotalFeeCash=data.TotalFeeCash;
+			$scope.OutpatientCount=data.OutpatientCount;
+			$scope.InHospitalCount=data.InHospitalCount;
+			$scope.LastTrsDate=data.LastTrsDate;
+			$scope.Balance=data.Balance;
+			$scope.State=data.State;
+			$targets("content","#1");
+		});
+	}
+
+
+}
+</script>

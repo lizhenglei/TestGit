@@ -1,0 +1,98 @@
+<div v-view-setup="PFundCtrl" v-init="init()">
+	<!-- 基金超市首页 -->
+	<div v-page v-transition="native" title="基金超市">
+		<div class="check" id="check" style="margin-top:5%;width: 96%;margin-left:2%;background-color:white">
+			<div class="checkin" id="checkin" style="  padding-top: 10px;width:95%;padding-bottom:10px;text-align:center;border-bottom: 1px solid #cccccc;  margin-left: 3%">
+				<input class="checkw" id="checkw" style="width:75%;" placeholder="请输入基金名称或代码">
+				<img src="images/ss_icon.png" width="20px">
+			</div>	
+			<div class="check" id="check" style="  margin-top: 10px;text-align:center;width:95%;padding-bottom:10px;border-bottom: 1px solid #cccccc;  margin-left: 3%">
+				<div style="float:left;  font-size: 15px;padding-left: 7%;">基金公司：</div>
+				<select  v-model="fundgs" name="fundgs" class="fundgs" style="width:75%;  width: 50%;height: 25px; border: 1px solid #cccccc;">
+						<option value="0" select="selected">全部</option>
+						<option value="1">诺安基金</option>
+						<option value="2">交银施罗德</option>						
+				 </select>
+			</div>	
+			<div class="check" id="check" style="  margin-top: 10px;text-align:center;width:95%;padding-bottom:10px;  margin-left: 3%">
+				<div style="float:left;  font-size: 15px;padding-left: 7%;">基金类型：</div>
+				<select  v-model="fundlx" name="fundlx" class="fundlx" style="width:75%;  width: 50%;height: 25px; border: 1px solid #cccccc;"> </select>
+			</div>		
+		</div>
+		<div style="margin-top:10px;margin-left:2%;width: 96%;border:1px solid;  border-radius: 15px;  padding-top: 5px;background-color:white">
+			<div style="  margin-left: 5%;float:left">诺安基金1号</div><div style="  margin-left: 5%;width:100px;float:left">22222</div><div style="  height: 30px;">33333333333</div>
+			<div style="border-top: 1px solid;  height: 85px;">
+				<div style="float: left;  margin-top: 10px;  height: 65px;text-align: center; border-right: 1px solid;width: 30%;">222222</div>
+				<div style="  float: left;  margin-left: 5%; width: 50%;height: 100%;  text-align: center; padding-top: 4%;">
+					<div style="margin-bottom: 5%;">累计净值:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.69元</div>
+					<div>风险等级:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;中高风险</div>
+				</div>
+				<div style="float:left;height:100%;  margin-top: 3%; padding-left: 4%;"><img v-click="gotodetail()" style="  height: 55px;" src="images/more.png"></div>
+			</div>
+		</div>
+	</div>
+	
+	<!-- 天天利购买申请确认页面 -->
+	<div  v-transition="native" title="理财产品购买">
+		<div style="margin-top:10px;margin-left:2%;width: 96%;border:1px solid;  border-radius: 15px;  padding-top: 5px;background-color:white">
+			<div style="  margin-left: 5%;float:left">诺安基金1号</div><div style="  margin-left: 5%;width:100px;float:left">22222</div><div style="  height: 30px;">33333333333</div>
+			<div style="border-top: 1px solid;  height: 85px;">
+				<div style="float: left;  margin-top: 10px;  height: 65px;text-align: center; border-right: 1px solid;width: 30%;">222222</div>
+				<div style="  float: left;  margin-left: 5%; width: 50%;height: 100%;  text-align: center; padding-top: 4%;">
+					<div style="margin-bottom: 5%;">累计净值:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.69元</div>
+					<div>风险等级:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;中高风险</div>
+				</div>
+				<div style="float:left;height:100%;  margin-top: 3%; padding-left: 4%;"><img v-click="gotodetail()" style="  height: 55px;" src="images/more.png"></div>
+			</div>
+		</div>
+		<div class="content4">
+			<div class="conone" id="conone" style="float:left;width: 25%; height: 30px;  margin-left: 6%; text-align: center;  border-radius: 10px;  line-height: 30px;border:1px solid" v-click="showMonth()">月收益率</div>
+			<div class="contwo" id="contwo" style="float:left;width: 25%; height: 30px;  margin-left: 15px; text-align: center;  border-radius: 10px;line-height: 30px;border:1px solid" v-click="showSeason()">季收益率</div>
+			<div class="conthree" id="conthree" style="float:left;width: 25%; height: 30px;  margin-left: 15px; text-align: center;  border-radius: 10px;line-height: 30px;border:1px solid" v-click="showYear()">年收益率</div>
+		</div>
+		<div style="width: 95%; padding-left: 5%;background-color: white;"
+			v-click="toHissir()">
+			<div style="width: 97%">
+				<canvas id="canvas"></canvas>
+			</div>
+		</div>
+	</div>
+	
+	
+	<!-- 天天利购买申请结果页面 -->
+	<div v-page v-transition="native" data-back="false" title="理财产品购买">
+
+	</div>
+	<div style="width:100%;height:40px"></div>
+</div>
+<script>
+PFundCtrl.$inject = ["$scope","$remote","$targets","$filter","$context","$chartService"];
+function PFundCtrl($scope,$remote,$targets,$filter,$context,$chartService){
+	$scope.init=function(){
+		
+	}
+	$scope.gotodetail=function(){
+		tempList={"05-11":4.3425,"05-12":4.3420,"05-13":4.3111,"05-14":4.8925,"05-15":4.3905}
+		var params={
+				"data":tempList,//数据源
+				"pointDot":false,//是否显示节点
+				"pointDotRadius":4,//节点大小-半径
+				"scaleStartValue":4.30,//Y轴起始值
+				"scaleSteps":3,//Y轴刻度个数
+				"scaleStepWidth":0.2500,//Y轴跨度
+				"tooltipFillColor":"#008aff",//标注背景色
+				"showTooltips":false,//点击显示标注
+				"fillColor":"#d8edf4",//阴影填充色
+				"strokeColor" : "#008aff",//曲线颜色
+				"pointColor" : "yellow",//节点颜色
+				"pointStrokeColor" : "#008aff",//节点边框颜色
+				"pointHighlightFill" : "green",//选中节点颜色
+				"pointHighlightStroke" : "blue",//选中节点边框颜色
+				"widther" : "5px",
+		};
+		$chartService.line(document.getElementById("canvas"), params); 
+		$targets("content","#2");
+	}
+
+}
+</script>

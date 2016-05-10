@@ -1,0 +1,120 @@
+<div v-view-setup="PHelpCenterCtrl" v-init="init()">
+	<div v-page v-transition="native">
+	 	<div class="zz_cont">
+			<input type="button"" class="button_1 fright" name="button" value="意见反馈"  v-click="toEstimate()">
+		</div>
+		<div class=" fontsize4" style="margin-left:5%;padding-top:10px"><b>常见问题</b></div>
+		<div class="bg_box">
+		<div class="box_cont">   
+			<div v-repeat="p in  testList">
+			
+			    <div class="zz_cont" >
+			    <ul>
+			    		<li class="size2">{{p.ProblemTitle}}</li>
+			    		<li class="lineheight1" >
+			    			<div style="overflow:auto;word-break:break-all" v-repeat="pc in  p.PCList">{{pc.ProblemContent}}</div>
+			    		</li>
+			    	</ul>
+			    </div>
+			     <div class="j-heightb"></div>
+			   </div>
+		</div>
+		</div>
+		
+<!-- 		<div class="zz_cont">
+					<input type="button" class="button_1" name="button" value="查看更多"  v-click="moreHelp()">
+		</div> -->
+			
+		<div class="zz_cont"><img src="images/ts.png" />
+		    <font class="tishi">
+				温馨提示<br>
+				&nbsp;&nbsp;若查询【常见问题】后未能解决您的问题，您可通过在线留言咨询问题。<br>
+			</font>
+			<div style="font-size:12px; line-height:16px; color:#929292;"> </div>
+		</div>	
+		<div style="width:100%;height:40px;"></div>
+</div>
+
+<div v-page  v-transition="native">
+		<div class="bg_box">
+			<div class="box_cont">   
+			    <div class="zz_cont">
+			    	<ul>
+			    		<li>
+				    		<em style="text-align:left;">反馈类型：</em>
+				    		<i>
+				    			<div class="radio_cont2">
+				    				<span class="radio" style="margin:0;line-height:30px">
+				    					<input type="radio" v-model="feedbackType" name="feedbackType" value="1" />问题
+				    				</span>
+				    				<span class="radio" style="margin:0;line-height:30px">
+				    					<input type="radio" v-model="feedbackType" name="feedbackType" value="2"  />建议
+				    				</span>
+				    				<span class="radio" style="margin:0;line-height:30px">
+				    					<input type="radio" v-model="feedbackType" name="feedbackType" value="3"  />投诉
+				    				</span>
+				    			</div>
+				    		</i>
+			    		</li>
+			    		<li>
+			    			<em style="text-align:left;height:25px;">反馈内容：</em>
+			    			<div>
+			    				<textarea placeholder="输入内容不超过100字" name="feedbackContent" v-model="feedbackContent" style="width:98%;height:180px;margin-top:15px;border-radius: 5px;font-size:initial;" maxlength=100></textarea>
+			    			</div>
+			    		</li>
+			    	</ul>
+			    </div>
+			    <div class="zz_cont">
+					<input type="button" class="button_1" name="button" value="提交"  v-click="confirm()">
+				</div>
+			</div>
+		</div>
+<!-- 		<div class="zz_cont"><img src="images/ts.png" /> -->
+<!-- 		    <font class="tishi"> -->
+<!-- 				温馨提示:<br> -->
+<!-- 				1、<br> -->
+<!-- 				2、<br> -->
+<!-- 			</font> -->
+<!-- 			<div style="font-size:12px; line-height:16px; color:#929292;"> </div> -->
+<!-- 		</div> -->
+				
+	</div>
+</div>
+
+<script>
+PHelpCenterCtrl.$inject = ["$scope","$remote","$targets","$filter","$context"];
+function PHelpCenterCtrl($scope,$remote,$targets,$filter,$context){
+	$scope.init=function(){
+		var params={
+				"pageSize":50,
+				"currentIndex":0
+			}
+		$remote.post("/pmobile/NormalProblemQry.do",params,function(data){
+			$scope.testList=data.List;
+		});
+	}
+	//进到意见反馈页面
+	$scope.toEstimate=function(){
+		$scope.feedbackType=1;
+// 		window.location.href="http://www.baidu.com"
+		var Str="http://wxe.csrcbank.com/BC/admin.php/Home/";
+		NativeCall.OpenHTML(Str);
+	}
+	
+	//提交反馈内容
+	$scope.confirm=function(){
+		if(!$scope.feedbackContent){
+			NativeCall.toast("请输入想要反馈的内容");
+			return false;
+		}
+		var params={
+				"ContentStyle":$scope.feedbackType,
+				"FeedBackContent":$scope.feedbackContent
+			}
+		$remote.post("/pmobile/FeedBackSet.do",params,function(data){
+			$scope.alert("问题反馈成功！");
+			NativeCall.finishWeb();
+		});
+	}
+}
+</script>

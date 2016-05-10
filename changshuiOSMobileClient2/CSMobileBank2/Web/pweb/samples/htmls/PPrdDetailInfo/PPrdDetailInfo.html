@@ -1,0 +1,318 @@
+<div v-view-setup="PPrdDetailInfoCtrl" v-init="init()">
+	<!-- 第一页：粒金理财/天天利理财详情页 -->
+	<div v-page v-transition="native" style="width:95%;margin:0 auto" title="产品详情">
+		<!-- 粒金理财详情 -->
+		<div v-show="prdInfo.TplCd=='1102'">
+<!-- 		<div v-show="flag=='LiJin'"> -->
+			<div class="lic_buy">
+				<h3>
+					<span style="font-weight: bold; font-size: 16px;width:55%;overflow:hidden;">{{prdInfo.PrdctNm}}</span>
+					<div class="PrdOutsiteBox" style="border-radius:5px; float: right">
+						可售额度{{(prdInfo.AvlMblLmt*100+prdInfo.AvlPrsnLmt*100)/prdInfo.PrdctMaxRsgAmt|number:0}}%
+						<div class="PrdInnerBox" style="border-radius:5px;width:{{(prdInfo.AvlMblLmt*100+prdInfo.AvlPrsnLmt*100)/prdInfo.PrdctMaxRsgAmt|number:0==1?0:(prdInfo.AvlMblLmt*100+prdInfo.AvlPrsnLmt*100)/prdInfo.PrdctMaxRsgAmt|number:0}}%;margin-left:{{(prdInfo.PrdctMaxRsgAmt*100-(prdInfo.AvlMblLmt*100+prdInfo.AvlPrsnLmt*100))/prdInfo.PrdctMaxRsgAmt|number:0}}%"></div>
+					</div>
+				</h3>
+				<div class="earn licaiInfo" style="background:none">
+<!-- 					<span v-show="!(prdInfo.expectMinRate==prdInfo.expectMaxRate$$prdInfo.expectMaxRate==0.0000)" class="superwidth"> -->
+<!-- 					<span style="font-size:20px;color:#f18903;" >{{prdInfo.expectMinRate|FloatTwo}}%~{{prdInfo.expectMaxRate|FloatTwo}}%</span> -->
+<!-- 						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;预期年化收益<br /> -->
+<!-- 					</span> -->
+					<span class="superwidth">
+						<span style="font-size:20px;color:#f18903;text-align:center;" >{{prdInfo.ExpcPftRateTxt}}</span>
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;预期年化收益<br />
+					</span>
+<!-- 					<span class="superwidth"> -->
+<!-- 						<span style="font-size:20px;color:#f18903;"">{{prdInfo.expectMinRate|FloatTwo}}%~{{prdInfo.expectMaxRate|FloatTwo}}%</span> -->
+<!-- 						预期年化收益率<br /> -->
+<!-- 					</span> -->
+					<span>
+						<span style="color:#0084ff">{{prdInfo.PrsnFrstMinIvsAmt/10000}}万</span>
+						起购金额<br />
+					</span>
+					<span>
+						<span style="color:#666">{{prdInfo.CycDays}}天</span>
+						产品期限<br />
+					</span>
+				</div>
+			</div>
+			<div class="zz_cont bor_1 lic_buy">
+					<div class="timeline">
+			          <div class="timeline1"></div>
+			          <div class="timemain">
+			            	<div class="timeline_top" style="background:#fff"></div>
+			                <div class="timeline_img"><img class="sjyuan" src="images/a1.png"/></div>
+			                <div class="timeline_top"></div>
+			                <div class="timeline_img2"><img class="sjhengjian" src="images/c002.png"/></div>
+			                <div class="timeline_img3"><img class="sjyuan" src="images/b3.png"/></div>
+			                <div class="timeline_img4"><img class="sjyuan" src="images/b4.png"/></div>
+			                <div class="timeline_img5"><img class="sjyuan" src="images/b5.png"/></div>
+			                </div>
+			        </div>
+					<ul>
+						<li>
+							<em style="width:43%;">募集开始日期：</em>
+							<i style="width: 51%;">
+								{{prdInfo.RsgStrtDt|formatDate}}
+							</i>
+						</li>
+						<li>
+							<em style="width:43%;">募集结束日期：</em>
+							<i style="width: 51%;">
+								{{prdInfo.RsgEndDt|formatDate}}
+							</i>
+						</li>
+						<li>
+							<em style="width: 43%;">产品成立日：</em>
+							<i  style="width: 51%;">
+								{{prdInfo.FndPrdctDt|formatDate}}
+							</i>
+						</li>
+						<li>
+							<em style="width:43%;">到期日：</em>
+							<i  style="width: 51%;">
+								{{prdInfo.PrdctEndDt|formatDate}}
+							</i>
+						</li>
+						<li>
+							<em style="width:43%;">最迟兑付日：</em>
+							<i  style="width:51%;">
+								{{prdInfo.lastDate|formatDate}}
+							</i>
+						</li>
+					</ul>
+			</div>
+			
+			<div class="zz_cont bor_1 lic_buy">
+					<ul>
+<!-- 						<li> -->
+<!-- 							<em>产品代码：</em> -->
+<!-- 							<i> -->
+<!-- 								{{prdInfo.prdCode}} -->
+<!-- 							</i> -->
+<!-- 						</li> -->
+<!-- 						<li> -->
+<!-- 							<em>产品类型：</em> -->
+<!-- 							<i> -->
+<!-- 								{{prdInfo.prdType|financFilter}} -->
+<!-- 							</i> -->
+<!-- 						</li> -->
+<!-- 						<li> -->
+<!-- 							<em>产品规模：</em> -->
+<!-- 							<i> -->
+<!-- 								{{prdInfo.PrdctMaxRsgAmt}} -->
+<!-- 							</i> -->
+<!-- 						</li> -->
+						<li>
+							<em>最低追加金额：</em>
+							<i>
+								{{prdInfo.PrsnAddMinIvsAmt|number:2}}
+							</i>
+						</li>
+<!-- 						<li> -->
+<!-- 							<em>币种：</em> -->
+<!-- 							<i> -->
+<!-- 								{{prdInfo.currencyType|CurrenyFilter}} -->
+<!-- 							</i> -->
+<!-- 						</li> -->
+						<li>
+							<em>风险等级：</em>
+							<i>
+								{{prdInfo.PrdctRskLvlNm}}
+							</i>
+						</li>
+<!-- 						<li> -->
+<!-- 							<em>产品状态：</em> -->
+<!-- 							<i> -->
+<!-- 								{{prdInfo.state|statusFilter}} -->
+<!-- 							</i> -->
+<!-- 						</li> -->
+					</ul>
+			</div>
+			<div class="zz_cont">
+				<input type="checkbox" name="agree" v-model="agree"/>
+				我已阅读并同意<a style="color:blue" v-click="FXproDirect(10)">《风险提示书》</a>及<a style="color:blue" v-click="proDirect(prdCode,'02')">《产品说明书》</a>
+			</div>
+			<div class="zz_cont">
+				<input type="button" class="button_1" name="button" value="购买" v-disabled="!agree" v-click="toLJBuy(prdInfo)">
+			</div>
+		</div>
+		<!-- 天天利详情 -->
+		<div v-show="prdInfo.TplCd=='1200'">		
+<!-- 		<div v-show="flag=='TTLi'"> -->
+			<div class="lic_buy">
+				<h3>
+					<span style="font-weight: bold; font-size: 16px;width:100%">{{prdInfo.PrdctNm}}</span>
+				</h3>
+				<div class="earn licaiInfo" style="background:none">
+					<span class="superwidth" style="  text-align: center;">
+						<span style="font-size:20px;color:#f18903;">{{prdInfo.ExpcPftRateTxt}}</span>
+						预期年化收益率<br />
+					</span>
+					<span style="text-align:center;padding-left:20px;">
+						<span style="color:#0084ff">{{prdInfo.PrsnFrstMinIvsAmt/10000}}万</span>
+						起购金额<br />
+					</span>
+				</div>
+			</div>
+			<div class="zz_cont bor_1 lic_buy">
+					<ul>
+<!-- 						<li> -->
+<!-- 							<em>产品代码：</em> -->
+<!-- 							<i> -->
+<!-- 								{{ttProdects.prdCode}} -->
+<!-- 							</i> -->
+<!-- 						</li> -->
+						<li>
+							<em>最低追加金额：</em>
+							<i>
+								{{prdInfo.PrsnAddMinIvsAmt|number:2}}
+							</i>
+						</li>
+<!-- 						<li> -->
+<!-- 							<em>币种：</em> -->
+<!-- 							<i> -->
+<!-- 								{{TTCurrencyType|CurrenyFilter}} -->
+<!-- 							</i> -->
+<!-- 						</li> -->
+						<li>
+							<em>风险等级：</em>
+							<i>
+								{{prdInfo.PrdctRskLvlNm}}
+							</i>
+						</li>
+<!-- 						<li> -->
+<!-- 							<em>产品状态：</em> -->
+<!-- 							<i> -->
+<!-- 								{{ttProdects.state|ttstatusFilter}} -->
+<!-- 							</i> -->
+<!-- 						</li> -->
+<!-- 						<li> -->
+<!-- 							<em style="  line-height:100px;">说明文字：</em> -->
+<!-- 							<i style="line-height: 25px;">10倍，预期收益高于活期存款利率；<br>灵活，工作日8点至20点实时赎；<br>随心，支持下随时申购，省心省力；<br>周到，准数服务经历随时恭候</i> -->
+<!-- 						</li> -->
+					</ul>
+			</div>
+			<div class="zz_cont">
+				<input type="checkbox" name="agree2" v-model="agree2"/>
+				我已阅读并同意<a style="color:blue" v-click="FXproDirect(12)">《风险提示书》</a>及<a style="color:blue" v-click="proDirect(prdCode,'01')">《产品说明书》</a>
+			</div>
+			<div>
+				<input type="button" class="button_1" name="button" value="购买" v-disabled="!agree2" v-click="toLJBuy(prdInfo)">
+			</div>
+		</div>
+		<!-- 净值理财 -->
+		<div v-show="prdInfo.TplCd=='1300'">		
+			<div class="lic_buy">
+				<h3>
+					<span style="font-weight: bold; font-size: 16px;height:35px;line-height:35px;width:70%">{{prdInfo.PrdctNm}}</span>
+					<div  style="float:right;width:30%">
+						<input type="button" style="-webkit-tap-highlight-color:rgba(0,0,0,0);width:100%; height:35px;line-height:35px;font-size:16px;background:#f18903; margin:0 auto; color:#fff;  cursor:pointer; border:none; border-radius:4px;-webkit-appearance:none" name="button" value="历史净值" v-click="toOldAmt(prdInfo)">
+					</div>
+				</h3>
+				<div class="earn licaiInfo" style="background:none">
+					<span style="text-align: center;width:21%;">
+						<span style="font-size:20px;color:#f18903;text-align:center;">{{prdInfo.NetPrdctAmt|number:2}}</span>
+						<span style="font-size:12px;color:#666;text-align:center;">参考净值</span><br />
+					</span>
+					<span style="text-align:center;padding-left:3px;width:21%;">
+						<span style="color:#0084ff">{{prdInfo.PrsnFrstMinIvsAmt/10000}}万</span>
+						起购金额<br />
+					</span>
+					<span style="text-align:center;padding-left:3px;width:21%;">
+						<span style="color:#0084ff" v-show="prdInfo.PrdctSt=='1'">募集期</span>
+						<span style="color:#0084ff" v-show="prdInfo.PrdctSt=='0'">开放期</span>
+						产品状态<br />
+					</span>
+					<span style="text-align:center;padding-left:3px;width:30%;">
+						<span style="color:#0084ff">{{prdInfo.NextCfrmDt|formatDate}}</span>
+						份额确认日<br />
+					</span>
+				</div>
+			</div>
+			<div class="zz_cont bor_1 lic_buy">
+					<ul>
+						<li>
+							<em>最低追加金额：</em>
+							<i>
+								{{prdInfo.PrsnAddMinIvsAmt|number:2}}
+							</i>
+						</li>
+						<li>
+							<em>风险等级：</em>
+							<i>
+								{{prdInfo.PrdctRskLvlNm}}
+							</i>
+						</li>
+					</ul>
+			</div>
+			<div class="zz_cont">
+				<input type="checkbox" name="agree2" v-model="agree2"/>
+				我已阅读并同意<a style="color:blue" v-click="FXproDirect(12)">《风险提示书》</a>及<a style="color:blue" v-click="proDirect(prdCode,'01')">《产品说明书》</a>
+			</div>
+			<div>
+				<input type="button" class="button_1" name="button" value="购买" v-disabled="!agree2" v-click="toLJBuy(prdInfo)">
+			</div>
+		</div>
+		<div style="width:100%;height:40px"></div>
+	</div>
+	<!--第二页： 产品说明书/风险提示书 -->
+	<div v-page v-transition="native" style="width:95%;margin:0 auto">
+		<div>
+			<h2 class="font_title">{{PrdIntroName}}</h2>
+			<div id="prdFileId"></div>
+		</div>
+		<div style="width:100%;height:40px"></div>
+	</div>
+	<div style="width:100%;height:40px"></div>
+</div>
+<script>
+PPrdDetailInfoCtrl.$inject = ["$scope","$remote","$targets","$filter","$context"];
+function PPrdDetailInfoCtrl($scope,$remote,$targets,$filter,$context){
+	$scope.init=function(){
+		//区别粒金理财和天天利理财的标志
+		$scope.flag=$context.getJson().selecType;
+		//粒金理财/天天利产品代码
+		$scope.prdCode=$context.getJson().selectedLiCai;
+		$scope.prdInfo=$context.getJson().prdInfo;
+		$scope.prdInfo.lastDate=$scope.formartDate($scope.prdInfo.PrdctEndDt,1);
+		console.log($scope.prdInfo);
+// 		if($scope.flag!="TTLi"){
+// 			$scope.prdInfo.lastDate=$scope.formartDate($scope.prdInfo.PrdctEndDt,1);
+// 			$scope.prdInfo.TplCd="";
+// 		}
+	}
+
+	//查询产品说明书
+	$scope.proDirect=function(proCode,proType){
+		var params={
+				"PrdctCd":proCode,
+				"PrdType":proType//01天天利02粒金理财
+		}
+		$remote.post("/pmobile/FinancialProductDeclareQuery.do",params,function(data){
+			$scope.prdFileName=data.FileCNName;
+			document.getElementById("prdFileId").innerHTML=data.Content;
+			$targets("content","#+1");
+			NativeCall.setTitle("产品说明书");//设置标题
+		});
+	}
+	//粒金、天天利风险提示书
+	$scope.FXproDirect=function(params){//param值：10-粒金理财风险揭示书，12-天天利风险揭示书
+		$remote.post("/pmobile/TreatyContent.do",{"TreatyType":params},function(data){
+			document.getElementById("prdFileId").innerHTML=data.Content;
+			$targets("content","#+1");
+			NativeCall.setTitle("风险提示书");//设置标题
+		});
+	}
+	//前往粒金理财购买页
+	$scope.toLJBuy=function(obj){
+		$context.setJson({"LJproduct":obj});
+// 		$context.setJson({"LJday":$scope.ljProdects.investTerm});
+		$scope.goto("PPrdDetailInfo","LiJinBuy");
+	}
+	$scope.toOldAmt=function(obj){
+		$context.setJson({"jzlc":obj});
+		$scope.goto("PPrdDetailInfo","jzlcdetail");
+		
+	}
+}
+</script>

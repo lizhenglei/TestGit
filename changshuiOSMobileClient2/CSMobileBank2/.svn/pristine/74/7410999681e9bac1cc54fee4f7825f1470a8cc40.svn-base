@@ -1,0 +1,118 @@
+<div v-view-setup="QueryPswdModifyCtrl" v-init="init()">
+	<!-- 信用卡查询密码修改 -->
+	<div class="bg_box" v-page v-transition="native" title="查询密码修改">
+		<div class="box_cont">
+			<div class="zz_cont">
+					<ul>
+						<li>
+							<em>原查询密码：</em>
+							<i>
+								<input type="password" id="password" placeholder="请输入原查询密码" name="password" class="y_srk" v-click="getPW('password')"  readonly required/>
+							</i>
+						</li>
+						<li>
+							<em>新查询密码：</em>
+							<i>
+								<input type="password" id="newPassword" placeholder="请输入新查询密码" name="newPassword" class="y_srk" v-click="getPW('newPassword')"  readonly required/>
+							</i>
+						</li>
+						<li>
+							<em>确认查询密码：</em>
+							<i>
+								<input type="password" id="newPasswordConfirm" placeholder="请再次输入查询密码" name="newPasswordConfirm" class="y_srk"  v-click="getPW('newPasswordConfirm')" readonly required/>
+							</i>
+						</li>
+					</ul>
+			</div>
+		    <div class="zz_cont">
+		     		<input type="button"  class="button_1" name="button" id="subbtn" disabled="buttonDis" value="确认" v-click="toResult()">
+		    </div>
+<!-- 		    <div class="zz_cont"> -->
+<!-- 		     		<input style="background:#000" type="button"  class="button_1" name="button" value="确认" v-click="goto('CreditToActivTest')"> -->
+<!-- 		    </div> -->
+		    
+		</div>
+		<div class="zz_cont"><img src="images/ts.png" />
+		    <font class="tishi">
+				温馨提示</br>
+			</font>
+				&nbsp;&nbsp;1、查询密码主要用于登陆网上银行及电话银行等服务的身份验证。每位信用卡客户仅有一个查询密码。</br> 
+				&nbsp;&nbsp;2、为了您的账户安全，设置密码请不要选用您的身份证、生日、卡号、重复或连续等简单的数字，请妥善保管。</br> 
+			<div style="font-size:12px; line-height:16px; color:#929292;"> </div>
+	   </div>
+	</div>
+</div>
+<script>
+QueryPswdModifyCtrl.$inject = ["$scope","$remote","$context"];
+function QueryPswdModifyCtrl($scope,$remote,$context){
+	$scope.init=function(){
+		$scope.creditNo=$context.getJson().CreditNO;
+		$scope.buttonDis = true;
+	}
+	//调用密码控件
+	$scope.getPW=function(id){
+		$("#"+id).val("");
+		$scope.buttonDis = true;
+		$("#subbtn").attr("disabled",$scope.buttonDis);
+		var scrollHeight=$scope.getPWPosition($("#"+id).get(0));//定位当前密码输入栏位在文档中的位置
+		$scope.getPassword(function(pwResponse){
+			var resJson=vx.fromJson(pwResponse);
+			if(resJson.Flag==0){
+				$("#"+id).val(resJson.passWord);
+				if($("#password").val().length>=6&&$("#newPassword").val().length>=6&&$("#newPasswordConfirm").val().length>=6){
+					$("#subbtn").attr("disabled",false);
+				}
+			}else if(resJson.Flag==1){
+				if(id=="password"){
+					$scope.miwen1=resJson.passWord;//原查询密码密文
+					$scope.buttonDis1 = resJson.buttonDis;
+				}else if(id=="newPassword"){
+					$scope.miwen2=resJson.passWord;//新查询密码
+					$scope.buttonDis2 = resJson.buttonDis;
+				}else if(id=="newPasswordConfirm"){
+					$scope.miwen3=resJson.passWord;//再次输入交易密码密文
+					$scope.buttonDis3 = resJson.buttonDis;
+				}
+				if($scope.buttonDis1=="true"&&$scope.buttonDis2=="true"&&$scope.buttonDis3=="true"){
+					$scope.buttonDis = false;
+					$("#subbtn").attr("disabled",$scope.buttonDis);
+				}
+			}
+			
+		},scrollHeight);
+		
+	}
+	$scope.toResult=function(){
+		$scope.confirm("您确认修改查询密码吗？",function(){
+			$remote.post("/pmobile/getNewTokenName.do",{},function(data){
+				$scope.tokenName=data._tokenName;
+				var params={
+						"CreditNo":$scope.creditNo,
+						"PayPassword":$scope.miwen1,
+						"NewPayPassword":$scope.miwen2,
+						"NewPayConfirmPassword":$scope.miwen3,
+						"_tokenName":$scope.tokenName
+				};
+				$remote.post("/pmobile/CreditcardPassWordModify.do",params,function(data){
+					$scope.alert("查询密码修改成功！请牢记您的新密码");
+					NativeCall.goBack();
+				},function(data){
+					if(data.jsonError){
+						$scope.alert(data.jsonError);
+					}
+					$scope.miwen1="";
+					$scope.miwen2="";
+					$scope.miwen3="";
+					$("#password").val("");
+					$("#newPassword").val("");
+					$("#newPasswordConfirm").val("");
+					$scope.getToken();
+					return data.jsonError;
+				});
+			});
+		},null);
+	}
+	
+	
+}
+</script>

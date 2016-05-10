@@ -1,0 +1,116 @@
+//
+//  HotWireTelViewController.m
+//  MobileClient
+//  热线电话
+//  Created by Gavin Ren on 13-8-19.
+//  Copyright (c) 2013年 pro. All rights reserved.
+//
+
+#import "HotWireTelViewController.h"
+
+@interface HotWireTelViewController ()
+
+@end
+
+@implementation HotWireTelViewController
+
+
+- (id)init
+{
+    self=[super init];
+    if (self) {
+        
+    }
+    return self;
+}
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    
+	// Do any additional setup after loading the view.
+    
+    if ([[UIDevice currentDevice] userInterfaceIdiom]==UIUserInterfaceIdiomPhone) {
+        UILabel *lbTel=[[UILabel alloc]initWithFrame:CGRectMake(60, 100, 80, 25)];
+        lbTel.text=@"客服热线:";
+        lbTel.backgroundColor=[UIColor clearColor];
+        [self.view addSubview:lbTel];
+        
+        UILabel *lbTelNum=[[UILabel alloc]initWithFrame:CGRectMake(140, 100, 200, 25)];
+        lbTelNum.text=@"400-830-8001";
+        lbTelNum.textColor=[UIColor blackColor];
+        lbTelNum.backgroundColor=[UIColor clearColor];
+        [self.view addSubview:lbTelNum];
+        
+        
+        UIButton *btnTel=[UIButton buttonWithType:UIButtonTypeCustom];
+         btnTel.frame=CGRectMake(100, 150, 118, 35);
+        //[btnTel setTitle:@"呼叫" forState:UIControlStateNormal];
+        [btnTel setImage:[UIImage imageNamed:@"hotWireCall.png"] forState:UIControlStateNormal];
+        [btnTel setImage:[UIImage imageNamed:@"hotWireCall_down.png"] forState:UIControlStateHighlighted];
+        [btnTel addTarget:self action:@selector(btnTelClick) forControlEvents:UIControlEventTouchUpInside];
+        [self.view addSubview:btnTel];
+
+    }
+    else
+    {
+        UILabel *lbTel=[[UILabel alloc]initWithFrame:CGRectMake(300, 100, 80, 25)];
+        lbTel.text=@"客服热线:";
+        lbTel.backgroundColor=[UIColor clearColor];
+        [self.view addSubview:lbTel];
+        
+        UILabel *lbTelNum=[[UILabel alloc]initWithFrame:CGRectMake(400, 100, 200, 25)];
+        lbTelNum.text=@"400-830-8001";
+        lbTelNum.textColor=[UIColor blackColor];
+        lbTelNum.backgroundColor=[UIColor clearColor];
+        [self.view addSubview:lbTelNum];
+        
+        
+        UIButton *btnTel=[UIButton buttonWithType:UIButtonTypeCustom];
+        btnTel.frame=CGRectMake(330, 150, 118, 35);
+        //[btnTel setTitle:@"呼叫" forState:UIControlStateNormal];
+        [btnTel setImage:[UIImage imageNamed:@"hotWireCall.png"] forState:UIControlStateNormal];
+        [btnTel setImage:[UIImage imageNamed:@"hotWireCall_down.png"] forState:UIControlStateHighlighted];
+        [btnTel addTarget:self action:@selector(btnTelClick) forControlEvents:UIControlEventTouchUpInside];
+        [self.view addSubview:btnTel];
+
+    }
+    
+}
+
+-(void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+    ((UILabel*)[self.navigationController.navigationBar viewWithTag:99]).text = @"客服热线";
+    if ([[[NSUserDefaults standardUserDefaults] objectForKey:@"skinSelect"] isEqualToString:@"0"]) {
+        [self.view setBackgroundColor:[UIColor colorWithPatternImage:[UIImage imageNamed:@"background.png"]]];
+    }else if([[[NSUserDefaults standardUserDefaults] objectForKey:@"skinSelect"] isEqualToString:@"1"]){
+        [self.view setBackgroundColor:[UIColor colorWithPatternImage:[UIImage imageNamed:@"640X960背景"]]];
+    }else if ([[[NSUserDefaults standardUserDefaults] objectForKey:@"skinSelect"] isEqualToString:@"2"]){
+        [self.view setBackgroundColor:[UIColor colorWithPatternImage:[UIImage imageNamed:@"640X960背景2"]]];
+    }else {
+        [self.view setBackgroundColor:[UIColor colorWithPatternImage:[UIImage imageNamed:@"640X960背景3"]]];
+    }
+}
+
+- (void)btnTelClick
+{
+    NSURL *url = [NSURL URLWithString:@"tel://4008308001"];
+    
+    if ([[UIDevice currentDevice] userInterfaceIdiom]==UIUserInterfaceIdiomPad||TARGET_IPHONE_SIMULATOR || ![[UIApplication sharedApplication] canOpenURL:url])
+    {
+        UIAlertView *alert=[[UIAlertView alloc]initWithTitle:@"提示" message:@"当前设备不支持电话功能" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+        [alert show];
+    }
+    else
+    {
+        [[UIApplication sharedApplication] openURL:url];
+    }
+}
+- (void)didReceiveMemoryWarning
+{
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+
+@end

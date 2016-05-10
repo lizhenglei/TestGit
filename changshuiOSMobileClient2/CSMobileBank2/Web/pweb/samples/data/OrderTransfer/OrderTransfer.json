@@ -1,0 +1,14 @@
+[
+	{
+		"transName":"行内转账"
+	},
+	{
+		"transName":"银联"
+	},
+	{
+		"transName":"跨行快速"
+	},
+	{
+		"transName":"跨行实时"
+	}
+]

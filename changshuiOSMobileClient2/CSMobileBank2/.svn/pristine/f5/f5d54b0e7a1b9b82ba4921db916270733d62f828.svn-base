@@ -1,0 +1,11 @@
+{
+	"List":[
+		{
+			"NormalPayeeBankNo":"1234",
+			"NormalPayeeBankName":"中国银行北京市朝阳区三里屯支行"
+		},{
+			"NormalPayeeBankNo":"1233",
+			"NormalPayeeBankName":"交通银行辽宁市刘家沟子支行"
+		}
+	]
+}

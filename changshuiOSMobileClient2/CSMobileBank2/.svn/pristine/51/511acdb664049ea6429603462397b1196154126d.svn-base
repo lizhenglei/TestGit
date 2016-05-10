@@ -1,0 +1,131 @@
+<div v-view-setup="updatePayeeInfoCtrl" v-init="init()">
+	<div v-page v-transition="native">
+		<div class="bg_box">
+			<div class="box_cont">
+				<div class="zz_cont">
+				      <ul>
+							<li>
+								<em>收款人姓名：</em>
+								<i>
+									<input type="text" placeholder="请输入收款人姓名" name="payeeName"  v-model="payeeName" class="y_srk">
+								</i>
+							</li>
+							<li>
+								<em>别名：</em>
+								<i>
+									<input type="text" placeholder="请输入账号别名" name="AcAlias" v-model="AcAlias" class="y_srk" maxlength="10">
+								</i>
+							</li>
+							<li>
+								<em>收款人账号：</em>
+								<i>
+									<input type="text" placeholder="请输入收款人账号"name="payeeAcNo" v-model="payeeAcNo" ui-num='{"maxlength":22,"hasDot":false,"tip":"收款人账号"}' class="y_srk">
+								</i>
+							</li>
+							<li v-show="transType==6">
+								<em>收款银行：</em>
+								<i>
+									<input type="text" name="payeeBankName" placeholder="请查询收款银行" v-model="payeeBankName" class="y_srk" readOnly>
+									<span v-click="queryPayeeBank()"><img src="images/ss_icon.png" /></span>
+								</i>
+							</li>
+							<li v-show="transType==1">
+								<em>收款开户行：</em>
+								<i>
+									<input type="text" placeholder="请查询收款开户行" name="payeeKBankName" v-model="payeeKBankName" class="y_srk" readOnly>
+									<span v-click="queryKHbank()"><img src="images/ss_icon.png" /></span>
+								</i>
+							</li>
+							
+					 </ul>
+					<div>
+			     		<input v-show="transType==6" v-disabled="!payeeName||!payeeAcNo||!payeeBankName" type="submit"  class="button_1" name="Submit" value="确认" v-click="savePayee()">
+			     		<input v-show="transType==1" v-disabled="!payeeName||!payeeAcNo||!payeeKBankName" type="submit"  class="button_1" name="Submit" value="确认" v-click="savePayee()">
+			     		<input v-show="transType==0" v-disabled="!payeeName||!payeeAcNo" type="submit"  class="button_1" name="Submit" value="确认" v-click="savePayee()">
+			     		<input v-show="transType==5" v-disabled="!payeeName||!payeeAcNo" type="submit"  class="button_1" name="Submit" value="确认" v-click="savePayee()">
+			     	</div>
+			    </div>
+			</div>
+		</div>
+	</div>
+</div>
+<script>
+updatePayeeInfoCtrl.$inject = ["$scope","$remote","$targets","$context"];
+function updatePayeeInfoCtrl($scope,$remote,$targets,$context){
+	$scope.init=function(){
+		$scope.updatePayee=$context.getJson().updatePayee;
+		$scope.rBank=$context.getJson().selectedpayeebank;
+		$scope.rkBank=$context.getJson().selectedKHbank;
+		
+		$scope.payeeName=$scope.updatePayee.PayeeAcName;
+		$scope.AcAlias=$scope.updatePayee.AcAlias;
+		$scope.payeeAcNo=$scope.updatePayee.PayeeAcNo;
+		$scope.transType=$scope.updatePayee.TransType;//跨行类交易缺少此字段
+		
+		//判断是否选中收款银行
+		if($scope.rBank){
+			$scope.payeeBankName=$scope.rBank.PayeeBankName;
+			$scope.payeeBankNo=$scope.rBank.EBankNo;		
+		}else if($scope.updatePayee){
+			$scope.payeeBankName=$scope.updatePayee.QuickPayeeBankName;
+			$scope.payeeBankNo=$scope.updatePayee.QuickPayeeBankNo;
+		}
+		//判断是否选中收款开户行
+		if($scope.rkBank){
+			$scope.payeeKBankName=$scope.rkBank.BankName;
+			$scope.payeeKBankNo=$scope.rkBank.BankNo;
+		}else if($scope.updatePayee){
+			$scope.payeeKBankName=$scope.updatePayee.NormalPayeeBankName;
+			$scope.payeeKBankNo=$scope.updatePayee.NormalPayeeBankNo;
+		}
+		
+		
+	}
+	
+	//查询开户行
+	$scope.queryKHbank=function(){
+		$context.setJson({"comeFrom":"updatePayeeInfo"});
+		$scope.goto("updatePayeeInfo","KHbank");
+	}
+	
+	//查询收款银行
+	$scope.queryPayeeBank=function(){
+		$context.setJson({"comeFrom":"updatePayeeInfo"});
+		$scope.goto("updatePayeeInfo","PayeeBank");
+	}
+	
+	//保存收款人信息
+	$scope.savePayee=function(){
+		if($scope.transType==6){
+			$scope.payeeSubBankName = $scope.payeeBankName;
+			$scope.payeeSubBankNo = $scope.payeeBankNo;
+		}else if ($scope.transType == 1){
+			$scope.payeeSubBankName = $scope.payeeKBankName;
+			$scope.payeeSubBankNo = $scope.payeeKBankNo;
+		}
+		else if ($scope.transType == 5 || $scope.transType == 0){//信用卡 行内
+			$scope.payeeSubBankName = "本行";
+			$scope.payeeSubBankNo = "";
+		}
+		var params={
+				"PayeeAcNo":$scope.payeeAcNo,
+				"PayeeAcName":$scope.payeeName,
+				"PayeeBankName":$scope.payeeSubBankName,
+				"PayeeBankNo":$scope.payeeSubBankNo,
+				"TransType":$scope.updatePayee.TransType,
+				"OldTransType":$scope.updatePayee.TransType,
+				"HostCustNo":$scope.updatePayee.HostCustNo,
+				"AcAlias":$scope.AcAlias,
+				"AcNo":$scope.updatePayee.PayeeAcNo,
+				"OperationType":2
+		}
+		$remote.post("/pmobile/PayeeBookManage.do",params,function(data){
+				if(data._RejCode=="000000"){
+					$context.clear();
+					$context.setJson({"transType":$scope.transType});
+					$scope.goto("PPayeeBookMgmt");
+				}
+		});
+	}
+}
+</script>

@@ -1,0 +1,50 @@
+<div v-view-setup="PRedCtrl" v-init="init()">
+	<div v-page v-transition="native" title="我要提款">
+		<div class="zz_cont bor_1" style="border:0px">
+		<div>发红包</div>
+				<div class="zz_cont">
+					<input type="button" class="button_1" name="button" value="群发红包"
+						v-click="gotopub()">
+				</div>
+				<div class="zz_cont">
+					<input type="button" class="button_1" name="button" value="个人红包"
+						v-click="gotoper()">
+				</div>
+				<div>查红包</div>
+				<div class="zz_cont">
+					<input type="button" class="button_1" name="button" value="我的红包"
+						v-click="tocheck()">
+				</div>
+		</div>
+	</div>
+</div>
+<script>
+PRedCtrl.$inject = [ "$scope", "$remote", "$targets", "$filter",
+			"$context" ];
+	function PRedCtrl($scope, $remote, $targets, $filter, $context) {
+		$scope.init = function() {
+			
+		}
+		$scope.gotoper=function(){
+			$scope.goto("PRed","PPer");
+		}
+		$scope.gotopub=function(){
+			$scope.goto("PRed","PPub");
+		}
+		$scope.tocheck=function(){
+			$scope.goto("PRed","RedCheck");
+			var params={
+					"type":"",
+					"state":"",
+					"beginDate":"20160125",
+					"endDate":"20160128",
+					"turnPageShowNum":"10",
+					"turnPageBeginPos":"1"
+					
+			}
+			$remote.post("/pmobile/queryHBList.do",params,function(data){
+				console.log(data);
+			});
+		}
+	}
+</script>

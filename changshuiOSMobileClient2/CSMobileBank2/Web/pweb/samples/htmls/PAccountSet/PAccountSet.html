@@ -1,0 +1,83 @@
+<div v-view-setup="PAccountSetCtrl" v-init="init()">
+	<div v-page>
+		<div class="bg_box">
+			<div class="box_cont">
+				<div class="zz_cont">
+				      <ul>
+							<li>
+								<em>当前主账户：</em>
+								<i style = "font-style : normal">{{mainCard}}</i>
+							</li>
+							<li v-show = "flag">
+								<em>账户：</em>
+								<i>
+									<select v-model=rCard name="rCard" v-options="ac.No for ac in noList" ></select>
+								</i>
+							</li>
+					 </ul>
+			    </div>
+			    
+				<div class="zz_cont" v-show = "flag">
+					<input type="button" class="button_1" name="button" value="设置"  v-click="toConfirm()">
+				</div>
+			    
+			</div>
+		</div>
+		<div class="zz_cont"><img src="images/ts.png" />
+		    <font class="tishi">
+				温馨提示</br>
+			</font>
+				&nbsp;&nbsp;主账户将作为手机号转账对应收款人账号。</br>
+			<div style="font-size:12px; line-height:16px; color:#929292;"> </div>
+	   </div>
+	</div>
+</div>
+<script>
+PAccountSetCtrl.$inject = ["$scope","$remote","$targets"];
+function PAccountSetCtrl($scope,$remote,$targets){
+	
+	//页面初始化
+	$scope.init=function(){
+		$remote.post("/pmobile/ActListQry.do",{},function(data){
+			$scope.acList=data.AcList;
+			$scope.noList=[];
+			
+			vx.forEach($scope.acList,function(item,index){
+				var noMainAcNo = {};
+				if(item.MainAccFlag == "1"){//主账户
+					$scope.mainCard=item.AcNo;
+				}
+				else if(item.MainAccFlag == "0"){
+					noMainAcNo.No=item.AcNo;
+					noMainAcNo.AcAlias=item.AcAlias;
+					$scope.noList.push(noMainAcNo);
+				}
+			});
+			
+			$scope.rCard = $scope.noList[0];
+			
+			if($scope.noList.length==0){
+				$scope.flag=false;
+				$scope.alert("当前只加挂一张借记卡，不能修改主账户");
+			}
+			else{
+				$scope.flag =true;
+			}
+		});
+	}
+	
+	
+	//跳转到确认页面
+	$scope.toConfirm=function(){
+		var params={
+				"AcNo":$scope.rCard.No
+			};
+		$remote.post("/pmobile/MainAcNoSet.do",params,function(data){
+			$scope.changeClientInfo(vx.toJson({"MainAcNo":$scope.rCard.No}));
+			$scope.alert("设置成功");
+			NativeCall.finishWeb();
+		});
+	}
+	
+}
+</script>

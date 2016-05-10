@@ -1,0 +1,452 @@
+//
+//  SplashScreenViewController.m
+//  MobileClient
+//
+//  Created by 张海亮 on 13-7-11.
+//  Copyright (c) 2013年 pro. All rights reserved.
+//
+
+#import "SplashScreenViewController.h"
+#import "FirstOpenViewController.h"
+#import "Context.h"
+#import "CSIIMenuViewController.h"
+#import "MobileBankSession.h"
+
+#import "DeviceInfo.h"
+
+#import "CommonFunc.h"
+
+static const char encodingTable[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+@interface SplashScreenViewController ()<MobileSessionDelegate>
+{
+    BOOL isFirstFinish;
+    NSTimer *loadingStrUpdateTimer;
+    UILabel *loadingStrLabel;
+    int loadingStrState;
+    UIActivityIndicatorView *indicatorView;
+    UIImageView*LogoView;
+    NSMutableArray*imageArray;
+    int count;
+    UIImageView*lastImg;
+    UIImageView *backImage;
+    UIImageView *backImage2;
+    NSDictionary *menuDic;
+}
+@end
+
+@implementation SplashScreenViewController
+@synthesize localStorageSplash;
+@synthesize movie;
+
+- (id)init
+{
+    self = [super init];
+    if (self)
+    {
+        // Custom initialization
+        self.view=[[UIView alloc]initWithFrame:[self getScreenBoundsForCurrentOrientation]];
+        self.view.autoresizesSubviews = YES;
+        self.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        self.view.backgroundColor = [UIColor clearColor];
+        //启动图片
+        count = 0;
+        menuDic = [[NSDictionary alloc]init];
+        backImage = [[UIImageView alloc] initWithFrame:self.view.frame];
+        backImage2 = [[UIImageView alloc] initWithFrame:self.view.frame];
+        backImage2.alpha = 0.1;
+
+        [self.view addSubview:backImage2];
+        if (IOS8_OR_LATER) {
+            backImage.image = [UIImage imageNamed:@"qiDong3"];
+        }else
+        {
+            backImage.image = [UIImage imageNamed:@"qiDong"];
+        }
+        [self.view addSubview:backImage];
+        
+//        [MobileBankSession sharedInstance].delegate = self;
+//        [[MobileBankSession sharedInstance]postToServer:@"StartPageQry.do" actionParams:nil method:@"POST"];
+        NSMutableDictionary*initDic = [[NSMutableDictionary alloc]init];
+        [initDic setObject:@"1" forKey:@"ClientType"];                         //0 安卓正式版   1 iOS正式版  2 安卓测试版 3 iOS体验版
+        
+        [initDic setObject:APP_VERSION_CODE forKey:@"VersionId"];               //
+        [initDic setObject:[DeviceInfo executablePathMD5] forKey:@"Signature"];
+        [initDic setObject:@"0" forKey:@"VersionType"];              //0正式版    1体验版
+        
+        NSString *ostype = [Context isArm64OrArm32];
+        
+        if ([ostype isEqualToString:@"64"]) {
+            [initDic setObject:@"64" forKey: @"OSType"];
+            NSLog(@"64");
+        }else{
+            [initDic setObject:@"" forKey: @"OSType"];
+            NSLog(@"32");
+        }
+        [MobileBankSession sharedInstance].delegate =self;
+        [[MobileBankSession sharedInstance] postToServer:@"SessionInit.do" actionParams:initDic method:@"POST"];
+
+        backImage.tag = 0;
+        
+
+//        NSString *filePath = [[MobileBankSession sharedInstance] getMarketData];
+//        NSLog(@"splash filePath=%@",filePath);
+//        NSURL *url = [NSURL fileURLWithPath:filePath];
+
+/* 禁止播放视频
+        NSURL *url = [NSURL fileURLWithPath:[[NSBundle mainBundle]pathForResource:@"iphone_loading"ofType:@"mp4"]];
+
+        self.movie=[[MPMoviePlayerController alloc]initWithContentURL:url];
+        
+        //很重要的一点是在头文件里已经把movie变为属性了，@property（nonamaic,strong），如果不写为属性就会黑屏，目前不知道为什么
+        [self.movie prepareToPlay];
+        self.movie.controlStyle=MPMovieControlStyleNone;
+        self.movie.shouldAutoplay=YES;
+        self.movie.fullscreen=YES;
+        self.movie.scalingMode=MPMovieScalingModeFill;
+        self.movie.view.frame=[self getScreenBoundsForCurrentOrientation];
+        self.movie.view.autoresizesSubviews = YES;
+        self.movie.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        self.movie.initialPlaybackTime=0;
+        self.movie.endPlaybackTime=3;
+
+        [self.view addSubview:self.movie.view];
+        [self.movie play];
+        //[self.view insertSubview:self.movie.view atIndex:1];
+        
+        [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(myMovieFinishedCallback:) name:MPMoviePlayerPlaybackDidFinishNotification object:movie];
+ */
+        
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(initDataFinsh:) name:@"APPInitDataFinish" object:nil];
+        
+        
+        loadingStrLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 100, (IPAD)?50:30)];
+        if (IPAD) {
+            loadingStrLabel.center = CGPointMake(self.view.frame.size.width/2+35, self.view.frame.size.height - 155);
+        }else{
+            loadingStrLabel.center = CGPointMake(self.view.frame.size.width/2+35, self.view.frame.size.height - 80);
+        }
+        
+        loadingStrLabel.backgroundColor = [UIColor clearColor];
+        loadingStrLabel.textAlignment = NSTextAlignmentLeft;
+        loadingStrLabel.text = @"加载中...";
+        loadingStrLabel.textColor = [UIColor lightGrayColor];
+        loadingStrLabel.font = [UIFont boldSystemFontOfSize:(IPAD)?22:14];
+        loadingStrState = 3;
+//        [self.view addSubview:loadingStrLabel];
+        
+        
+        indicatorView= [[UIActivityIndicatorView alloc] initWithFrame:CGRectMake(loadingStrLabel.frame.origin.x-((IPAD)?50:30)+35, loadingStrLabel.frame.origin.y-20, (IPAD)?50:30, (IPAD)?50:30)];
+        indicatorView.activityIndicatorViewStyle=UIActivityIndicatorViewStyleGray;
+        indicatorView.hidesWhenStopped=YES;
+//        [self.view addSubview:indicatorView];
+        
+        loadingStrUpdateTimer = [NSTimer scheduledTimerWithTimeInterval:1.0f target:self
+                                                         selector:@selector(handleLoadingStrUpdate) userInfo:nil repeats:YES];
+    }
+    return self;
+}
+- (NSData *)dataWithBase64EncodedString:(NSString *)string
+{
+    //    if (string == nil)
+    //        [NSException raise:NSInvalidArgumentException format:nil];
+    if ([string length] == 0)
+        return [NSData data];
+    
+    static char *decodingTable = NULL;
+    if (decodingTable == NULL)
+    {
+        decodingTable = malloc(256);
+        if (decodingTable == NULL)
+            return nil;
+        memset(decodingTable, CHAR_MAX, 256);
+        NSUInteger i;
+        for (i = 0; i < 64; i++)
+            decodingTable[(short)encodingTable[i]] = i;
+    }
+    
+    const char *characters = [string cStringUsingEncoding:NSASCIIStringEncoding];
+    if (characters == NULL)     //  Not an ASCII string!
+        return nil;
+    char *bytes = malloc((([string length] + 3) / 4) * 3);
+    if (bytes == NULL)
+        return nil;
+    NSUInteger length = 0;
+    
+    NSUInteger i = 0;
+    while (YES)
+    {
+        char buffer[4];
+        short bufferLength;
+        for (bufferLength = 0; bufferLength < 4; i++)
+        {
+            if (characters[i] == '\0')
+                break;
+            if (isspace(characters[i]) || characters[i] == '=')
+                continue;
+            buffer[bufferLength] = decodingTable[(short)characters[i]];
+            if (buffer[bufferLength++] == CHAR_MAX)      //  Illegal character!
+            {
+                free(bytes);
+                return nil;
+            }
+        }
+        
+        if (bufferLength == 0)
+            break;
+        if (bufferLength == 1)      //  At least two characters are needed to produce one byte!
+        {
+            free(bytes);
+            return nil;
+        }
+        
+        //  Decode the characters in the buffer to bytes.
+        bytes[length++] = (buffer[0] << 2) | (buffer[1] >> 4);
+        if (bufferLength > 2)
+            bytes[length++] = (buffer[1] << 4) | (buffer[2] >> 2);
+        if (bufferLength > 3)
+            bytes[length++] = (buffer[2] << 6) | buffer[3];
+    }
+    
+    bytes = realloc(bytes, length);
+    return [NSData dataWithBytesNoCopy:bytes length:length];
+}
+
+-(void)getReturnData:(id)data WithActionName:(NSString *)action
+{
+    if ([action isEqualToString:@"SessionInit.do"]) {
+        if ([[data objectForKey:@"_RejCode"]isEqualToString:@"000000"]) {
+            menuDic = [data objectForKey:@"DisplayList"];
+            
+            if (([Context getNSUserDefaultskeyStr:@"isFirstOpenApp"])) {
+            NSMutableDictionary *ddic = [data objectForKey:@"StartPageMap"];
+            [Context setNSUserDefaults:[NSString stringWithFormat:@"%@",[ddic objectForKey:@"ImageName"]] keyStr:@"startNameStr"];
+            if ([[ddic objectForKey:@"IsStart"]isEqualToString:@"Y"]) {
+            NSData *dataPage = [self dataWithBase64EncodedString:[[NSUserDefaults standardUserDefaults] objectForKey:@"haveStartPage"]];
+                if ([dataPage length]==0) {
+                    [[MobileBankSession sharedInstance]postToServerStream:@"StartPageLoad.do" actionParams:nil];
+                }else{
+                    if ([[ddic objectForKey:@"ImageName"]isEqualToString:[Context getNSUserDefaultskeyStr:@"startNameStr"]]) {
+                        backImage2.image = [UIImage imageWithData:dataPage];
+                        [UIView beginAnimations:nil context:NULL];
+                        [UIView setAnimationDuration:0.8];
+                        backImage2.alpha = 1;
+                        [UIView commitAnimations];
+                        backImage.hidden = YES;
+                        
+                        [self createBtnSkip];
+                    [NSTimer scheduledTimerWithTimeInterval:5 target:self selector:@selector(pushBackImageView) userInfo:nil repeats:NO];
+
+                    }else{
+                        [[MobileBankSession sharedInstance]postToServerStream:@"StartPageLoad.do" actionParams:nil];
+                    }
+                
+//                [NSTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(pushBackImageView) userInfo:nil repeats:NO];
+                }
+            }
+          else{
+            [NSTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(pushBackImageView) userInfo:nil repeats:NO];
+            }
+        }
+        else{
+                [NSTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(pushBackImageView) userInfo:nil repeats:NO];
+            }
+        }
+    }
+    if ([action isEqualToString:@"StartPageLoad.do"]) {
+        if ([data length]==0) {
+            DebugLog(@"没有自定义的图片");
+        }else{
+            
+            NSString *string = [CommonFunc base64EncodedStringFrom:data];
+            [[NSUserDefaults standardUserDefaults]setObject:string forKey:@"haveStartPage"];
+            [[NSUserDefaults standardUserDefaults]synchronize];
+            
+            backImage2.image = [UIImage imageWithData:data];
+            [UIView beginAnimations:nil context:NULL];
+            [UIView setAnimationDuration:0.8];
+            backImage2.alpha = 1;
+            [UIView commitAnimations];
+            backImage.hidden = YES;
+            [self createBtnSkip];
+            [NSTimer scheduledTimerWithTimeInterval:5 target:self selector:@selector(pushBackImageView) userInfo:nil repeats:NO];
+
+        }
+    }
+
+}
+-(void)createBtnSkip
+{
+    UIButton *skipBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+    skipBtn.frame = CGRectMake(self.view.frame.size.width-80, 30, 40, 30);
+    skipBtn.backgroundColor = [UIColor clearColor];
+    [skipBtn setTitle:@"跳过" forState:UIControlStateNormal];
+    [skipBtn setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+    [skipBtn addTarget:self action:@selector(pushBackImageView) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:skipBtn];
+}
+-(void)pushBackImageView
+{
+    [MobileBankSession sharedInstance].delegate = [CSIIMenuViewController sharedInstance];
+    [[MobileBankSession sharedInstance].delegate getReturnData:menuDic WithActionName:@"SessionInit.do"];
+    [[MobileBankSession sharedInstance] sessionInit];
+    
+}
+-(void)handleLoadingStrUpdate
+{
+    if(1 == loadingStrState){
+        loadingStrState = 2;
+        loadingStrLabel.text = @"加载中..";
+    }
+    else if(2 == loadingStrState){
+        loadingStrState = 3;
+        loadingStrLabel.text = @"加载中...";
+    }
+    else if(3 == loadingStrState){
+        loadingStrState = 1;
+        loadingStrLabel.text = @"加载中.";
+    }
+}
+
+- (void)onCloseSplashScreen:(NSNotification *)note
+{//网页加载完成,收到的通知
+    [self.movie.view removeFromSuperview];
+    [self performSelectorOnMainThread:@selector(switchView) withObject:nil waitUntilDone:NO];
+}
+
+- (void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:NO];
+    [indicatorView startAnimating];
+}
+
+-(void)viewDidAppear:(BOOL)animated{
+    [super viewDidAppear:animated];
+     [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:NO];
+}
+
+-(void)viewWillDisappear:(BOOL)animated
+{
+    [super viewWillDisappear:animated];
+    [loadingStrUpdateTimer invalidate];
+    [indicatorView stopAnimating];
+}
+
+-(void)myMovieFinishedCallback:(NSNotification *)noto
+{
+    //动画加载完,收到消息
+    MPMoviePlayerController *theMovie=[noto object];
+    [theMovie.view removeFromSuperview];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:MPMoviePlayerPlaybackDidFinishNotification object:theMovie];
+    [self performSelectorOnMainThread:@selector(switchView) withObject:nil waitUntilDone:NO];
+}
+
+-(void)initDataFinsh:(NSNotification *)noto
+{
+    if (![Context getNSUserDefaultskeyStr:@"isFirstOpenApp"]) {    //首次打开app,导航图片
+        FirstOpenViewController*firstopenController = [[FirstOpenViewController alloc] init];
+        [self.navigationController pushViewController:firstopenController animated:NO];
+    }else
+    [self.navigationController popToRootViewControllerAnimated:NO];
+//    currentControllers = self.navigationController.viewControllers;
+}
+
+- (void)switchView
+{
+    if (!isFirstFinish)
+    {
+        isFirstFinish = YES;
+        [movie.view removeFromSuperview];
+        return;
+    }
+    [self.navigationController popToRootViewControllerAnimated:NO];
+}
+
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    
+    
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 70000
+    if (IOS7_OR_LATER)
+    {
+        if ([self respondsToSelector:@selector(edgesForExtendedLayout)])
+            self.edgesForExtendedLayout = UIRectEdgeNone;//表示视图是否覆盖到四周的区域，默认是UIRectEdgeAll，即上下左右四个方向都会覆盖
+        self.extendedLayoutIncludesOpaqueBars = NO;
+        self.modalPresentationCapturesStatusBarAppearance = NO;
+        self.automaticallyAdjustsScrollViewInsets = NO;//禁止scroll view的内容自动调整
+    }
+#endif
+}
+
+- (void)viewDidUnload
+{
+    [super viewDidUnload];
+}
+
+- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
+{
+    if(UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone)
+    {
+        return (interfaceOrientation == UIInterfaceOrientationPortrait);
+    }
+    else
+    {
+        return UIInterfaceOrientationIsLandscape(interfaceOrientation);
+    }
+}
+
+-(CGRect)getScreenBoundsForCurrentOrientation
+{
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 70000
+    if (IOS7_OR_LATER)
+    {
+        if ([Context iPhone5])
+        {
+            CGRect rect=CGRectMake(0,0,320,568);
+            return rect;
+        }
+        else if(IPHONE)
+        {
+            CGRect rect=CGRectMake(0,0,320,480);
+            return rect;
+        }
+        else
+        {
+            CGRect rect=CGRectMake(0,0,768,1024);
+            return rect;
+        }
+ 
+    }
+#endif
+    
+    if ([Context iPhone5])
+    {
+        CGRect rect=CGRectMake(0,0,320,548);
+        return rect;
+    }
+    else if(IPHONE)
+    {
+        CGRect rect=CGRectMake(0,0,320,460);
+        return rect;
+    }
+    else
+    {
+        CGRect rect=CGRectMake(0,0,768,1004);
+        return rect;
+    }
+    
+}
+
+- (BOOL) shouldAutorotate
+{
+    return YES;
+}
+
+-(NSUInteger)supportedInterfaceOrientations
+{
+    return UIInterfaceOrientationMaskAll;
+}
+
+@end

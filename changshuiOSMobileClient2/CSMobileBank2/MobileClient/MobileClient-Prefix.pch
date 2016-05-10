@@ -1,0 +1,69 @@
+//
+// Prefix header for all source files of the 'MobileClient' target in the 'MobileClient' project
+//
+
+#import <Availability.h>
+
+#ifndef __IPHONE_4_0
+#warning "This project uses features only available in iOS SDK 4.0 and later."
+#endif
+
+#ifdef __OBJC__
+    #import <UIKit/UIKit.h>
+    #import <Foundation/Foundation.h>
+#endif
+#import <QuartzCore/QuartzCore.h>
+
+//#import "MobileBankSession.h"
+
+#import "GlobalVariable.h"
+
+#import "Context.h"
+
+//#import "PowerEnterUITextField.h"
+//#import "ThemeManager.h"
+
+#define kAddedMenu @"AddedMenu"
+
+
+#define BGImageViewFrame CGRectMake(0, -30, [[UIScreen mainScreen] bounds].size.width, [[UIScreen mainScreen] bounds].size.height+10)
+
+#define IMAGE(image) [UIImage imageNamed:image]
+
+#define SET_CELL_TEXTLABEL_FONT cell.textLabel.font = [UIFont systemFontOfSize:16];
+#define SET_CELL_TEXTLABEL_FONT_IPAD cell.textLabel.font = [UIFont systemFontOfSize:20];
+
+//底部按钮-宽-高-间距
+#define MAIN_MENU_BUTTON_WIDTH 50
+#define MAIN_MENU_BUTTON_HEIGHT 57.5
+#define MAIN_MENU_BUTTON_SPACE (self.view.bounds.size.width-MAIN_MENU_BUTTON_WIDTH*5)/6
+//扫一扫高度-宽度
+#define MAIN_MENU_CENTER_HEIGHT 72
+#define MAIN_MENU_CENTER_WIDTH 50
+
+//底部Label-宽-高-间距
+#define MAIN_MENU_LABEL_WIDTH 64
+#define MAIN_MENU_LABEL_HEIGHT 20
+#define MAIN_MENU_LABEL_SPACE 0
+
+#define ScreenHeight [UIScreen mainScreen].bounds.size.height
+#define ScreenWidth [UIScreen mainScreen].bounds.size.width
+
+#define IPad_Bottom_Left_Space (ScreenWidth-320)/2 // 底部首按钮距离左边长度
+
+#define CELL_START       @"cell_start"
+#define CELL_MIDDLE      @"cell_middle"
+#define CELL_END         @"cell_end"
+#define CELL_SINGLE      @"cell_single"
+
+#define CELL_START_IPAD       @"cell_start_ipad"
+#define CELL_MIDDLE_IPAD      @"cell_middle_ipad"
+#define CELL_END_IPAD         @"cell_end_ipad"
+#define CELL_SINGLE_IPAD      @"cell_single_ipad"
+
+#define CONFIRM_BTN           @"BtnBG"
+#define CONFIRM_BTN_SELECTED  @"BtnBG"
+
+#define CONFIRM_BTN_IPAD           @"确认按钮默认_ipad"
+#define CONFIRM_BTN_SELECTED_IPAD  @"确认按钮选中_ipad"
+

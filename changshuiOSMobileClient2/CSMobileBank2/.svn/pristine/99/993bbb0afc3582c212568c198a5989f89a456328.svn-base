@@ -1,0 +1,175 @@
+<div v-view-setup="BillPostModifyCtrl" v-init="init()">
+	<!-- 信用卡账单方式变更 -->
+	<div class="bg_box" v-page v-transition="native" title="我的信用卡">
+		<div class="box_cont">
+			<div class="zz_cont">
+					<ul>
+						<li>
+							<em>账单方式：</em>
+							<i>
+								<div class="radio_cont2" style="margin:0">
+									<span class="radio" style="margin:0;line-height:30px"><input type="checkbox" v-model="BillType1" name="BillType1" >&nbsp;纸质</span>
+									<span class="radio" style="margin:0;line-height:30px"><input type="checkbox" v-model="BillType2" name="BillType2" class="creditcard_checkbox">&nbsp;电子</span>
+								</div>
+							</i>
+						</li>
+						<li v-show="BillType1">
+							<em>寄送地址类型：</em>
+							<i>
+								<div class="radio_cont2" style="margin:0">
+									<span class="radio" style="margin:0;line-height:30px"><input type="radio" v-model="postAddrType" name="postAddrType" value="B" v-click="selected()"  class="creditcard_checkbox">&nbsp;单位</span>
+									<span class="radio" style="margin:0;line-height:30px"><input type="radio" v-model="postAddrType" name="postAddrType" value="H" v-click="selected()" class="creditcard_checkbox">&nbsp;住宅</span>
+								</div>
+							</i>
+						</li>
+			            <li v-show="BillType1">
+			            	<em>寄送地址：</em>
+			            	<i>
+			            		{{addr}}
+			            	</i>
+			            </li>
+			             <li v-show="BillType2">
+			            	<em>Email：</em>
+			            	<i>
+			            		<input type="text" placeholder="请输入电子邮箱" name="email" v-model="email" class="y_srk" required/>
+			            	</i>
+			            </li>
+					</ul>
+			</div>
+		    
+		    <div class="zz_cont">
+		     		<input type="button"  class="button_1" name="button" value="确认" v-disabled="(!BillType1)&&(!BillType2)" v-click="toResult()">
+		    </div>
+		    
+		</div>
+		<div class="zz_cont"><img src="images/ts.png" />
+		    <font class="tishi">
+				温馨提示</br>
+			</font>
+				&nbsp;&nbsp;如果选择了电子账单、请确认已设置Email地址。</br> 
+			<div style="font-size:12px; line-height:16px; color:#929292;"> </div>
+	   </div>
+	</div>
+</div>
+<script>
+BillPostModifyCtrl.$inject = ["$scope","$remote","$targets","$context"];
+function BillPostModifyCtrl($scope,$remote,$targets,$context){
+	$scope.init=function(){
+		$scope.type=$context.getJson().types;
+		$scope.eml=$context.getJson().eml;
+		$scope.credit=$context.getJson().CreditNO;
+		if($scope.type=="LT"){
+			$scope.BillType1=true;
+			$scope.BillType2=undefined;
+		}else if($scope.type=="EM"){
+			$scope.BillType1=undefined;
+			$scope.BillType2=true;
+		}else if($scope.type=="LE"){
+			$scope.BillType1=true;
+			$scope.BillType2=true;
+		}
+		//查询该信用卡账单寄送方式
+		$remote.post("/pmobile/BillSendMethodMgmt.do",{"CreditNo":$scope.credit},function(data){
+			//帐单地址	
+			if(data.add1_Type=='H'){
+				$scope.homeAddr=data.add1_1+data.add1_2+data.add1_3+data.add1_4+data.add1_5;
+			}else if(data.add1_Type=='B'){
+				$scope.cpyAddr=data.add1_1+data.add1_2+data.add1_3+data.add1_4+data.add1_5;
+			}
+			//地址
+			if(data.add2_Type=='H'){
+				$scope.homeAddr=data.add2_1+data.add2_2+data.add2_3+data.add2_4+data.add2_5;
+			}else if(data.add2_Type=='B'){
+				$scope.cpyAddr=data.add2_1+data.add2_2+data.add2_3+data.add2_4+data.add2_5;
+			}
+			//当前设置的账单地址标志 H:家庭地址 B:单位地址 F户籍嗲至: W:房产地址
+			$scope.postAddrType="B";
+			$scope.addr=$scope.cpyAddr;
+			if($scope.type=="B"){
+				$scope.postAddrType="B";
+				
+			}else if(data.stsMail=="H"){
+				$scope.postAddrType="H";
+				$scope.addr=$scope.homeAddr;
+			}
+		});
+		//信用卡客户信息查询预留手机号、邮箱
+		$remote.post("/pmobile/CreditcardCustInfo.do",{"CreditNo":$scope.credit},function(data){
+			$scope.mobilePhone=data.mobileNo;
+			$scope.email=data.email;
+		});
+	}
+	//寄送地址类型切换
+	$scope.selected=function(){
+		$scope.addr=$scope.postAddrType=="B"?$scope.cpyAddr:$scope.homeAddr;
+	}
+	//账单方式中修改手机号和邮箱信息
+	$scope.BillStyleSelected=function(){
+		if($scope.BillType1&&!$scope.BillType2){//多选只选中纸质账单，并且没有选中电子账单
+			$scope.setFlag=0;
+			//设置账单寄送地址
+			$scope.BillPostAddrSet();
+		}else if($scope.BillType2){//多选选中电子账单
+				//发送交易前，获取防重复提交码
+				$remote.post("/pmobile/getNewTokenName.do?r"+Math.random(),{},function(data){
+					var tokenName=data._tokenName;
+					//信用卡客户信息维护：手机号和邮箱
+					var params={
+							"CreditNo":$scope.credit,
+							"mobileNo":$scope.mobilePhone,
+							"email":$scope.email,
+							"_tokenName":tokenName
+					}
+					$remote.post("/pmobile/CreditcardCifInfoMgmt.do",params,function(data){
+						//设置账单寄送地址
+						if($scope.BillType1){//多选还选中了纸质账单
+							$scope.setFlag=3;
+							$scope.BillPostAddrSet();
+						}else{//多选未选中纸质账单
+							$scope.setFlag=1;
+							$scope.BillPostSet();
+						}
+					});
+				});
+		}
+	}
+	//账单寄送地址设置
+	$scope.BillPostAddrSet=function(){
+		//发送交易前，获取防重复提交码
+		$remote.post("/pmobile/getNewTokenName.do?r"+Math.random(),{},function(data){
+			var tokenName=data._tokenName;
+			var params={
+					"CreditNo":$scope.credit,
+					"stsMail":$scope.postAddrType,//H:家庭地址 B:单位地址 F户籍嗲至: W:房产地址
+					"_tokenName":tokenName
+			}
+			$remote.post("/pmobile/BillSendAddSet.do",params,function(data){
+				//上送账单方式设置数据
+				$scope.BillPostSet();
+			});
+		});
+	}
+	//上送账单方式设置数据
+	$scope.BillPostSet=function(){
+		//发送交易前，获取防重复提交码
+		$remote.post("/pmobile/getNewTokenName.do?r"+Math.random(),{},function(data){
+			var tokenName=data._tokenName;
+			var params={
+					"CreditNo":$scope.credit,
+					"serviceContent":$scope.setFlag,//0:纸质账单  1:电子账单 3:同时设置
+					"_tokenName":tokenName
+			};
+			$remote.post("/pmobile/CreditcardSendSet.do",params,function(data){
+				NativeCall.toast("账单寄送方式设置操作成功！");
+				NativeCall.goBack();
+			});
+		});
+	}
+	$scope.toResult=function(){
+		//选择账单方式
+		$scope.BillStyleSelected();
+		$context.setJson({"faddr":$scope.addr});
+	}
+	
+}
+</script>

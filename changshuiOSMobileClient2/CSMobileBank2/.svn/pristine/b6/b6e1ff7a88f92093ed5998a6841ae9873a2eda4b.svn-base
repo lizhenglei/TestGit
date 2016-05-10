@@ -1,0 +1,53 @@
+<div v-view-setup="bigmoneyCtrl" v-init="init()">
+	<div v-page v-transition="native" title="大额存单">
+		<div class="zz_cont bor_1" style="border:0px">
+			<ul style="position: relative">
+				<li><em
+					style="width: 40%; line-height: 30px; text-align: center">持有账号：</em>
+					<i style="width: 50%; line-height: 30px;"> {{alist.accountNo}}
+				</i></li>
+				<li><em
+					style="width: 40%; line-height: 30px; text-align: center">产品名称：</em>
+					<i style="width: 50%; line-height: 30px;">
+						{{alist.PrdctNm}} </i></li>
+				<li><em
+					style="width: 40%; line-height: 30px; text-align: center">产品代码：</em>
+					<i style="width: 50%; line-height: 30px;">
+						{{alist.PrdctCd}}</i></li>
+						<li><em
+					style="width: 40%; line-height: 30px; text-align: center">起息日：</em>
+					<i style="width: 50%; line-height: 30px;">
+						{{alist.beginDate}}</i></li>
+						<li><em
+					style="width: 40%; line-height: 30px; text-align: center">到期日：</em>
+					<i style="width: 50%; line-height: 30px;">
+						{{alist.endDate}}</i></li>
+						<li><em
+					style="width: 40%; line-height: 30px; text-align: center">金额：</em>
+					<i style="width: 50%; line-height: 30px;">
+						{{alist.balance|number:2}}</i></li>
+						<li><em
+					style="width: 40%; line-height: 30px; text-align: center">存期：</em>
+					<i style="width: 50%; line-height: 30px;">
+						{{alist.DepTrm}}</i></li>
+						<li><em
+					style="width: 40%; line-height: 30px; text-align: center">开户网点：</em>
+					<i style="width: 50%; line-height: 30px;">
+						{{alist.openNode}}</i></li>
+			</ul>
+		</div>
+	</div>
+</div>
+<script>
+bigmoneyCtrl.$inject = [ "$scope", "$remote", "$targets", "$filter",
+			"$context" ];
+	function bigmoneyCtrl($scope, $remote, $targets, $filter, $context) {
+		$scope.init = function() {
+			$scope.alist=$context.getJson().bigAcno;
+			$scope.alist.DepTrm=$scope.alist.DepTrm.replace(/M/g,"个月");
+			$scope.alist.DepTrm=$scope.alist.DepTrm.replace(/Y/g,"年");
+			$scope.alist.DepTrm=$scope.alist.DepTrm.replace(/D/g,"天");
+			console.log($scope.alist.DepTrm)
+		}
+	}
+</script>

@@ -1,0 +1,58 @@
+<div v-view-setup="PCardWalletCtrl" v-init="init()">
+	<div v-page>
+		 <div v-show="pcouponList.length==0" class="mingce">
+			      <ul>
+						<li class="center">没有可使用优惠券</li>
+				  </ul>
+		 </div>
+		<div v-repeat="item in pcouponList" >
+			<div class="yhj" v-show="item.IsUsed==1">
+				<div class="yhj_top">
+<!-- 					<div class="fleft left f98973 fontsize3"> {{item.BussName}}</div> -->
+<!-- 					<div ></div> -->
+					<div class="left f98973" style="font-size:28px;float:left;width:40%">{{item.BussName}}</div>
+					<div class="right" style="float:right;width:60%"><font class="f98973 fontsize4">{{item.CommName}}</font><br/>{{item.Application}}</div>
+				</div>
+				<div class="radio_cont" style="padding-bottom:0px">
+					<div style="width:15%;float:left;padding-left:10px">未使用</div>
+					<div style="width:30%;float:left;text-align:left;padding-left:20px;">兑换码:{{item.ConvCode}}</div>
+					<div style="width:40%;float:right;text-align:right;padding-right:10px">有效期:{{item.ConvDate|formatDate}}</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	        <div class="zz_cont"><img src="images/ts.png" />
+		    <font class="tishi">
+				温馨提示</br>
+			</font>
+				&nbsp;&nbsp;1、优惠券不可与其他优惠同享。</br>
+				&nbsp;&nbsp;2、优惠券不可用于情人节、平安夜、圣诞节等特殊日期。</br>
+				&nbsp;&nbsp;3、如有疑问，请拨打客服热线962000。</br>
+			<div style="font-size:12px; line-height:16px; color:#929292;"> </div>
+	   </div>
+	   
+     <div style="width:100%;height:20px;"></div>
+	
+</div>
+<script>
+PCardWalletCtrl.$inject = ["$scope","$remote","$targets"];
+function PCardWalletCtrl($scope,$remote,$targets){
+	
+	//页面初始化
+	$scope.init=function(){
+		$remote.post("/pmobile/pcouponListQry.do",{},function(data){
+			$scope.pcouponList = data.List;
+			for(var i = 0 ; i<$scope.pcouponList.length ; i++){
+				if($scope.pcouponList[i].IsUsed!=1){
+					$scope.pcouponList.splice(i,1);
+				}
+			}
+			console.log($scope.pcouponList);
+		});
+	}
+	
+	//跳转到确认页面
+
+}
+</script>

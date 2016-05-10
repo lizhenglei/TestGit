@@ -1,0 +1,112 @@
+<div v-view-setup="PHouseQryCtrl" v-init="init()">
+<!-- 	<div v-page> -->
+<!-- 		<div class="bg_box"> -->
+<!-- 			<div class="box_cont"> -->
+<!-- 				<div class="zz_cont"> -->
+<!-- 				      <ul> -->
+<!-- 				      		<li> -->
+<!-- 								<em>身份证号：</em> -->
+<!-- 								<i><input  id="idNo" type="text" name="idNo" v-model="idNo" class="y_srk" placeholder="请输入身份证号"/></i> -->
+<!-- 							</li> -->
+<!-- 					 </ul> -->
+<!-- 			    </div> -->
+			    
+<!-- 				<div> -->
+<!-- 					<input type="button" class="button_1" name="button" value="查询"  v-click="toConfirm()"> -->
+<!-- 				</div> -->
+			    
+<!-- 			</div> -->
+<!-- 		</div> -->
+<!-- 	</div> -->
+	
+	
+	<!--公积金查询-->
+	<div v-page v-transition="native">
+		 <form name="transConfirm" class="bg_box">
+		    <div class="box_cont">
+		      
+		      <div class="zz_cont">
+			      <ul>
+						<li><em>个人账号：</em><i>{{Seq}}</i></li>
+						<li><em>姓名：</em><i>{{CifName}}</i></li>
+						<li><em>身份证号：</em><i>{{IdNo}}</i></li>
+			            <li><em>余额：</em><i style="color:red">{{Balance}}</i></li>
+			            <li><em>月缴额：</em><i style="color:red">{{Amount}}</i></li>
+			            <li><em>账户状态：</em><i>{{AccountState}}</i></li>
+						<li><em>缴存截止时间：</em><i>{{EndDate}}</i></li>
+						<li><em>发卡状态：</em><i>{{State}}</i></li>
+			            <li><em>缴存银行：</em><i>{{BankName}}</i></li>
+			            <li><em>单位名称：</em><i>{{CorpName}}</i></li>
+<!-- 			            <li><em>单位公积金：</em><i>{{}}</i></li> -->
+			            <li><em>单位代码：</em><i>{{CorpAccountNo}}</i></li>
+			            <li><em>缴存工资基数：</em><i>{{MomthincoAmount}}</i></li>
+						<li><em>单位缴存比例：</em><i>{{CorpPerc}}</i></li>
+						<li><em>个人缴存比例：</em><i>{{CustPerc}}</i></li>
+			            <li><em>缴存补贴比例：</em><i>{{AlloPerc}}</i></li>
+			            <li v-show="BindBankName"><em>关联银行：</em><i>{{BindBankName}}</i></li>
+			            <li v-show="BindCardNo"><em>关联银行卡号：</em><i>{{BindCardNo}}</i></li>
+				  </ul>
+		       </div>
+		 </div>
+		 </form>
+	</div>
+</div>
+<script>
+PHouseQryCtrl.$inject = ["$scope","$remote","$targets"];
+function PHouseQryCtrl($scope,$remote,$targets){
+	
+	//页面初始化
+	$scope.init=function(){
+// 		$scope.idNo="325688155601236554";
+		$scope.getClientState(function(response){
+			var vxJson = vx.fromJson(response);
+			if (vxJson.isLogin == true){
+				$scope.idNo=vxJson.Userinfo.IdNo;
+				$scope.toConfirm();
+			}
+			else {
+				$scope.idNo="";
+				NativeCall.toast("请登录后进行查询");
+			}
+			
+		});
+	}
+	
+	$scope.toConfirm = function(){
+		if(!$scope.idNo){
+			NativeCall.toast("请输入身份证号");
+			return false;
+		}
+		else if($scope.idNo.length != 18){
+			NativeCall.toast("输入的身份证号格式不正确");
+			return false;
+		}
+		//ReservedFundsQry 公积金
+		$remote.post("/pmobile/ReservedFundsQry.do",{"IdNo":$scope.idNo},function(data){
+			if(data._RejCode == "000000"){
+				$scope.Seq=data.Seq;
+				$scope.CifName=data.CifName;
+				$scope.IdNo=data.IdNo;
+				$scope.Balance=data.Balance;
+				$scope.Amount=data.Amount;
+				$scope.AccountState=data.AccountState;
+				$scope.EndDate=data.EndDate;
+				$scope.State=data.State;
+				$scope.BankName=data.BankName;
+				$scope.CorpName=data.CorpName;
+				$scope.CorpAccountNo=data.CorpAccountNo;
+				$scope.MomthincoAmount=data.MomthincoAmount;
+				$scope.CorpPerc=data.CorpPerc;
+				$scope.CustPerc=data.CustPerc;
+				$scope.AlloPerc=data.AlloPerc;
+				$scope.BindBankName=data.BindBankName;
+				$scope.BindCardNo=data.BindCardNo;
+				//不需要做错误处理，在vx.config中已经统一处理
+				$targets("content","#1");
+			}
+		});
+	};
+
+
+}
+</script>

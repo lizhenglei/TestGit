@@ -1,0 +1,812 @@
+<div v-view-setup="PRepaymentCtrl" v-init="init()">
+	<!-- 信用卡还款录入页面 -->
+	<div  v-page v-transition="native" title="我要还款">
+		<form  name="transInput" class="bg_box">
+			<div class="box_cont">
+	
+				<div class="selected">
+					<span><img class="jindu" src="images/u1.png" /></span> <span><img
+						class="jindu" src="images/u2_1.png" /></span> <span><img class="jindu" src="images/u3_1.png" /></span>
+				</div>
+				<div class="zz_cont">
+					<ul>
+						<li>
+							<em>付款账号：</em>
+							<i>
+								<select  v-change="getCardInfo()" v-model="payCard" name="payCard" v-options="ac.AcNo1 for ac in acList" >
+								</select>
+							</i>
+						</li>
+						<li>
+							<em>可用余额：</em>
+							<i class="colff6" ui-money='{"amounts":"balance"}' style="height:35px;line-height:35px"></i>
+						</li>
+						<li>
+							
+							<i style="padding-left:18%;">
+								<div class="radio_cont2" style="margin:0">
+									<span class="radio" style="margin:0;line-height:30px"><input type="radio" v-model="postAddrType" name="postAddrType" value="1" v-click="selected('self')"  class="creditcard_checkbox">&nbsp;还本人</span>
+									<span class="radio" style="margin:0;line-height:30px"><input type="radio" v-model="postAddrType" name="postAddrType" value="2" v-click="selected('sb')" class="creditcard_checkbox">&nbsp;还本行他人</span>
+								</div>
+							</i>
+						</li>
+					</ul>
+					<ul v-show="paySelf">
+						<li>
+							<em>信用卡：</em>
+							<i>
+								<select  v-change="getCCardInfo(crediCard)" v-model="crediCard" name="crediCard" v-options="c.creditCardNo for c in credList" >
+								</select>
+							</i>
+						</li>
+<!-- 						<li> -->
+<!-- 							<em>币种：</em> -->
+<!-- 							<i> -->
+<!-- 								<i> -->
+<!-- 								<select  v-model="amountKind" name="amountKind" v-options="k.name for k in kindList" > -->
+<!-- 								</select> -->
+<!-- 							</i> -->
+<!-- 							</i> -->
+<!-- 						</li> -->
+						<li>
+							<em>剩余应还金额：</em>
+							<i>
+								{{payAmount}}
+							</i>
+						</li>
+						<li>
+							<em>最低还款额：</em>
+							<i>
+								{{miniAmount}}
+							</i>
+						</li>
+						<li>
+							<em>还款方式：</em>
+							<i class="colff6">
+								<select v-change="getSelected(payKind.value)" v-model="payKind" name="payKind" v-options="pk.name for pk in payKindList" >
+								</select>
+							</i>
+						</li>
+						<li>
+							<em>还款金额：</em>
+							<i class="colff6" v-show="payKind.value==2||payKind.value==0">
+								{{payAmount}}
+							</i>
+							<i   class="colff6" v-show="payKind.value==1">
+								<input  type="text" placeholder="请输入还款金额" name="amount" v-model="amount"  ui-num='{"maxlength":11,"hasDot":true,"tip":"还款金额"}' class="y_srk">
+							</i>
+						</li>
+					</ul>
+					<ul v-show="paySB">
+						<li id="lastShowLi">
+							<em>收款人信用卡：</em>
+							<i>
+								<input type="text" v-focus="showLastTrans()" v-blur="hideLastTrans()" v-change="isHide()" placeholder="请输入收款人信用卡" name="rCard" v-model="rCard" ui-num='{"maxlength":22,"hasDot":false,"tip":"收款人信用卡"}' class="y_srk" required/>
+								<span  v-click="queryReciver()"><img src="images/skr_icon.png" /></span>
+<!-- 								<div id="lasttrans" class="payeeList" style="display:none"> -->
+<!-- 									<div class="tips" v-repeat=" l3 in last3List" v-click="selectedInput(l3)">{{l3.PayeeAcNo}}/{{l3.PayeeAcName}}</div> -->
+<!-- 								</div> -->
+							</i>
+						</li>
+						<li v-show="ShowOrHide">
+							<em>&nbsp;</em>
+							<i style="width:60%">
+								<div v-repeat=" l3 in last3List" style="border: 1px solid #ccc;border-top: none;">
+									<input type="text" class="tips" v-focus="selectedInput(l3)" value="{{l3.PayeeAcNo}}/{{l3.PayeeAcName}}" style="border:none;line-height:35px;height:35px;text-align:left"/>
+								</div>
+							</i>
+						</li>
+						<li>
+							<em>收款人姓名：</em>
+							<i class="colff6"> 
+								<input type="text"  placeholder="请输入收款人姓名" name="rName" v-model="rName" class="y_srk" required/> 
+							</i>
+						</li>
+						<li v-show="postAddrType=='2'"><em>保存收款人：</em> <i class="colff6">
+								<input type="checkbox" name="saveThis" v-model="saveThis"
+								class="checkbox">
+						</i></li>
+<!-- 						<li> -->
+<!-- 							<em>币种：</em> -->
+<!-- 							<i> -->
+<!-- 								<i> -->
+<!-- 								<select  v-model="amountKind" name="amountKind" v-options="k.name for k in kindList" > -->
+<!-- 								</select> -->
+<!-- 							</i> -->
+<!-- 							</i> -->
+<!-- 						</li> -->
+						<li>
+							<em>还款金额：</em>
+							<i class="colff6">
+								<input type="text" placeholder="请输入还款金额" name="amount2" v-model="amount2"  ui-num='{"maxlength":11,"hasDot":true,"tip":"还款金额"}' class="y_srk">
+							</i>
+						</li>
+					</ul>
+				</div>
+				<div class="zz_cont" v-show="paySelf">
+					<input type="button" class="button_1" name="button" value="确认"  v-disabled="(payKind.value==1&&(!amount||amount==0))||(payKind.value!=1&&(payAmount=='--'||payAmount==0))" v-click="toConfirm('self')">
+				</div>
+				<div class="zz_cont" v-show="paySB">
+					<input type="button" class="button_1" name="button" value="确认"  v-disabled="!rCard||!rName||!amount2" v-click="toConfirm('sb')">
+				</div>
+			</div>
+		</form>
+		<div class="zz_cont"><img src="images/ts.png" />
+		    <font class="tishi">
+				温馨提示</br>
+			</font>
+				&nbsp;&nbsp;还本行他人：操作完成请务必确认所填写的信息，核对信息。  </br>
+			<div style="font-size:12px; line-height:16px; color:#929292;"> </div>
+	   </div>
+	   <div style="width:100%;height:40px;"></div>
+	</div>
+	
+	<!-- 信用卡还款确认页面 -->
+	<div  v-page v-transition="native" title="我要还款">
+		 <form name="transConfirm" class="bg_box">
+		    <div class="box_cont">
+		      <div class="selected">
+		        <span><img class="jindu" src="images/u1.png" /></span>
+		         <span><img class="jindu" src="images/u2.png" /></span>
+		          <span><img class="jindu" src="images/u3_1.png" /></span>
+		      </div>
+		     <div class="zz_cont">
+					<ul v-show="paySelf">
+						<li>
+							<em>付款账号：</em>
+							<i>
+								{{payCard.AcNo1}}
+							</i>
+						</li>
+						<li>
+							<em>信用卡：</em>
+							<i>
+								{{crediCard.creditCardNo|accountNo}}
+							</i>
+						</li>
+<!-- 						<li> -->
+<!-- 							<em>币种：</em> -->
+<!-- 							<i> -->
+<!-- 								{{amountKind.name}} -->
+<!-- 							</i> -->
+<!-- 						</li> -->
+						<li>
+							<em>还款金额：</em>
+							<i class="colff6">
+								{{(payKind.value==1?amount:payAmount)|number:2}}元
+							</i>
+						</li>
+						
+					</ul>
+					<ul v-show="paySB">
+						<li>
+							<em>付款人账号：</em>
+							<i>
+								{{payCard.AcNo1}}
+							</i>
+						</li>
+						<li>
+							<em>收款人信用卡：</em>
+							<i>
+								{{rCard|accountNo}}
+							</i>
+						</li>
+						<li>
+							<em>收款人姓名：</em>
+							<i>
+								{{rName}}
+							</i>
+						</li>
+<!-- 						<li> -->
+<!-- 							<em>币种：</em> -->
+<!-- 							<i> -->
+<!-- 								{{amountKind.name}} -->
+<!-- 							</i> -->
+<!-- 						</li> -->
+						<li>
+							<em>还款金额：</em>
+							<i class="colff6">
+								{{amount2|number:2}}元
+							</i>
+						</li>
+						
+					</ul>
+				</div>
+		       <div class="zz_cont">
+			      <ul>
+			      		<li v-show="authType==2">
+							<em>手机动态码：</em>
+							<i>
+								<input type="tel" id="dycode" name="dycode" v-model="dycode" maxlength=6 class="y_srk_50" placeholder="请输入动态码"/>
+								<button id="anniu" class="inp_butt" v-sms="getDYcode()">获取动态码</button>
+							</i>
+						</li>
+						<li v-show="authType==null">
+							<em>验证码：</em>
+							<i><input type="tel" name="imgcode" v-model="imgcode" maxlength=4 class="y_srk" placeholder="请输入验证码" style="width:50%"/></i>
+							<!-- <img id="img" v-src="/pmobile/GenTokenImg.do" style="position:relative;left:40%;padding-top:8px;" v-click="freshCode('img')"> -->
+							<img id="img" name="img" v-model="img" src="data:image/png;base64,{{TokenImg}}" data-ke-src="data:image/png;base64,{{TokenImg}}"  style="position:relative;left:40%;margin-top:3%" v-click="freshCode('img')">
+						</li>
+						<li v-show="authType==0&&Security=='07'">
+							<em>付款密码：</em>
+							<i><input  id="cardpassword" type="password" name="cardpassword" v-model="cardpassword" class="y_srk" placeholder="请输入密码" v-click="getPW()" readonly/></i>
+						</li>
+						<li v-show="authType==0&&Security=='07'">
+							<em>手机动态码：</em>
+							<i>
+								<input type="tel" id="dycode" name="dycode" v-model="dycode" maxlength=6 class="y_srk_50" placeholder="请输入动态码"/>
+								<button id="anniu" class="inp_butt" v-sms="getDYcode()">获取动态码</button>
+							</i>
+						</li>
+						<li v-show="paySB&&authType==0&&Security=='05'">
+							<em>音频Key密码：</em>
+							<i><input  id="keypassword" type="password" name="keypassword" v-model="keypassword" class="y_srk" placeholder="请输入音频Key密码"/></i>
+						</li>
+				  </ul>
+		     	</div>
+		     	<div v-show="authType==2">
+		     		<input type="submit"  class="button_1" name="Submit" v-disabled="!dycode" value="确认" v-click="toResult('img')">
+		     	</div>
+		     	<div v-show="authType==null">
+		     		<input type="submit"  class="button_1" name="Submit" value="确认" v-disabled="!imgcode" v-click="toResult()">
+		     	</div>
+		     	<div v-show="authType==0&&Security=='07'">
+		     		<input type="submit"  class="button_1" name="Submit" value="确认" v-disabled="!dycode||(buttonDis=='false')" v-click="toResult()">
+		     	</div>
+		     	<div v-show="authType==0&&Security=='05'">
+		     		<input type="submit"  class="button_1" name="Submit" value="确认" v-disabled="!keypassword" v-click="toResult()">
+		     	</div>
+		 </div>
+		 </form>
+		 <div style="width:100%;height:40px;"></div>
+	</div>
+	
+	
+	<!-- 还款结果页面 -->
+	<div  v-page v-transition="native" data-back="false" title="我要还款">
+		<div class="bg_box">
+		    <div class="box_cont">
+			      <div class="selected">
+			        <span><img class="jindu" src="images/u1.png" /></span>
+			        <span><img class="jindu" src="images/u2.png" /></span>
+			        <span><img class="jindu" src="images/u3.png" /></span>
+			      </div>
+				  <div class="zz_cont">
+				  	<div v-show="IsReward=='true'" class="maind" style="margin:0px">
+						<div class="d1" style="float:left;padding-left:5px;width:20%;padding-top:20px"><img src="images/cg_img.png" style="width:60px;height:60px"/></div>
+						<div class="d2" style="float:left;width:50%;height:70px;  padding-top:9%;">
+							 <div style="  text-align: center;font-size:x-large;color:#0069c9"> 交易成功</div>
+							<div class="transtime" style="padding-bottom:0px;padding-top:10px;font-size:inherit;">{{resultList.TransDate}}</div>
+						</div>
+						<div class="d3"  style="padding-top: 25px;float:left;width:20%;margin-left:-3%"><img  v-click="gotoRewardPage()" src="images/img_reward.gif" style="width:100px;height:60px;"/></div>
+					</div>
+					<div v-hide="IsReward=='true'">
+						<div class="d1" style="float:left;padding-left:50px;;width:20%;padding-top:20px"><img src="images/cg_img.png" style="width:60px;height:60px"/></div>
+						<div class="d2" style="float:right;width:50%;height:70px;  padding-top:9%;padding-right:30px">
+							 <div style="  text-align: center;font-size:x-large;color:#0069c9"> 交易成功</div>
+							<div class="transtime" style="padding-bottom:0px;padding-top:10px;font-size:inherit;">{{resultList.TransDate}}</div>
+						</div>
+					</div>
+				      <div class="resultForm">
+						<ul v-show="paySelf">
+							<li><em>付款人账号：</em><i>{{payCard.AcNo2}}</i></li>
+							<li><em>可用余额：</em><i>{{balance|number:2}}</i></li>
+							<li><em>信用卡：</em><i>{{crediCard.creditCardNo|accountNo}}</i></li>
+<!-- 							<li><em>币种：</em><i>{{amountKind.name}}</i></li> -->
+							<li><em>还款金额：</em><i>{{amount|number:2}}元</i></li>
+				  		</ul>
+				  		<ul v-show="paySB">
+				  			<div style="  text-align: center;">请通知对方查询收款人账号到账情况。</div>
+							<li><em>付款人账号：</em><i>{{payCard.AcNo1}}</i></li>
+							<li><em>可用余额：</em><i>{{balance|number:2}}</i></li>
+							<li><em>收款人信用卡：</em><i>{{rCard|accountNo}}</i></li>
+							<li><em>收款人姓名：</em><i>{{rName}}</i></li>
+<!-- 							<li><em>币种：</em><i>{{amountKind.name}}</i></li> -->
+							<li><em>还款金额：</em><i>{{amount2|number:2}}元</i></li>
+				  		</ul>
+				     </div>
+				  </div>
+		 	</div>
+ 		</div>
+	</div>
+	<div style="width:100%;height:40px;"></div>
+</div>
+<script>
+PRepaymentCtrl.$inject = ["$scope","$remote","$targets","$filter","$context","$timeout"];
+function PRepaymentCtrl($scope,$remote,$targets,$filter,$context,$timeout){
+	$scope.init=function(){
+		$scope.buttonDis="false";
+		//在收款人列表页面被选中的账号
+		$scope.payee=$context.getJson().selectedPayee;
+		//在其他页面被选中的本行本人信用卡账号
+		$scope.selfAcc=$context.getJson().selectedAcc;
+		//跳转至收款人列表页面前，被保存的页面信息
+		$scope.PRepayParam=$context.getJson().PRepayParam;
+		$scope.paySelf=true;
+		$scope.postAddrType=1;
+		$scope.kindList=[{"name":"人民币"}];
+		$scope.payKindList=[{
+			"name":"全额还款",
+			"value":2
+		},{
+			"name":"最低额还款",
+			"value":0
+		},{
+			"name":"其他金额",
+			"value":1
+		}];
+		//初始化值
+		$scope.payKind=$scope.payKindList[0];
+		$scope.amountKind=$scope.kindList[0];
+		$scope.saveThis=$scope.PRepayParam?$scope.PRepayParam.saveThis:true;
+		//若是从收款人选择页面回来，则默认选择为：还本行他人
+		if($scope.PRepayParam){
+			//改变单选按钮状态
+			$scope.postAddrType=2;
+			$scope.selected("sb");
+			$scope.payCard=$scope.PRepayParam.payCard;//
+			$scope.amount2=$scope.PRepayParam.amount2;
+			//判断是否选定收款人
+			if($scope.payee){
+				$scope.rCard=$scope.payee.PayeeAcNo;
+				$scope.rName=$scope.payee.PayeeAcName;
+			}else{
+				$scope.rCard=$scope.PRepayParam.rCard;
+				$scope.rName=$scope.PRepayParam.rName;
+			}
+		}
+		//获取服务器当前时间
+		$remote.post("/pmobile/GenTimeStamp.do",{},function(data){
+			var serviceTime=data._sysDate;
+			$scope.nowdate=$scope.formartDate(serviceTime,0);
+		});
+		//查询账户列表
+		$remote.post("/pmobile/ActListQry.do",{},function(data){
+			//我的借记卡列表
+			$scope.acList=data.AcList;
+			var filterFn=$filter("filter");
+			$scope.acList=filterFn($scope.acList,function(obj,text){
+				if(obj.AcNo != undefined){
+					obj.AcNo1=obj.AcNo.substring(0,4)+"****"+ obj.AcNo.substring(obj.AcNo.length-4)
+					obj.AcNo2=obj.AcNo1;
+					if(obj.AcAlias.length>4){
+						obj.AcNo1=obj.AcNo1+" / "+obj.AcAlias.substring(0,4)+"...";
+					}else if(obj.AcAlias.length<=4&&obj.AcAlias.length>0){
+						obj.AcNo1=obj.AcNo1+" / "+obj.AcAlias;
+					}else{
+						obj.AcNo1=obj.AcNo1;
+					}
+					return true;
+				}
+			});
+			$scope.payCard=$scope.acList[0];
+			//获取本人名字和手机号，还信用卡
+			$scope.cifName=data.CifName;
+			$scope.mobilePhone=data.MobilePhone;
+			$scope.getCardInfo();
+			//我的信用卡列表
+			$scope.credList=data.CreditList;
+			console.log($scope.credList);
+			if($scope.selfAcc){
+				vx.forEach($scope.credList,function(item){
+					if($scope.selfAcc==item.creditCardNo){
+						$scope.crediCard=item;
+					}
+				});
+			}else{
+				if(!$scope.paySB){
+					if($scope.credList.length==0){
+						$scope.alert("无信用卡加挂信息或卡片未激活");
+						NativeCall.goBack();
+					}else{
+						$scope.crediCard=$scope.credList[0];
+					}
+				}
+			}
+			if($scope.crediCard){
+				//查询信用卡账单详细信息
+				$scope.getCCardInfo($scope.crediCard);
+			}
+		});
+	}
+	
+	//跳转到抽奖页面
+	$scope.gotoRewardPage=function(){
+		$context.clear();
+		if($scope.postAddrType=="1"){
+			$scope.TransName="iiiiii";
+		}else if($scope.postAddrType=="2"){
+			$scope.TransName="jjjjjj";
+		}
+		$remote.post("/pmobile/TransRewardsQry.do",{"TRANSNAME":$scope.TransName},function(data){
+			if(data.GAMETYPE=="0"){
+				var param={
+						"ReWardCount":data.REWARDCOUNT,"TransName":data.TRANSNAME,
+						"Count":data.COUNT,
+						"GameType":data.GAMETYPE,
+						"IsReward":data.ISREWARD,
+						
+						"UpDateTime":data.UPDATETIME
+				}
+				$context.setJson({"innerParam":param});
+				$scope.goto("LotteryDraw");
+			}else if(data.GAMETYPE=="2"){
+				var param={
+						"ReWardCount":data.REWARDCOUNT,"TransName":data.TRANSNAME,
+						"Count":data.COUNT,
+						"GameType":data.GAMETYPE,
+						"IsReward":data.ISREWARD,
+						
+						"UpDateTime":data.UPDATETIME
+				}
+				$context.setJson({"innerParam":param});
+				$scope.goto("GuaGuaLe");
+			}else if(data.GAMETYPE=="3"){
+				var param={
+						"ReWardCount":data.REWARDCOUNT,"TransName":data.TRANSNAME,
+						"Count":data.COUNT,
+						"GameType":data.GAMETYPE,
+						"IsReward":data.ISREWARD,
+						
+						"UpDateTime":data.UPDATETIME
+				}
+				$context.setJson({"innerParam":param});
+				$scope.goto("YaoYiYao");
+			}
+		});
+	}
+	//改变支付卡
+	$scope.getCardInfo=function(){
+		var cardNo=$scope.payCard.AcNo;
+		//查询余额
+		$remote.post("/pmobile/ActBalQry.do",{"AcNo":cardNo},function(data){
+			$scope.balance=data.AvailBal;
+		});
+	}
+	//改变要还款的信用卡
+	$scope.getCCardInfo=function(card){
+		$remote.post("/pmobile/CreditcardInfo.do",{"CreditNo":card.creditCardNo},function(data){
+			$scope.remainFlag=data.nowTranFlag;
+			//应还款全额金额，+号显示还款余额为0
+			if($scope.remainFlag!="-"){
+				$scope.remainAmount=data.nowTranAmt;//账单剩余金额
+			}else{
+				$scope.payAmount=0;
+				$scope.remainAmount=0;
+			}
+			$scope.miniAmount=data.minRepayAmt;
+			$remote.post("/pmobile/CreditBillAmoutnQry.do",{"CreditNo":card.creditCardNo},function(data){
+				$scope.BillAmoutn = data;
+				$scope.getSelected(2);
+			});
+		},function(data){
+			$scope.remainAmount="--";
+			$scope.payAmount="--";
+			$scope.miniAmount="--";
+			NativeCall.toast("请用其他金额还款");
+			return data.jsonError;
+		})
+	}
+	//改变还款方式
+	$scope.getSelected=function(value){
+		if(value==0&&$scope.remainFlag!="-"){
+// 			$scope.payAmount=$scope.miniAmount;
+			$scope.payAmount=$scope.BillAmoutn.tranAmount;
+		}else if(value==2){
+// 			$scope.payAmount=$scope.remainAmount;
+			$scope.payAmount=$scope.BillAmoutn.tranAmount;
+		}
+	}
+	//从最近三笔转账选定收款人
+	$scope.selectedInput=function(obj){
+		$scope.selectL3Payee=obj;
+		$scope.rCard=obj.PayeeAcNo;
+		$scope.rName=obj.PayeeAcName;
+	}
+	//显示最近三位联系人
+	$scope.showLastTrans=function(){
+		$scope.last3List=$scope.last3ListN;
+		if(!$scope.rCard&&$scope.last3List!=""){
+			$scope.ShowOrHide = true;
+			$("#lastShowLi").addClass("noBottom");//去掉账号那一栏的底部border
+// 			var item=$scope.last3List.length;
+// 			if(item){
+// 				$("#lastShowLi").css("height",35+30*item+"px");
+// 			}
+// 			$("#lasttrans").css("display","block");
+		}
+	}
+	//隐藏最近三位联系人
+	$scope.hideLastTrans=function(){
+		$timeout(function(){
+			$scope.ShowOrHide = false;
+			$("#lastShowLi").removeClass("noBottom");
+// 			$("#lastShowLi").css("height","auto");
+// 			$("#lasttrans").css("display","none");
+		},100);
+	}
+	//监听input框变化
+	$scope.isHide=function(){
+		if($scope.rCard){
+			$scope.hideLastTrans();
+		}else{
+			$scope.showLastTrans();
+		}
+	}
+	//查询收款人
+	$scope.queryReciver=function(){
+		//保存当前表单信息，从其他碎片页返回时使用，如查询收款人名册
+		
+		var params={
+				"payCard":$scope.payCard,
+				"rName":$scope.rName,
+				"rCard":$scope.rCard,
+				"saveThis":$scope.saveThis,
+				"amount2":$scope.amount2
+		}
+		$context.setJson({"PRepayParam":params});
+		$context.setJson({"whoPBM":"PRepay"});
+		$scope.goto("PRepayment","PayeeBook");
+	}
+	//还款人选项卡
+	$scope.selected=function(id){
+		if(id=="self"){
+			$scope.paySelf=true;
+			$scope.paySB=false;
+			//查询信用卡账单详细信息
+			if($scope.credList.length!=0){
+				//查询信用卡账单详细信息
+				$scope.getCCardInfo($scope.crediCard);
+			}else{
+				$scope.alert("无信用卡加挂信息");
+			}
+		}else if(id=="sb"){
+			$scope.paySB=true;
+			$scope.paySelf=false;
+			//获取最后三笔转账(为他人信用卡还款)
+			$remote.post("/pmobile/ReceiptRollQry.do",{"TransType":5},function(data){
+				$scope.last3ListN=data.List;
+			});
+		}
+	}
+	//刷新验证码
+	$scope.freshCode=function(id){
+		$remote.post("/pmobile/GenTokenImg.do?r"+Math.random(),{},function(data){
+			$scope.TokenImg=data.imgKey;
+		});
+	}
+	//调用密码控件
+	$scope.getPW=function(){
+		$("#cardpassword").val("");
+		$scope.buttonDis="false";
+		var scrollHeight=$scope.getPWPosition($("#cardpassword").get(0));//定位当前密码输入栏位在文档中的位置
+		$scope.getPassword(function(pwResponse){
+			var resJson=vx.fromJson(pwResponse);
+			if(resJson.Flag==0){
+				$("#cardpassword").val(resJson.passWord);
+			}else if(resJson.Flag==1){
+				$scope.miwen=resJson.passWord;
+				$scope.buttonDis = resJson.buttonDis;
+			}
+		},scrollHeight);
+	}
+	//跳转到确认页面
+	$scope.toConfirm=function(id){
+		//初始化确认页面
+		$scope.imgcode="";
+		$scope.cardpassword="";
+		$("#cardpassword").val("");
+		$scope.dycode="";
+		$scope.keypassword="";
+		$("#anniu").text("获取动态码");
+		$("#anniu").css("background-color","#0084ff");
+		if(parseFloat($scope.amount)==0){
+			NativeCall.toast("转账金额不能为0");
+			return false;
+		}
+		if(id=="self"){
+			if(parseFloat($scope.amount)>parseFloat($scope.balance)){
+				NativeCall.toast("卡内余额不足！");
+				return;
+			}
+			if($scope.crediCard==null||$scope.crediCard==""||$scope.crediCard==undefined){
+				NativeCall.toast("请选择信用卡号！");
+				return;
+			}
+			if(!$scope.payAmount&&$scope.payKind.value!=1){
+				NativeCall.toast("还款金额不能为零");
+				return;
+			}else{
+				$remote.post("/pmobile/GenTokenImg.do",{},function(data){
+					$scope.TokenImg=data.imgKey;
+				});
+				//获取完成交易token防重复码
+				$remote.post("/pmobile/getNewTokenName.do",{},function(data){
+					if(data._RejCode=="000000"){
+						$scope._tokenName=data._tokenName;
+						$scope.freshCode('img');
+						$targets("content","#2");
+					}
+				});
+			}
+		}else if(id="sb"){
+			if(parseFloat($scope.amount2)>parseFloat($scope.balance)){
+				NativeCall.toast("卡内余额不足！");
+				return;
+			}
+			var reg=new RegExp(/^[\u4E00-\u9FA5A-Za-z ]+$/);//姓名只能是中文字符或者英文字符
+			if(!reg.test($scope.rName)){
+				NativeCall.toast("姓名只能为汉字或字母");
+				return false;
+			}
+			var params={
+					"PayerAcNo":$scope.payCard.AcNo,
+					"Amount":$scope.amount2,
+					"PayeeAcNo":$scope.rCard,
+					"PayeeAcName":$scope.rName,
+					"TranType":"F"//F-还本行他人信用卡,G-自助还款
+			}
+			$scope.payOtherCredConfirm(params);//还他人信用卡确认交易
+		}
+	}
+	//还本行他人信用卡确认
+	$scope.payOtherCredConfirm=function(params){
+		$remote.post("/pmobile/PayforOtherCreditConfirm.do",params,function(data){
+			if(data._RejCode=="ECIP0023"||data._RejCode=="ECIP0024"){
+				$scope.confirm("超过当前认证方式限额，是否切换认证方式为音频KEY？",function(){
+					$remote.post("/pmobile/ChannelAuthTypeUpd.do",{"security":"05"},function(data){
+						if(data._RejCode=="000000"){
+							$scope.changeClientInfo(vx.toJson({"Security":"05"}));//修改登录信息
+							$scope.payOtherCredConfirm(params);
+						}
+					});
+				},null);
+			}else if(data._RejCode="000000"){
+				$scope._tokenName=data._tokenName;
+				$scope.Security=data.Security;
+				$scope.authType=data.Flag;//0:当前认证方式；1：小额免密；2：手机动态密码 空：不需要认证方式
+				$targets("content","#2");
+				$scope.freshCode('img');
+			}
+			
+		});
+	}
+	//倒计时的回调函数
+	$scope.getDYcode=function(){
+		//
+		var businessName="还他人信用卡";
+		var params={
+				"BusinessName":businessName,
+				"MobileNo":$scope.mobilePhone,
+				"ServiceCode":"CCA002001"
+		}
+		//获取手机动态码
+		$remote.post("/pmobile/GenTokenName.do",params,function(data){
+			$scope.msmNo=data.SerialNo;
+		});
+	}
+	//还他人信用卡
+	$scope.PaySBCredit=function(params){
+		$remote.post("/pmobile/PayforOtherCredit.do",params,function(data){
+			$scope.resultList=data;
+			$scope.getCardInfo();//获取支付卡卡片余额
+			$targets("content","#3");
+		},function(data){
+			if(data.jsonError){
+				$scope.alert(data.jsonError);
+			}
+			$scope.keypassword="";
+			$scope.dycode="";
+			$("#cardpassword").val("");
+			$scope.miwen="";
+			$scope.getToken();
+			return data.jsonError;
+		});
+	}
+	//跳转到结果页
+	$scope.toResult=function(id){
+		if($scope.postAddrType=="1"){
+			$scope.TransName="iiiiii";
+		}else if($scope.postAddrType=="2"){
+			$scope.TransName="jjjjjj";
+		}
+		$remote.post("/pmobile/TransRewardsQry.do",{"TRANSNAME":$scope.TransName},function(data){
+			$scope.IsReward=data.ISREWARD;
+		});
+		//定义参数
+		var params="";
+		//确定当前认证方式
+		if($scope.authType==0){
+			//音频key
+			if($scope.Security=="05"){
+				
+				//音频PKY制签名需要的数据
+				var inputData={"recAccountNo":$scope.rCard,"recAccountName":$scope.rName,"tranAmount":$scope.amount2,
+						"accountNo":$scope.payCard.AcNo,"currencyType":$scope.RMBChange($scope.amountKind.name)};
+				var sourceField = "信用卡卡号#"+inputData.recAccountNo+"|信用卡户名#"+inputData.recAccountName+"|还款金额#"+inputData.tranAmount+"|付款人账号#"+inputData.accountNo;
+				//调用音频KEY字段转换xml格式的方法
+				var sinData = $scope.getSignSourceValue(sourceField,"币种#"+inputData.currencyType);
+				var subData={"sinData":sinData,"YPKPassword":$scope.keypassword};
+				//通过原生调用音频key
+				$scope.getSignData(function(outputdata){
+					var signData=outputdata;
+					if(!signData){
+						$scope.keypassword="";
+						return false;
+					}
+					params={
+							"PayerAcNo":$scope.payCard.AcNo,
+							"Amount":$scope.amount2,
+							"PayeeAcNo":$scope.rCard,
+							"PayeeAcName":$scope.rName,
+							"TranType":"F",
+							"_tokenName":$scope._tokenName,
+							"TrsPassword":$scope.miwen,
+							"SerialNo":$scope.msmNo,
+							"SmsCode":$scope.dycode,
+							"SignData":signData
+					};
+					params.IsSave=$scope.saveThis?1:0;
+					$scope.PaySBCredit(params);
+				},vx.toJson(subData));
+				
+			}else if($scope.Security=="07"){//手机动态码+卡密码
+				params={
+						"PayerAcNo":$scope.payCard.AcNo,
+						"Amount":$scope.amount2,
+						"PayeeAcNo":$scope.rCard,
+						"PayeeAcName":$scope.rName,
+						"TranType":"F",
+						"_tokenName":$scope._tokenName,
+						"TrsPassword":$scope.miwen,//交易，
+						"SerialNo":$scope.msmNo,
+						"SmsCode":$scope.dycode
+				};
+			}
+			
+		}else if($scope.authType==2){//手机动态码
+			params={
+					"PayerAcNo":$scope.payCard.AcNo,
+					"Amount":$scope.amount2,
+					"PayeeAcNo":$scope.rCard,
+					"PayeeAcName":$scope.rName,
+					"TranType":"F",
+					"_tokenName":$scope._tokenName,
+					"SerialNo":$scope.msmNo,
+					"SmsCode":$scope.dycode
+			};
+		}
+		if($scope.payKind.value!=1){
+			$scope.amount=$scope.payAmount;
+		}
+		//还本人信用卡
+		if($scope.paySelf){
+			var params2={
+					"PayerAcNo":$scope.payCard.AcNo,
+					"Amount":$scope.amount,
+					"PayeeAcNo":$scope.crediCard.creditCardNo,
+					"PayeeAcName":$scope.cifName,
+					"TranType":"G",
+					"_vTokenName":$scope.imgcode
+					
+			};
+			$remote.post("/pmobile/SameNamePayforCredit.do",params2,function(data){
+				$scope.resultList=data;
+				$scope.getCardInfo();//获取支付卡卡片余额
+				$targets("content","#3");
+			},function(data){
+				if(data.jsonError){
+					$scope.alert(data.jsonError);
+				}
+				$scope.freshCode();
+				$scope.getToken();
+				return data.jsonError;
+			});
+		}else if($scope.paySB&&($scope.authType!=0||$scope.Security!="05")){
+			//还他人信用卡（非音频KEY认证），参数从上面获取
+			params.IsSave=$scope.saveThis?1:0;
+			$scope.PaySBCredit(params);
+		}
+	}
+}
+</script>

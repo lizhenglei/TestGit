@@ -1,0 +1,73 @@
+<div v-view-setup="AccNoModifyCtrl" v-init="init()">
+	<div class="bg_box" v-page v-transition="native" title="变更">
+		<div class="box_cont">
+			<div class="zz_cont">
+					<ul>
+						<li>
+							<em>原来账号：</em>
+							<i>
+								{{oldCard}}
+							</i>
+						</li>
+						<li>
+							<em>变更账号：</em>
+							<i>
+								<input type="text" placeholder="请输入变更账号" name="newCard" v-model="newCard" ui-num='{"maxlength":22,"hasDot":false,"tip":"变更账号"}' class="y_srk" required/>
+							</i>
+						</li>
+						<li>
+							<em>别名：</em>
+							<i>
+								<input type="text" placeholder="非必输" name="Alias" v-model="Alias" class="y_srk" required maxlength=10/>
+							</i>
+						</li>
+					</ul>
+			</div>
+		    
+		    <div class="zz_cont">
+		     		<input type="submit"  class="button_1" name="Submit" v-disabled="!newCard" value="确认" v-click="toResult()">
+		    </div>
+		</div>
+	</div>
+	   <div class="zz_cont"><img src="images/ts.png" />
+		    <font class="tishi">
+				温馨提示</br>
+			</font>
+				&nbsp;&nbsp;1、别名支持数字、英文、汉字等，最长10位。</br>
+				&nbsp;&nbsp;2、别名输入为空，系统将自动截取该账号的后5位为别名。</br>
+			<div style="font-size:12px; line-height:16px; color:#929292;"> </div>
+	   </div> 
+</div>
+<script>
+AccNoModifyCtrl.$inject = ["$scope","$remote","$targets","$context"];
+function AccNoModifyCtrl($scope,$remote,$targets,$context){
+	$scope.init=function(){
+		$scope.oldCard=$context.getJson().selectedAcc;
+	}
+	$scope.toResult=function(){
+		if(!$scope.Alias&&$scope.newCard){
+			var tempAcc=$scope.newCard;
+			$scope.Alias=tempAcc.substr(tempAcc.length-5);
+		}
+		if($scope.oldCard==$scope.newCard){
+			NativeCall.toast("卡号相同");
+			$scope.newCard="";
+			$scope.Alias="";
+			return;
+		}
+		var params={
+				"AcNo":$scope.newCard,
+				"accountAlias":$scope.Alias,
+				"oldAccountNo":$scope.oldCard,
+		}
+		//查询借记卡
+		$remote.post("/pmobile/AccountNotihuan.do",params,function(data){
+			if(data._RejCode=="000000"){
+				$scope.alert("变更账号成功");
+			}
+		});
+	}
+	
+	
+}
+</script>

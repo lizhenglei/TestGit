@@ -1,0 +1,39 @@
+//
+//  CSIISavCalculatorController.h
+//  MobileClient
+//
+//  Created by 张海亮 on 13-8-16.
+//  Copyright (c) 2013年 pro. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+#import "CSIITextField.h"
+#import "CSIISuperViewController.h"
+@interface CSIISavCalculatorController : CSIISuperViewController<UITableViewDelegate,UITableViewDataSource,UIPickerViewDelegate,UIPickerViewDataSource,UITextFieldDelegate>
+{
+    UITableView *calculateTableView;
+    NSMutableArray *YuanArray;
+    NSMutableArray *NewArray;
+    
+    CSIITextField*saveTime;
+    CSIITextField*Yuanfield;
+    CSIITextField*Newfield;
+    CSIITextField *textfield;
+    CSIITextField *ratefield;
+    
+    UIPickerView *Yuanpickview;
+    UIPickerView *Newpickview;
+    UIToolbar *pickerViewToolBar;
+    NSMutableDictionary *ratedictionary;
+    UILabel *resultlable;
+    UILabel *resultlableAmount;
+    float rate ;
+    float result;
+    float resultAmount;
+    UIButton *btn;
+
+}
+
+@property (nonatomic, retain)  UITableView *calculateTableView;
+
+@end

@@ -1,0 +1,308 @@
+<div v-view-setup="YuanLinCardPayCtrl" v-init="init()">
+	<!-- 园林卡充值录入页面 -->
+	<div v-page v-transition="native" title="园林卡充值">
+		<form name="transInput1" class="bg_box">
+			<div class="box_cont">
+
+				<div class="selected">
+					<span> <img class="jindu" src="images/u1.png" />
+					</span> <span> <img class="jindu" src="images/u2_1.png" />
+					</span> <span> <img class="jindu" src="images/u3_1.png" />
+					</span>
+				</div>
+				<div class="zz_cont">
+					<ul>
+				
+						  <li>
+		           <em>付款账号：</em>
+		           <i><select v-change="getCardInfo()"
+								v-model="payCard" name="payCard"
+								v-options="ac.AcNo1 for ac in acList">
+							</select> </i>
+		         </li>
+		         <li>
+		         <em>户名：</em>
+		            <i>
+		              {{accountName}}
+		            </i>
+		         </li>	
+		         <li>
+		         <em>可用余额：</em>
+		         <i class="colff6"
+							ui-money='{"amounts":"balance"}'>
+		         </i>
+		         </li>
+					</ul>
+				</div>
+			</div>
+		</form>
+		<form name="transInput2" class="bg_box">
+		    <div class="zz_cont">
+		       <ul>
+		       		<li>
+						<em>虞城通号：</em>
+						<i>
+						<input type="text" placeholder="请输入虞城通号" name="recordNo" v-model="recordNo" 
+								  ui-num='{"maxlength":8,"hasDot":false}' class="y_srk">
+						</i>
+						</li>
+						<li>
+							<em>姓名：</em>
+							<i>
+							<input type="text" placeholder="请输入姓名" name="custName" v-model="custName" 
+								  class="y_srk">
+							</i>
+						</li>
+		          <li>
+		         <em>充值金额：</em>
+		         <i>100.00元</i>
+		         </li>
+		       </ul>
+		       <input type="button" class="button_1" name="button" value="下一步"
+			  v-disabled="!custName||!recordNo" v-click="toConfirm('1')"/>
+		    </div>
+		</form>
+		  <div class="zz_cont"><img src="images/ts.png" />
+		    <font class="tishi">
+				温馨提示</br>
+			</font>
+				<em>&nbsp;&nbsp;1、仅支持常熟地区市民卡/园林卡充值。</em></br>
+				<em>&nbsp;&nbsp;2、充值有效期至</em><em>{{nowdate}}</em><em>年12月31日。</em>
+			<div style="font-size:12px; line-height:16px; color:#929292;"> </div>
+	   </div> 
+	</div>
+	<!-- 园林卡充值确认页面 -->
+	<div v-page v-transition="native" title="园林卡充值">
+	    <form name="transConfirm1" class="bg_box">
+	         <div class="box_cont">
+	             <div class="selected">
+					<span><img class="jindu" src="images/u1.png" /></span>
+					<span><img class="jindu" src="images/u2.png" /></span> 
+					<span><img class="jindu" src="images/u3_1.png"/></span>
+				</div>
+				<div class="zz_cont">
+				     <ul>
+						<li><em>虞城通号：</em><i>{{recordNo}}</i></li>
+                        <li><em>客户姓名：</em><i>{{custName}}</i></li>
+                        <li><em>付款账号：</em><i>{{payCard.AcNo1}}</i></li>
+                        <li><em>充值金额：</em><i style="  color: #ff6000">100.00元</i></li>
+					</ul>
+				</div>
+	         </div>
+	    </form>
+	    <form name="transConfirm2" class="bg_box">
+	        <div class="box_cont">
+	         <div class="zz_cont">
+	           <ul>
+	              <li>
+	               <em>手机动态码：</em>
+	                <i> 
+	                <input type="number" id="dycode" name="dycode" v-model="dycode" maxlength=6 class="y_srk_50" placeholder="请输入动态码"/>
+					<button id="anniu" class="inp_butt" v-sms="getDYcode()">获取动态码</button>
+					</i>
+	              </li>
+	           </ul>  
+	           </div>
+	            <input type="button" class="button_1" name="btnConfirm" value="确认"
+			  v-disabled="!recordNo||!dycode" v-click="toConfirm('2')"/>
+	         </div>
+	    </form>
+	</div>
+	<!-- 园林卡充值结果页面 -->
+   <div v-page v-transition="native" title="园林卡充值">
+	    <div class="bg_box">
+	        <div class="box_cont">
+	            <div class="selected">
+					<span><img class="jindu" src="images/u1.png" /></span> <span><img
+						class="jindu" src="images/u2.png" /></span> <span><img class="jindu" src="images/u3.png" /></span>
+				</div>
+				<div class="zz_cont">
+				   <div v-show="IsReward=='true'" class="maind" style="margin:0px">
+						<div class="d1" style="float:left;padding-left:5px;width:20%;padding-top:20px"><img src="images/cg_img.png" style="width:60px;height:60px"/></div>
+						<div class="d2" style="float:left;width:50%;height:70px;  padding-top:10%;">
+							 <div style="  text-align: center;font-size:x-large;color:#0069c9"> 交易成功</div>
+							<div class="transtime" style="padding-bottom:0px;padding-top:10px;font-size:inherit;">{{time}}</div>
+						</div>
+						<div class="d3"  style="padding-top: 25px;float:left;width:20%;margin-left:-3%"><img  v-click="gotoRewardPage()" src="images/img_reward.gif" style="width:100px;height:60px;"/></div>
+					</div>
+					<div v-hide="IsReward=='true'">
+						<div class="d1" style="float:left;padding-left:50px;;width:20%;padding-top:20px"><img src="images/cg_img.png" style="width:60px;height:60px"/></div>
+						<div class="d2" style="float:right;width:50%;height:70px;  padding-top:10%;padding-right:30px">
+							 <div style="  text-align: center;font-size:x-large;color:#0069c9"> 交易成功</div>
+							<div class="transtime" style="padding-bottom:0px;padding-top:10px;font-size:inherit;">{{time}}</div>
+						</div>
+					</div>
+					<div class="resultForm">
+					    <ul>
+							<li><em>虞城通号：</em><i>{{recordNo}}</i></li>
+	                        <li><em>客户姓名：</em><i>{{custName}}</i></li>
+	                        <li><em>付款账号：</em><i>{{payCard.AcNo1}}</i></li>
+	                        <li><em>充值金额：</em><i>100.00元</i></li>
+						</ul>
+					</div>
+				</div>
+	        </div>
+	    </div>
+	</div>
+</div>
+<script>
+YuanLinCardPayCtrl.$inject = ["$scope","$remote","$targets","$filter","$context"];
+function YuanLinCardPayCtrl($scope,$remote,$targets,$filter,$context){
+	$scope.init=function(){
+		$scope.isSuccess=true;
+		 $remote.post("/pmobile/getNewTokenName.do",{},function(data){
+				$scope.tokenName=data._tokenName;
+		 });
+			//获取系统时间
+			$remote.post("/pmobile/GenTimeStamp.do",{},function(data){
+				var serviceTime=data._sysDate;
+				$scope.nowdate=$scope.formartDate(serviceTime,0).substr(0,4);
+			});
+		//查询借记卡
+		$remote.post("/pmobile/ActListQry.do",{},function(data){
+			var temp=[];
+			vx.forEach(data.AcList,function(item){
+				if(item.AcType=="1"){
+					temp.push(item);
+				}
+			});
+			$scope.acList=temp;
+			$scope.accountName=data.CifName;
+			$scope.CifNo=data.CifNo;
+			$scope.payCard=$scope.acList[0];
+			var filterFn=$filter("filter");
+			$scope.acList=filterFn($scope.acList,function(obj,text){
+				if(obj.AcNo != undefined){
+					obj.AcNo1=obj.AcNo.substring(0,4)+"****"+ obj.AcNo.substring(obj.AcNo.length-4);
+					obj.AcNo2=obj.AcNo1;
+					if(obj.AcAlias.length>4){
+						obj.AcNo1=obj.AcNo1+" / "+obj.AcAlias.substring(0,4)+"...";
+					}else if(obj.AcAlias.length<=4&&obj.AcAlias.length>0){
+						obj.AcNo1=obj.AcNo1+" / "+obj.AcAlias;
+					}else{
+						obj.AcNo1=obj.AcNo1;
+					}
+					return true;
+				}
+			}); 
+			$scope.getCardInfo();
+		});
+	}
+	$scope.getName=function(){
+		//根据虞城通号查找姓名
+			if("8"==$scope.recordNo.length){
+				$remote.post("/pmobile/RecordNoQry.do",{"recordNo":$scope.recordNo},function(data){
+					if(data!=null){
+						if($scope.custName){
+							if($scope.custName==data.custName){
+						    	$scope.isSuccess=false;
+						    }else{
+						    	NativeCall.toast("虞城通号与姓名不符！");
+						    }
+						}  
+					}
+				});
+			}
+		
+			
+	}
+	//改变支付卡
+	$scope.getCardInfo=function(){
+		var cardNo=$scope.payCard.AcNo;
+		//查询余额
+		$remote.post("/pmobile/ActBalQry.do",{"AcNo":cardNo},function(data){
+			$scope.cardInfo=data;
+			$scope.balance=data.AvailBal;
+		});
+	}
+	$scope.toConfirm=function(data){
+		$scope.getMessageCode();
+		$("#anniu").text("获取动态码");
+		$("#anniu").css("background-color","#0084ff");
+		if(data=="1"){
+			//根据虞城通号查找姓名
+				$remote.post("/pmobile/RecordNoQry.do",{"recordNo":$scope.recordNo},function(data){
+					if(data!=null){
+						if($scope.custName){
+							if($scope.custName==data.custName){
+						    	$scope.isSuccess=false;
+						    	$targets("content","#2");
+						    }else{
+						    	NativeCall.toast("虞城通号与姓名不符！");
+						    }
+						}  
+					}
+				});
+		}
+		if(data=="2"){
+			if(!$scope.dycode){
+				NativeCall.toast("手机动态码不能为空！");
+				return;
+			}
+			if(!$scope.msmNo){
+				NativeCall.toast("请先获取短信验证码");
+				return ;
+			}
+			$remote.post("/pmobile/SmsCodeValidate.do",{"SmsCode":$scope.dycode,"SerialNo":$scope.msmNo},function(data){
+				//获取完成交易token防重复码
+				$remote.post("/pmobile/getNewTokenName.do",{},function(data){
+					if(data._RejCode=="000000"){
+						var params={
+								"recordNo":$scope.recordNo,
+								"custName":$scope.custName,
+								"accountNo":$scope.payCard.AcNo,
+//			                  "accountNo":"6223231000000006489",
+//			 					"accountName":"彭德明",
+			                    "accountName":$scope.accountName,
+								"tranAmount":"100.00",
+								"_tokenName":$scope.tokenName
+						}
+						
+						$remote.post("/pmobile/YuanlinCardPay.do",params,function(data){
+								$targets("content","#3");
+								$remote.post("/pmobile/GenTimeStamp.do",{},function(data){
+									var serviceTime=data._sysDate;
+									$scope.yy = serviceTime.substr(0, 4);
+									$scope.mm = serviceTime.substr(4, 2);
+									$scope.dd = serviceTime.substr(6, 2);
+									$scope.h = serviceTime.substr(8, 2);
+									$scope.m = serviceTime.substr(10, 2);
+									$scope.s = serviceTime.substr(12, 2);
+									$scope.time = $scope.yy + "-" + $scope.mm + "-" + $scope.dd+" "+$scope.h+"-"+$scope.m+"-"+$scope.s;
+								});
+								NativeCall.history = [];//清空历史，点击左上角返回时，可直接返回原生菜单
+								NativeCall.pages=[];
+						});
+					}
+				});
+			});
+		}
+		if(data=="3"){
+			$targets("content","#1");
+		}
+	};
+	//倒计时的回调函数
+	$scope.getDYcode=function(){
+		$scope.getClientState(function(response){
+			var resJson=vx.fromJson(response);
+			var mobileNo=resJson.Userinfo.MobileNo;
+			$scope.businessName="园林卡充值";
+			var params={
+					"BusinessName":$scope.businessName,
+					"MobileNo":mobileNo,
+					"ServiceCode":"PFA008001"  //渠道接口号
+			}
+			//获取手机动态码
+			$remote.post("/pmobile/GenTokenName.do",params,function(data){
+				$scope.msmNo=data.SerialNo;
+			});
+		});
+	}
+	$scope.getMessageCode=function(){
+		$scope.getMseCode(function(pwResponse){
+			$("#dycode").val(pwResponse);
+			$scope.dycode=pwResponse;
+		});
+	}
+}
+</script>

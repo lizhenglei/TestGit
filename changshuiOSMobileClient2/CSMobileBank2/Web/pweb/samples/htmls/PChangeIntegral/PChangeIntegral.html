@@ -1,0 +1,68 @@
+<div v-view-setup="PChangeIntegralCtrl" v-init="init()">
+	<!-- 积分兑换初始页面 -->
+	<div v-page v-transition="native" title="积分兑换">
+		<form name="OrderInput" class="bg_box">
+			<div class="box_cont">
+			<div class="zz_cont">
+				
+				<ul>
+						<li><em>我的粒金币：&nbsp;&nbsp;</em><i>{{LiJinCoin}}
+						<div class="button" v-click="toMingXi()" style="top: 8px;left:20px;position: absolute; font-size: 12px;line-height: 20px;  width: 50px;  height: 20px;">明细</div>
+<!-- 							 <span style="background:url(images/u9.png) no-repeat 50% center;width:60px;line-height: 40px; left:60px;position:absolute;" v-click="toDuiHuan()">兑换</span>	 -->
+						</i>
+						</li>
+				  </ul>
+			</div>
+			 <div class="zz_cont">
+		     		<div>
+						<div class="content4_left content4_button" style="width: 46%;"
+							v-click="toDuiHuan()">兑换</div>
+						<div class="content4_right content4_button" style="width: 46%;margin-left: 18px;"
+							v-click="toZhuanZeng()">转赠</div>
+					</div>
+		    </div>
+			</div>
+		</form>
+	</div>
+</div>
+<script>
+PChangeIntegralCtrl.$inject = ["$scope","$remote","$targets","$filter","$context","$timeout","$window"];
+function PChangeIntegralCtrl($scope,$remote,$targets,$filter,$context,$timeout,$window){
+	$scope.init=function(){
+		//获取粒金币
+		$remote.post("/pmobile/LiJinCoinQry.do",{},function(data){
+			if(data._RejCode=="000000"){
+				$scope.LiJinCoin = data.PointAvaile;
+				if(vx.isEmpty($scope.LiJinCoin)){
+					$scope.LiJinCoin = 0
+				}
+			}
+		},function(data){ 
+			if(data.jsonError){
+				$scope.alert(data.jsonError);
+			}	
+			$scope.LiJinCoin = 0;
+		});
+	}
+	//跳转兑换页面
+	$scope.toDuiHuan=function(){
+		if($scope.LiJinCoin==0){
+			$scope.alert("粒金币不足，不能兑换!");
+		}else{
+			$scope.goto("PChangeIntegral","PChangePoint");
+		}
+	}
+	//跳转转赠页面
+	$scope.toZhuanZeng=function(){
+		if($scope.LiJinCoin==0){
+			$scope.alert("粒金币不足，不能转赠!");
+		}else{
+			$scope.goto("PChangeIntegral","PChangeGive");
+		}
+	}
+	//跳转明细页面
+	$scope.toMingXi=function(){
+		$scope.goto("PChangeIntegral","PChangeInfo");
+	}
+}
+</script>

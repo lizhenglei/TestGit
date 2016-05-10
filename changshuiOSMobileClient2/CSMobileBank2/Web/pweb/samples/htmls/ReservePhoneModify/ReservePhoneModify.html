@@ -1,0 +1,58 @@
+<div v-view-setup="ReservePhoneModifyCtrl" v-init="init()">
+	<div class="bg_box" v-page v-transition="native">
+		<div class="box_cont">
+			<div class="zz_cont">
+					<ul>
+						<li>
+							<em>新手机号码：</em>
+							<i>
+								<input type="tel" placeholder="请输入新手机号码" name="newPhone" v-model="newPhone" ui-num='{"maxlength":22,"hasDot":false,"tip":"新手机号码"}' class="y_srk" required/>
+							</i>
+						</li>
+						<li>
+							<em>查询密码：</em>
+							<i>
+								<input type="password" placeholder="请输入查询密码" name="password" v-model="password" class="y_srk" required/>
+							</i>
+						</li>
+					</ul>
+			</div>
+		    
+		    <div class="zz_cont">
+		     		<input type="submit"  class="button_1" name="Submit" value="确认" v-click="toResult()">
+		    </div>
+		    
+		</div>
+	</div>
+</div>
+<script>
+ReservePhoneModifyCtrl.$inject = ["$scope","$remote","$targets","$context"];
+function ReservePhoneModifyCtrl($scope,$remote,$targets,$context){
+	$scope.init=function(){
+		$scope.credit=$context.getJson().CreditNO;
+		//信用卡客户信息查询预留手机号、邮箱
+		$remote.post("/pmobile/CreditcardCustInfo.do",{"CreditNo":$scope.credit},function(data){
+			$scope.mobilePhone=data.mobileNo;
+			$scope.email=data.email;
+		});
+	}
+	$scope.toResult=function(){
+		/* $remote.post("/pmobile/getNewTokenName.do",{},function(data){
+			var tokenName=data._tokenName;
+			//信用卡客户信息维护：手机号和邮箱
+			var params={
+					"CreditNo":$scope.credit,
+					"mobileNo":$scope.mobilePhone,
+					"email":$scope.email,
+					"_tokenName":tokenName
+			};
+			$remote.post("/pmobile/CreditcardCifInfoMgmt.do",params,function(data){
+				$scope.alert("设置成功");
+			});
+		}); */
+		NativeCall.toast("无接口");
+	}
+	
+	
+}
+</script>

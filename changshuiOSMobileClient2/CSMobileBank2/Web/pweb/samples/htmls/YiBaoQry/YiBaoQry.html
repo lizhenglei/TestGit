@@ -1,0 +1,46 @@
+<div v-view-setup="YiBaoQryCtrl" v-init="init()">
+	<div v-page>
+		<div class="bg_box">
+			<div class="box_cont">
+				<div class="safe_cont bor_bott">
+				      <ul>
+							<li>
+								<em>身份证号：</em>
+								<i style = "font-style : normal">
+								<input>
+								</i>
+							</li>
+					 </ul>
+			    </div>
+			    
+			    
+			</div>
+		</div>
+	</div>
+</div>
+<script>
+YiBaoQryCtrl.$inject = ["$scope","$remote","$targets"];
+function YiBaoQryCtrl($scope,$remote,$targets){
+	//页面初始化
+	$scope.init=function(){
+		$remote.post("/pmobile/ActListQry.do",{},function(data){
+			$scope.acList=data.AcList;
+			$scope.rCard=$scope.acList[0];
+			$scope.cifLimit=data.CifLimit;
+			/* $scope.accDayLimit=$scope.acList[0].AccDayLimit;
+			$scope.accSingleLimit=$scope.acList[0].AccSingleLimit; */
+		});
+	}
+	
+	
+	$scope.getCardInfo=function(){
+		console.log($scope.acList);
+		vx.forEach($scope.acList,function(item,index){
+			$scope.accDayLimit=item.AccDayLimit;
+			$scope.accSingleLimit=item.AccSingleLimit;
+		});
+	}
+
+	
+}
+</script>

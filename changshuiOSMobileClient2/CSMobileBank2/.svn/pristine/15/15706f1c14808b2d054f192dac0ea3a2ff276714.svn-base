@@ -1,0 +1,647 @@
+<div v-view-setup="PCaiFuTongCtrl" v-init="init()">
+	<div v-page v-transition="native">
+		<div class="bg_box">
+			<div class="box_cont">
+				<div class="zz_cont">
+				      <ul>
+				      		<li>
+								<em>账&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp号：</em>
+								<i>
+									<select  v-change="getSignInfo(rCard)"  v-model="rCard" name="rCard" v-options="ac.AcNo for ac in AcList" ></select></i>
+								</i>
+							</li>
+							<li>
+								<em>签约状态：</em>
+								<i>{{State|ZFBSignFlag}}</i>
+							</li>
+					 </ul>
+			    </div>
+			    
+				<div v-show="State != 'X'">
+					<input type="button" class="button_1" name="button" value="查询"  v-click="toQry()">
+				</div>
+				
+				<div v-show="State == 'X'">
+					<input type="button" class="button_1" name="button" value="签约"  v-click="toSignPre()">
+				</div>			    
+			</div>
+		</div>
+	</div>
+	<!-- 2财付通快捷支付签约详情-->
+	<div v-page v-transition="native">
+		<form  name="transInput" class="bg_box">
+			<div class="box_cont">
+	
+				<div class="zz_cont">
+					<ul>
+						<li>
+							<em>签约账号：</em>
+							<i>{{AcNo|accountNo}}</i>
+						</li>
+						<li>
+							<em>客户姓名：</em>
+							<i>{{CifName}}</i>
+						</li>
+						<li>
+							<em>手机号码：</em>
+							<i>{{MobilePhone}}</i>
+						</li>
+						<li>
+							<em>支付限额：</em>
+							<i class="colff6">{{PayLimit|number:2}}元<button class="button_bj" v-click="modify()">修改限额</button></i>
+						</li>
+						<li>
+							<em>协议状态：</em>
+							<i>开通</i>
+						</li>
+					</ul>
+				</div>
+				<div class="zz_cont">
+					<input type="button" class="button_1" name="button" value="解约" v-disabled="" v-click="toCancelPre()">
+				</div>
+			</div>
+		</form>
+	</div>
+	<!-- 3财付通快捷支付解约录入-->
+	<div v-page v-transition="native">
+		 <form name="transConfirm" class="bg_box">
+		    <div class="box_cont">
+		      <div class="selected">
+		        <span><img class="jindu" src="images/u1.png" /></span>
+		         <span><img class="jindu" src="images/u2_1.png" /></span>
+		          <span><img class="jindu" src="images/u3_1.png" /></span>
+		      </div>
+		      <div class="zz_cont">
+			      <ul>
+						<li><em>签约账号：</em><i>{{AcNo|accountNo}}</i></li>
+						<li><em>客户姓名：</em><i>{{CifName}}</i></li>
+						<li><em>日累计限额：</em><i>{{PayLimit|number:2}}元</i></li>
+						<li><em>身份证号码：</em>
+						<i class="colff6">
+							<input type="text" placeholder="请输入身份证号码" name="IdNo" v-model="IdNo" class="y_srk" maxlength=18 required/>
+						</i></li>
+			            
+				  </ul>
+		       </div>
+		     	<div>
+		     		<input type="submit"  class="button_1" name="Submit"  v-disabled="!IdNo"  value="确认" v-click="toCancelConfirm()">
+		     	</div>
+		 </div>
+		 </form>
+	</div>
+	
+	<!-- 4财付通快捷支付解约确认-->
+	<div v-page v-transition="native">
+		 <form name="transConfirm" class="bg_box">
+		    <div class="box_cont">
+		      <div class="selected">
+		        <span><img class="jindu" src="images/u1.png" /></span>
+		         <span><img class="jindu" src="images/u2.png" /></span>
+		          <span><img class="jindu" src="images/u3_1.png" /></span>
+		      </div>
+		      <div class="zz_cont">
+			      <ul>
+						<li><em>签约账号：</em><i>{{AcNo|accountNo}}</i></li>
+						<li><em>客户姓名：</em><i>{{CifName}}</i></li>
+						<li><em>身份证号码：</em><i>{{IdNo}}</i></li>
+			            <li><em>日累计限额：</em><i style="color:red">{{PayLimit|number:2}}元</i></li>
+			            <li>
+							<em>音频Key密码：</em>
+							<i><input type="password" name="keypassword" v-model="keypassword" class="y_srk" placeholder="请输入音频Key密码"/></i>
+						</li>
+				  </ul>
+		       </div>
+		     	<div>
+		     		<input type="submit"  class="button_1" name="Submit"  v-disabled="!keypassword"  value="提交" v-click="toResult('2')">
+		     	</div>
+		 </div>
+		 </form>
+	</div>
+	<!--  5财付通快捷支付解约结果-->
+	<div  v-page v-transition="native" data-back="false">
+		<div class="bg_box">
+		    <div class="box_cont">
+			      <div class="selected">
+			        <span><img class="jindu" src="images/u1.png" /></span>
+			        <span><img class="jindu" src="images/u2.png" /></span>
+			        <span><img class="jindu" src="images/u3.png" /></span>
+			      </div>
+				  <div class="zz_cont">
+				  <div v-show="IsReward=='true'" class="maind" style="margin:0px">
+						<div class="d1" style="float:left;padding-left:5px;width:20%;padding-top:20px"><img src="images/cg_img.png" style="width:60px;height:60px"/></div>
+						<div class="d2" style="float:left;width:50%;height:70px;  padding-top:9%;">
+							 <div style="  text-align: center;font-size:x-large;color:#0069c9"> 解约成功</div>
+							<div class="transtime" style="padding-bottom:0px;padding-top:10px;font-size:inherit;">{{TransDate}}</div>
+						</div>
+						<div class="d3"  style="padding-top: 25px;float:left;width:20%;margin-left:-3%"><img  v-click="gotoRewardPage()" src="images/img_reward.gif" style="width:100px;height:60px;"/></div>
+					</div>
+					<div v-hide="IsReward=='true'">
+						<div class="d1" style="float:left;padding-left:50px;;width:20%;padding-top:20px"><img src="images/cg_img.png" style="width:60px;height:60px"/></div>
+						<div class="d2" style="float:right;width:50%;height:70px;  padding-top:9%;padding-right:30px">
+							 <div style="  text-align: center;font-size:x-large;color:#0069c9"> 解约成功</div>
+							<div class="transtime" style="padding-bottom:0px;padding-top:10px;font-size:inherit;">{{TransDate}}</div>
+						</div>
+					</div>
+<!-- 				     <div class="cc_img" ><img src="images/cg_img.png" style="width:120px;height:120px"/><br/>解约成功</div> -->
+<!-- 				     <div class="transtime">{{TransDate}}</div> -->
+				  </div>
+		 	</div>
+ 		</div>
+	</div>
+	<!--   6财付通快捷支付额度修改录入-->
+	<div v-page v-transition="native">
+		 <form name="transConfirm" class="bg_box">
+		    <div class="box_cont">
+		      <div class="selected">
+		        <span><img class="jindu" src="images/u1.png" /></span>
+		         <span><img class="jindu" src="images/u2_1.png" /></span>
+		          <span><img class="jindu" src="images/u3_1.png" /></span>
+		      </div>
+		      <div class="zz_cont">
+			      <ul>
+						<li><em>签约账号：</em><i>{{AcNo|accountNo}}</i></li>
+						<li><em>客户姓名：</em><i>{{CifName}}</i></li>
+						<li><em>日累计限额：</em>
+						<i class="colff6">
+							<input type="text" placeholder="日累计限额不超过20000" name="NewPayLimit" v-model="NewPayLimit"  ui-num='{"maxlength":11,"hasDot":true,"tip":"日累计支付限额"}' class="y_srk" required>
+						</i></li>
+						<li><em>身份证号码：</em>
+						<i class="colff6">
+							<input type="text" placeholder="请输入身份证号码" name="IdNo" v-model="IdNo" class="y_srk" required maxlength=18/>
+						</i></li>
+			            
+				  </ul>
+		       </div>
+		     	<div>
+		     		<input type="submit"  class="button_1" name="Submit"  v-disabled="!NewPayLimit&&!IdNo"  value="确认" v-click="toModifyConfirm()">
+		     	</div>
+		 </div>
+		 </form>
+	</div>
+	<!-- 7财付通快捷支付额度修改确认-->
+	<div v-page v-transition="native">
+		 <form name="transConfirm" class="bg_box">
+		    <div class="box_cont">
+		      <div class="selected">
+		        <span><img class="jindu" src="images/u1.png" /></span>
+		         <span><img class="jindu" src="images/u2.png" /></span>
+		          <span><img class="jindu" src="images/u3_1.png" /></span>
+		      </div>
+		      <div class="zz_cont">
+			      <ul>
+						<li><em>签约账号：</em><i>{{AcNo|accountNo}}</i></li>
+						<li><em>客户姓名：</em><i>{{CifName}}</i></li>
+						<li><em>身份证号码：</em><i>{{IdNo}}</i></li>
+			            <li><em>日累计限额：</em><i style="color:red">{{NewPayLimit|number:2}}元</i></li>
+			            <li>
+							<em>音频Key密码：</em>
+							<i><input type="password" name="keypassword" v-model="keypassword" class="y_srk" placeholder="请输入音频Key密码"/></i>
+						</li>
+				  </ul>
+		       </div>
+		     	<div>
+		     		<input type="submit"  class="button_1" name="Submit"  v-disabled="!keypassword"  value="提交" v-click="toResult('3')">
+		     	</div>
+		 </div>
+		 </form>
+	</div>
+	<!-- 财付通快捷支付额度修改结果 8-->
+	<div v-page v-transition="native" data-back="false">
+		<div class="bg_box">
+		    <div class="box_cont">
+			      <div class="selected">
+			        <span><img class="jindu" src="images/u1.png" /></span>
+			        <span><img class="jindu" src="images/u2.png" /></span>
+			        <span><img class="jindu" src="images/u3.png" /></span>
+			      </div>
+				  <div class="zz_cont">
+				  <div v-show="IsReward=='true'" class="maind" style="margin:0px">
+						<div class="d1" style="float:left;padding-left:5px;width:20%;padding-top:20px"><img src="images/cg_img.png" style="width:60px;height:60px"/></div>
+						<div class="d2" style="float:left;width:50%;height:70px;  padding-top:9%;">
+							 <div style="  text-align: center;font-size:x-large;color:#0069c9"> 修改成功</div>
+							<div class="transtime" style="padding-bottom:0px;padding-top:10px;font-size:inherit;">{{TransDate}}</div>
+						</div>
+						<div class="d3"  style="padding-top: 25px;float:left;width:20%;margin-left:-3%"><img  v-click="gotoRewardPage()" src="images/img_reward.gif" style="width:100px;height:60px;"/></div>
+					</div>
+					<div v-hide="IsReward=='true'">
+						<div class="d1" style="float:left;padding-left:50px;;width:20%;padding-top:20px"><img src="images/cg_img.png" style="width:60px;height:60px"/></div>
+						<div class="d2" style="float:right;width:50%;height:70px;  padding-top:9%;padding-right:30px">
+							 <div style="  text-align: center;font-size:x-large;color:#0069c9"> 修改成功</div>
+							<div class="transtime" style="padding-bottom:0px;padding-top:10px;font-size:inherit;">{{TransDate}}</div>
+						</div>
+					</div>
+<!-- 				     <div class="cc_img" ><img src="images/cg_img.png" style="width:120px;height:120px" /><br/>修改成功</div> -->
+<!-- 				     <div class="transtime">{{TransDate}}</div> -->
+				  </div>
+		 	</div>
+ 		</div>
+	</div>
+	<!--财付通快捷支付签约录入 9-->
+	<div v-page v-transition="native">
+		 <form name="transConfirm" class="bg_box">
+		    <div class="box_cont">
+		      <div class="selected">
+		        <span><img class="jindu" src="images/u1.png" /></span>
+		         <span><img class="jindu" src="images/u2_1.png" /></span>
+		          <span><img class="jindu" src="images/u3_1.png" /></span>
+		      </div>
+		      <div class="zz_cont">
+			      <ul>
+						<li><em>客户姓名：</em><i>{{CifName}}</i></li>
+						<li><em>签约账号：</em><i>{{AcNo|accountNo}}</i></li>
+						<li><em>手机号码：</em><i>{{MobilePhone}}</i></li>
+						<li><em>身份证号码：</em>
+						<i>
+							<input type="text" placeholder="请输入身份证号码" name="IdNo" v-model="IdNo" class="y_srk" required maxlength=18/>
+						</i></li>
+						<li><em>日累计限额：</em>
+						<i>
+							<input type="text" placeholder="日累计限额不超过20000" name="PayLimit" v-model="PayLimit"  ui-num='{"maxlength":11,"hasDot":true,"tip":"日累计支付限额"}' class="y_srk" required>
+						</i></li>
+						<li><em>客户经理号：</em>
+						<i>
+							<input type="text" placeholder="请输入推荐客户经理号" name="CifMngNo" v-model="CifMngNo"   class="y_srk" required>
+						</i></li>        
+				  </ul>
+		       </div>
+		       <div class="zz_cont">
+				<input type="checkbox" name="agree" v-model="agree"/>
+				我已阅读并同意<a style="color:blue" v-click="toXieYiPage()">《财付通快捷支付签约协议》</a>
+			</div>
+		     	<div>
+		     		<input type="submit"  class="button_1" name="Submit"  v-disabled=""  value="确认" v-click="toSignConfirm()">
+		     	</div>
+		 </div>
+		 </form>
+	</div>
+	
+	<!-- 财付通快捷支付签约确认 10-->
+	<div v-page v-transition="native">
+		 <form name="transConfirm" class="bg_box">
+		    <div class="box_cont">
+		      <div class="selected">
+		        <span><img class="jindu" src="images/u1.png" /></span>
+		         <span><img class="jindu" src="images/u2.png" /></span>
+		          <span><img class="jindu" src="images/u3_1.png" /></span>
+		      </div>
+		      <div class="zz_cont">
+			      <ul>
+						<li><em>客户姓名：</em><i>{{CifName}}</i></li>
+						<li><em>签约账号：</em><i>{{AcNo|accountNo}}</i></li>
+						<li><em>手机号码：</em><i>{{MobilePhone}}</i></li>
+			            <li><em>身份证号码：</em><i>{{IdNo}}</i></li>
+			            <li><em>日累计限额：</em><i style="color:red">{{PayLimit|number:2}}元</i></li>
+			            <li><em>客户经理号：</em><i>{{CifMngNo}}</i></li>
+			            <li>
+							<em>音频Key密码：</em>
+							<i><input type="password" name="keypassword" v-model="keypassword" class="y_srk" placeholder="请输入音频Key密码"/></i>
+						</li>
+				  </ul>
+		       </div>
+		     	<div>
+		     		<input type="submit"  class="button_1" name="Submit"  v-disabled="!keypassword"  value="提交" v-click="toResult('1')">
+		     	</div>
+		 </div>
+		 </form>
+	</div>
+	<!-- 财付通快捷支付签约结果 11-->
+	<div v-page v-transition="native" data-back="false">
+		<div class="bg_box">
+		    <div class="box_cont">
+			      <div class="selected">
+			        <span><img class="jindu" src="images/u1.png" /></span>
+			        <span><img class="jindu" src="images/u2.png" /></span>
+			        <span><img class="jindu" src="images/u3.png" /></span>
+			      </div>
+				  <div class="zz_cont">
+				  <div v-show="IsReward=='true'" class="maind" style="margin:0px">
+						<div class="d1" style="float:left;padding-left:5px;width:20%;padding-top:20px"><img src="images/cg_img.png" style="width:60px;height:60px"/></div>
+						<div class="d2" style="float:left;width:50%;height:70px;  padding-top:9%;">
+							 <div style="  text-align: center;font-size:x-large;color:#0069c9"> 签约成功</div>
+							<div class="transtime" style="padding-bottom:0px;padding-top:10px;font-size:inherit;">{{TransDate}}</div>
+						</div>
+						<div class="d3"  style="padding-top: 25px;float:left;width:20%;margin-left:-3%"><img  v-click="gotoRewardPage()" src="images/img_reward.gif" style="width:100px;height:60px;"/></div>
+					</div>
+					<div v-hide="IsReward=='true'">
+						<div class="d1" style="float:left;padding-left:50px;;width:20%;padding-top:20px"><img src="images/cg_img.png" style="width:60px;height:60px"/></div>
+						<div class="d2" style="float:right;width:50%;height:70px;  padding-top:9%;padding-right:30px">
+							 <div style="  text-align: center;font-size:x-large;color:#0069c9"> 签约成功</div>
+							<div class="transtime" style="padding-bottom:0px;padding-top:10px;font-size:inherit;">{{TransDate}}</div>
+						</div>
+					</div>
+<!-- 				     <div class="cc_img" ><img src="images/cg_img.png" style="width:120px;height:120px" /><br/>签约成功</div> -->
+<!-- 				     <div class="transtime">{{TransDate}}</div> -->
+				  </div>
+		 	</div>
+ 		</div>
+	</div>	
+		<!-- 12-->
+	<div v-page v-transition="native">
+		<div style="width:100%;height:20px"></div>
+		<div  id="prdFileId"></div>
+		<div style="width:100%;height:40px"></div>
+	</div>		
+</div>
+<script>
+PCaiFuTongCtrl.$inject = ["$scope","$remote","$targets","$timeout","$context"];
+function PCaiFuTongCtrl($scope,$remote,$targets,$timeout,$context){
+	
+	$scope.init=function(){
+		$remote.post("/pmobile/TransRewardsQry.do",{"TRANSNAME":"财付通签约"},function(data){
+ 			$scope.IsReward=data.ISREWARD;
+		});
+		$remote.post("/pmobile/ActListQry.do",{},function(data){
+			//从借记卡和存折的列表中筛选出借记卡
+			var temp=[];
+			vx.forEach(data.AcList,function(item){
+				if(item.AcType=="1"){
+					temp.push(item);
+				}
+			});
+			$scope.AcList=temp;
+			if($scope.AcList.length==0){
+				$scope.alert("当前仅支持借记卡签约管理");
+				$timeout(function(){
+					NativeCall.goBack();//返回上一个页面
+				},100);
+				return;
+			}
+			$scope.rCard=$scope.AcList[0];
+			$scope.AcNo = $scope.rCard.AcNo;
+			$scope.MobilePhone=data.MobilePhone;
+			$scope.CifName = data.CifName;
+			$scope.getSignInfo($scope.rCard);
+		});	
+	}
+	
+	$scope.gotoRewardPage=function(){
+		$context.clear();
+		$scope.TransName="财付通签约";
+		$remote.post("/pmobile/TransRewardsQry.do",{"TRANSNAME":$scope.TransName},function(data){
+			if(data.GAMETYPE=="0"){
+				var param={
+						"ReWardCount":data.REWARDCOUNT,"TransName":data.TRANSNAME,
+						"Count":data.COUNT,
+						"GameType":data.GAMETYPE,
+						"IsReward":data.ISREWARD,
+						
+						"UpDateTime":data.UPDATETIME
+				}
+				$context.setJson({"innerParam":param});
+				$scope.goto("LotteryDraw");
+			}else if(data.GAMETYPE=="2"){
+				var param={
+						"ReWardCount":data.REWARDCOUNT,"TransName":data.TRANSNAME,
+						"Count":data.COUNT,
+						"GameType":data.GAMETYPE,
+						"IsReward":data.ISREWARD,
+						
+						"UpDateTime":data.UPDATETIME
+				}
+				$context.setJson({"innerParam":param});
+				$scope.goto("GuaGuaLe");
+			}else if(data.GAMETYPE=="3"){
+				var param={
+						"ReWardCount":data.REWARDCOUNT,"TransName":data.TRANSNAME,
+						"Count":data.COUNT,
+						"GameType":data.GAMETYPE,
+						"IsReward":data.ISREWARD,
+						
+						"UpDateTime":data.UPDATETIME
+				}
+				$context.setJson({"innerParam":param});
+				$scope.goto("YaoYiYao");
+			}
+		});
+	}
+	//获取签约信息
+	$scope.getSignInfo=function(data){
+		$scope.AcNo = data.AcNo;
+		$remote.post("/pmobile/FortuneSignQry.do",{"AcNo":data.AcNo},function(data){
+			if($scope.ContractNo == undefined||$scope.ContractNo==null || $scope.ContractNo==""){
+				$scope.State == "X"
+			}
+			$scope.PayLimit = data.PayLimit;
+			$scope.State=data.State;
+		}); 
+	}
+	
+	$scope.toQry=function(data){
+		$targets("content", "#+1");
+	}
+	
+	$scope.modify=function(){
+		$scope.NewPayLimit=$scope.PayLimit;
+		$targets("content", "#6");
+	}
+	
+	$scope.toModifyConfirm=function(){
+		//初始化修改确认页面
+		$scope.keypassword="";
+		
+		//校验身份证
+		if(!$scope.IdNo||$scope.IdNo==''){
+			NativeCall.toast("请输入身份证号码");
+			return false;
+		}
+		var reg=new RegExp(/(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/);//身份证15/18位校验
+		if(!reg.test($scope.IdNo)){
+			NativeCall.toast("请输入有效身份证");
+			return false;
+		}
+		if($scope.NewPayLimit == undefined||$scope.NewPayLimit==null || $scope.NewPayLimit==""){
+			NativeCall.toast("请输入日累计支付限额");
+			return;
+		}
+		if(parseFloat($scope.NewPayLimit) >20000){
+			NativeCall.toast("日累计支付限额不能超过20000");
+			return;
+		}
+		$scope.getNewToken();
+		$targets("content", "#+1");
+	}
+	//获取防重复提交码
+	$scope.getNewToken=function(){
+		$remote.post("/pmobile/getNewTokenName.do",{},function(data){
+			$scope._tokenName=data._tokenName;
+		});	
+	}
+	//获取协议
+	$scope.toXieYiPage=function(data){
+		$remote.post("/pmobile/TreatyContent.do",{"TreatyType":"03"},function(data){
+			document.getElementById("prdFileId").innerHTML=data.Content;
+			$targets("content","#12");
+		});
+	}
+	
+ 	$scope.toResult=function(item){
+		$scope.Flag = item;
+			if($scope.Flag == '3'){
+				//音频PKY制签名需要的数据
+				var inputData={"cardNo":$scope.AcNo,"showTemp":"修改","flag":$scope.Flag};
+				var sourceField = "签约账号#"+inputData.cardNo+"|操作类型#"+inputData.showTemp;
+				//调用音频KEY字段转换xml格式的方法
+				var sinData = $scope.getSignSourceValue(sourceField,"操作类型#"+inputData.flag);
+				var subData={"sinData":sinData,"YPKPassword":$scope.keypassword};
+				//通过原生调用音频key
+				$scope.getSignData(function(outputdata){
+					var signData=outputdata;
+					if(!signData){
+						$scope.keypassword="";
+						return false;
+					}
+					var formData = {
+							"AcNo" : $scope.AcNo,
+							"Flag":$scope.Flag,
+							"MobilePhone":$scope.MobilePhone,
+		 					"IdNo":$scope.IdNo,
+							"PayLimit":$scope.NewPayLimit,
+							"ShowTemp":"修改",//该字段传“签约”、“解约”、“修改”三种情况，对应参数Flag的1、2、3
+							"SignData":signData,
+							"_tokenName":$scope._tokenName
+					};
+					$scope.doIt(formData);//财付通修改
+				},vx.toJson(subData));
+				
+			}else if($scope.Flag == '2'){
+				//音频PKY制签名需要的数据
+				var inputData={"cardNo":$scope.AcNo,"showTemp":"解约","flag":$scope.Flag};
+				var sourceField = "签约账号#"+inputData.cardNo+"|操作类型#"+inputData.showTemp;
+				//调用音频KEY字段转换xml格式的方法
+				var sinData = $scope.getSignSourceValue(sourceField,"操作类型#"+inputData.flag);
+				var subData={"sinData":sinData,"YPKPassword":$scope.keypassword};
+				//通过原生调用音频key
+				$scope.getSignData(function(outputdata){
+					var signData=outputdata;
+					if(!signData){
+						$scope.keypassword="";
+						return false;
+					}
+					var formData = {
+							"AcNo" : $scope.AcNo,
+							"Flag":$scope.Flag,
+							"MobilePhone":$scope.MobilePhone,
+							"IdNo":$scope.IdNo,
+							"ShowTemp":"解约",//该字段传“签约”、“解约”、“修改”三种情况，对应参数Flag的1、2、3
+							"SignData":signData,
+							"_tokenName":$scope._tokenName	
+						};
+					$scope.doIt(formData);//财付通解约
+				},vx.toJson(subData));
+				
+			}else if($scope.Flag == '1'){
+				//音频PKY制签名需要的数据
+				var inputData={"cardNo":$scope.AcNo,"showTemp":"签约","flag":$scope.Flag};
+				var sourceField = "签约账号#"+inputData.cardNo+"|操作类型#"+inputData.showTemp;
+				//调用音频KEY字段转换xml格式的方法
+				var sinData = $scope.getSignSourceValue(sourceField,"操作类型#"+inputData.flag);
+				var subData={"sinData":sinData,"YPKPassword":$scope.keypassword};
+				//通过原生调用音频key
+				$scope.getSignData(function(outputdata){
+					var signData=outputdata;
+					if(!signData){
+						$scope.keypassword="";
+						return false;
+					}
+					var formData = {
+							"AcNo" : $scope.AcNo,
+							"Flag":$scope.Flag,
+							"MobilePhone":$scope.MobilePhone,
+		 					"IdNo":$scope.IdNo,
+							"PayLimit":$scope.PayLimit,
+							"custMngNo":$scope.CifMngNo,
+							"ShowTemp":"签约",//该字段传“签约”、“解约”、“修改”三种情况，对应参数Flag的1、2、3
+							"SignData":signData,
+							"_tokenName":$scope._tokenName
+					};	
+					$scope.doIt(formData);//财付通签约
+				},vx.toJson(subData));
+			}
+
+    }
+ 	//财付通交易执行
+ 	$scope.doIt=function(params){
+ 		$remote.post("/pmobile/FortuneMgmt.do",params,function(data){
+			if(data._RejCode=="000000"){
+				$scope.TransDate=data.TransDate;
+				$targets("content","#+1");
+			}
+		},function(data){
+			if(data.jsonError){
+				$scope.alert(data.jsonError);
+			}
+			$scope.keypassword="";
+			$scope.getToken();
+		});
+ 	}
+ 	
+	$scope.toCancelPre=function(){
+		//初始化解约录入页面
+		$scope.IdNo="";
+		
+		$targets("content", "#+1");
+	}
+	$scope.toCancelConfirm=function(){
+		//初始化解约确认页面
+		$scope.keypassword="";
+		
+		//校验身份证
+		if(!$scope.IdNo||$scope.IdNo==''){
+			NativeCall.toast("请输入身份证号码");
+			return false;
+		}
+		var reg=new RegExp(/(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/);//身份证15/18位校验
+		if(!reg.test($scope.IdNo)){
+			NativeCall.toast("请输入有效身份证");
+			return false;
+		}
+		$scope.getNewToken();
+		$targets("content", "#+1");
+	}
+	
+	$scope.toSignPre=function(){
+		//初始化签约录入页面
+		$scope.IdNo="";
+		$scope.PayLimit="";
+		$scope.CifMngNo="";
+		$scope.agree=false;
+		
+		if($scope.State == "X"){
+			delete $scope.PayLimit;
+// 			$scope.PayLimit = "0.01";
+		}		
+		$targets("content", "#9");
+	} 
+	$scope.toSignConfirm=function(){
+		//初始化签约确认页面
+		$scope.keypassword="";
+		
+		//校验身份证
+		if(!$scope.IdNo||$scope.IdNo==''){
+			NativeCall.toast("请输入身份证号码");
+			return false;
+		}
+		var reg=new RegExp(/(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/);//身份证15/18位校验
+		if(!reg.test($scope.IdNo)){
+			NativeCall.toast("请输入有效身份证");
+			return false;
+		}
+		if($scope.PayLimit == undefined||$scope.PayLimit==null || $scope.PayLimit==""){
+			NativeCall.toast("请输入日累计支付限额");
+			return;
+		}	
+		if(parseFloat($scope.PayLimit) >20000){
+			NativeCall.toast("日累计支付限额不能超过20000");
+			return;
+		}
+		
+		if($scope.agree != true){
+			NativeCall.toast("请认真阅读并同意《财付通快捷支付签约协议》");
+			return;
+		}
+		$scope.getNewToken();
+		$targets("content", "#+1");
+	} 	
+
+}
+</script>

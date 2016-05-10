@@ -1,0 +1,105 @@
+<div v-view-setup="PSavToTimCtrl" v-init="init()">
+	<!-- 贷款利率 -->
+	<div v-page v-transition="native" title="贷款利率">
+		<form name="transInput">
+			<div class="bg_box">
+				<div class="box_cont">
+					<div class="zz_cont">
+						<div style="width: 100%;">
+							<ul>
+								<li>
+									<div
+										style="text-align: center; line-height: 38px; font-weight: bold;">自2015年10月24日起执行</div>
+								</li>
+							</ul>
+							<ul>
+								<li>
+									<div
+										style="float: left; padding-left: 10px; width: 40%; line-height: 38px;">项目</div>
+									<div
+										style="text-align: right; float: left; width: 24%; line-height: 38px;">调整前</div>
+									<div
+										style="text-align: right; float: right; width: 24%; line-height: 38px;">现行</div>
+								</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="bg_box" v-repeat="type in typeList">
+				<div class="box_cont">
+					<div class="zz_cont">
+						<ul>
+							<li>
+								<div
+									style="float: left; padding-left: 10px; width: 70%; line-height: 38px; font-weight: bold;">{{type.Name}}</div>
+
+							</li>
+						</ul>
+						<div v-show="type.Code == item.Code" v-repeat="item in RateList">
+							<div style="width: 100%;">
+								<ul>
+									<li>
+										<div v-show="!item.Name"
+											style="float: left; padding-left: 10px; width: 40%; line-height: 38px;">{{item.Date}}</div>
+										<div v-show="!item.Name"
+											style="text-align: right; float: left; padding-right: 10px; width: 24%; line-height: 38px;">{{item.OldRate}}</div>
+										<div v-show="!item.Name"
+											style="text-align: right; float: right; padding-right: 10px; width: 24%; line-height: 38px;">{{item.Rate}}</div>
+										<div v-show="item.Name"
+											style="float: left; padding-left: 10px; width: 90%; line-height: 38px;">{{item.Name}}</div>
+									</li>
+								</ul>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</form>
+	</div>
+	<div style="width: 100%; height: 40px;"></div>
+</div>
+<script>
+	PSavToTimCtrl.$inject = [ "$scope", "$remote", "$targets", "$filter",
+			"$context" ];
+	function PSavToTimCtrl($scope, $remote, $targets, $filter, $context) {
+		$scope.init = function() {
+			$scope.typeList = [ {
+				"Name" : "短期贷款",
+				"Code" : "1"
+			}, {
+				"Name" : "中长期贷款",
+				"Code" : "2"
+			}, {
+				"Name" : "个人住房公积金贷款",
+				"Code" : "3"
+			} ];
+			$scope.RateList = [ {
+				"Code" : "1",
+				"Date" : "一年(含)以内",
+				"OldRate" : "4.6%",
+				"Rate" : "4.35%"
+			}, {
+				"Code" : "2",
+				"Date" : "一年至五年(含)",
+				"OldRate" : "5.00%",
+				"Rate" : "4.75%"
+			}, {
+				"Code" : "2",
+				"Date" : "五年以上",
+				"OldRate" : "5.15%",
+				"Rate" : "4.90%"
+			}, {
+				"Code" : "3",
+				"Date" : "五年以下(含)",
+				"OldRate" : "2.75%",
+				"Rate" : "2.75%"
+			}, {
+				"Code" : "3",
+				"Date" : "五年以上",
+				"OldRate" : "3.25%",
+				"Rate" : "3.25%"
+			} ];
+		}
+	}
+</script>

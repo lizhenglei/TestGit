@@ -1,0 +1,424 @@
+<div v-view-setup="SaveRateQryCtrl" v-init="init()">
+	<div v-page v-transition="native" title="存贷计算器">
+	<div class="box_cont">
+	  <div class="zz_cont"
+				style="margin-left: 0px; margin-right: 0px; padding: 0px; width: 100%;">
+				
+				<b class="bookTitle" style="margin-left:10px; width: 100%;text-align: center;">
+					<li class="inner" id="inner" class="selectTitle" style="text-align: center;font-size: 16px;width:45%;"
+					v-click="changeType('1')">存款计算器 
+				</li>
+					<li style="border-right: none;font-size: 16px;width:45%;text-align: center;" class="cross" id="cross" v-click="changeType('2')">
+						贷款计算器
+				</li>
+			
+					<div class="d1"
+						style="height:10px; width: 100%; background: white; float: left;">
+						<div class="d3"
+							style="height: 2px; width: 7%; background: white; float: left"></div>
+						<div class="d2"
+							style="height: 2px; width: 28%; background: #0084ff; float: left"></div>
+					</div>
+				</b>
+			</div>
+		</div>
+	
+	  
+		<form name="transInput" class="bg_box">
+		 <!-- 存款计算器 -->
+			<div class="box_cont" v-show="changeCDType=='1'">
+				<div class="zz_cont">
+					<ul>
+					<li>
+						<em>存款类型：</em>
+							<i>
+								<select  v-model="saveType" name="saveType" v-options="item.Type for item in SaveTypeList" > </select>
+							</i>
+					</li> 
+					<li>
+							<em>存款金额：</em>
+							<i>
+							 <input type="text" v-change="toDisAble2()"  placeholder=" 请输入存款金额" name="amount" v-model="amount"
+								  ui-num='{"maxlength":15,"hasDot":true}' class="y_srk" required /><em style="float:right">元</em>
+							</i>
+							
+					</li>
+					<li>
+							<em>存期：</em>
+							<i>
+								<select  v-model="stage" v-change="toGetRate()" name="stage" v-options="sl.name for sl in stageList" > </select>
+							</i>
+					</li>   
+					<li style="border-bottom: none;">
+							<em>利率：</em>
+							<i>	
+							{{rate}}
+							</i>
+						</li>
+					</ul>
+				</div>
+					<input type="button" class="button_1" name="button" value="计算" v-click="toDisAble()" v-disabled="!amount||!stage"/>
+				
+			</div>
+			 <!-- 贷款计算器 -->
+			<div class="box_cont" v-show="changeCDType=='2'">
+				<div class="zz_cont">
+					<ul>
+						<li>
+							<em>还款方式：</em>
+							<i>
+							<select title="还款方式" id="DKType" name="DKType"
+								v-model="DKType" class="span12" v-change="toDisAble1()"
+								v-options="item.Name for item in HKTypeList" required>
+							</select>
+							</i>
+						</li>
+						<li>
+							<em>贷款年限：</em>
+							<i>
+							<input type="text"  min="1" max="30" ui-num='{"maxlength":2,"hasDot":true}' v-change="toDisAble1()" name="DKMounth" id="DKMounth" v-model="DKMounth" v-blue="finishWeb()" class="y_srk" placeholder=" 请输入贷款年限" required />
+							<em style="float:right">年</em>
+							</i>
+						</li>   
+						<li>
+							<em>贷款金额：</em>
+							<i>
+							<input type="text" class="y_srk" id="DkAmount" v-change="toDisAble1()" name="DkAmount" ui-num='{"maxlength":15,"hasDot":true}' v-model="DkAmount" placeholder=" 请输入贷款金额" required />	
+							<em style="float:right">元</em>
+							</i>
+						</li>
+					     	<li  style="border-bottom: none;">
+							<em>年利率：</em>
+							<i>
+							  <input type="text" id="DKLL" name="DKLL" v-change="toDisAble1()" v-model="DKLL" placeholder=" 请输入年利率" class="y_srk" required
+							  ui-num='{"maxlength":3,"hasDot":true}' ui-Mask='{"Fixed":3}'/><em style="float:right">%</em>
+							</i>
+						</li>
+					</ul>
+				</div>
+				<input type="button" class="button_1" name="button" value="计算" v-click="finishWeb()" v-disabled="!DKMounth||!DkAmount||!DKLL"/>
+				
+			</div>
+		</form>
+		<form name="transInput1" class="bg_box" v-show="isHasRate">
+		<div class="box_cont">
+				<div class="zz_cont"
+				style="margin-left: 0px; margin-right: 0px; padding: 0px; width: 100%;">
+				<ul>
+				       <li v-show="isHasRate">
+							<em>所得利息：</em>
+							<i>
+							  {{Gans|number:2}}元
+							</i>
+						</li>
+						<li v-show="isHasRate">
+							<em>本息合计：</em>
+							<i>
+							 {{Total|number:2}}元
+							</i>
+						</li>
+				</ul>
+				</div>
+				</div>
+		</form>
+		<form name="transInput2" class="bg_box" v-show="ishasDKRate">
+		<div class="box_cont">
+				<div class="zz_cont"
+				style="margin-left: 0px; margin-right: 0px; padding: 0px; width: 100%;">
+				   <ul>
+				    <li v-show="ishasDKRate">
+							<em>应还本金：</em>
+							<i>
+							 ￥{{DkAmount| number:2}}
+							</i>
+						</li>
+						<li v-show="ishasDKRate">
+							<em>应还利息：</em>
+							<i>
+							 ￥{{AllAccrual|number:2}}
+							</i>
+						</li>
+						<li v-show="ishasDKRate">
+							<em>本息合计：</em>
+							<i>
+							 ￥{{AllAmount|number:2}}
+							</i>
+						</li>  
+						<li v-show="ishasDKRate">
+							<em v-show="ishasDKRate1">首月还款额：</em>
+							<em v-show="ishasDKRate2">每月还款额：</em>
+							<i>
+							￥{{MonthPay|number:2}}
+							<button class=" button btn btn-info" style="text-align:right;color:white;background: #f18903;border:none;border-radius:2px;margin-left:20px;width:40px;text-align: center;height: 20px" v-click="nextweb()">
+					详情
+				</button>
+							</i>
+						</li>   
+				   </ul>
+				</div>
+		</div>
+		</form>
+    </div>
+    <div v-page v-transition="native" title="贷款计算器">
+		<form name="form2" novalidate>
+			<div class="container-fluid">
+				<div v-repeat="item in LoanPayList">
+					<div style="border-left: none;border-right: none;">
+						<div style="float: left;width:98.3%;border-width:1px;border-style:ridge;border-color:#f18903;border-bottom: none;border-top:none">
+							<div>第{{item.LoanTerm}}期</div>
+						</div>
+						</br>
+						<div style="float: left;width:24%;border-width:1px;border-style:ridge;border-color:#f18903;border-right: none">
+							<div>应还本金</div>
+							<div>￥{{item.Principal |number:2}}</div>
+						</div>
+						
+						<div style="float: left;width:24%;border-width:1px;border-style:ridge;border-color:#f18903;border-right: none">
+							<div>应还利息</div>
+							<div>￥{{item.Accrual | number:2}}</div>
+						</div>
+						
+						<div style="float: left;width:24%;border-width:1px;border-style:ridge;border-color:#f18903;border-right: none">
+							<div>月还金额</div>
+							<div>￥{{item.MonthPay | number:2}}</div>
+						</div>
+						
+						<div style="float: left;width:25.5%;border:1px ridge #f18903">
+							<div>贷款余额</div>
+							<div>￥{{item.LeavingsAmout | number:2}}</div>
+						</div>
+						
+					</div>
+				</div>	
+			</div>
+		</form>
+	 </div>
+	 <div style="width:100%;height:40px"></div>
+</div>
+
+<script>
+SaveRateQryCtrl.$inject = ["$scope","$remote","$targets","$filter","$context"];
+function SaveRateQryCtrl($scope,$remote,$targets,$filter,$context){
+	$scope.init=function(){ 
+		$scope.SaveTypeList = [//{"Type" : "活期",	"Code" : "02"},
+		                       {"Type" : "整存整取","Code" : "T1"}, 
+		                      // {"Type" : "零存整取","Code" : "T2"}, 
+		                      // {"Type" : "整存零取","Code" : "T4"}, 
+		                      // {"Type" : "通知存款","Code" : "T11"}, 
+		                      // {"Type" : "协定存款","Code" : "22"},
+		                       //{"Type":"定活两便","Code":"99"}, //Code自定义的
+		                       //{"Type" : "存本取息","Code" : "T5"}
+		                       ];
+		$scope.saveType=$scope.SaveTypeList[0];
+		$remote.get("data/FixToAlive/FixToAlive.json", {}, function(data) {
+			$scope.stageList=data;
+			$scope.stage=$scope.stageList[0];
+			var params={
+					"Amount":1000,
+					"Term":$scope.stage.value
+			}
+			$remote.post("/pmobile/RateQry.do",params,function(data){
+				if(data._RejCode){
+					$scope.rate=data.Rate+"%";
+				}
+			});
+			$scope.changeType('1');
+			$scope.isHasRate=false;
+			$scope.ishasDKRate=false;
+			$scope.DkAmount="";
+			$scope.AllAccrual="0.00";
+			$scope.AllAmount="0.00";
+			$scope.MonthPay="0.00";
+			$scope.HKTypeList=[{
+				"No" : "type01",
+				"Name" : "等额本息还款"
+			},{
+				"No" : "type02",
+				"Name" : "等额本金还款"
+			}
+			//{
+				/*  "No" : "type03",
+				"Name" : "按月付息到期还本"} */ 
+			];
+			$scope.CurrencyList=[{
+				"No" : "CNY",
+				"Name" : "人民币"
+			}];
+			$scope.DKType =$scope.HKTypeList[0];
+		});
+		
+	}
+	$scope.changeType= function(data){
+		$scope.changeCDType= data;
+		if(data=='1'){
+			$scope.ishasDKRate=false;
+			$('.inner').css('color','#0084ff');
+			$('.cross').css('color','black');
+			$('.d3').css('width','8%');
+			    $scope.fdf=true;
+			    $scope.fsf=false;
+			    $scope.DKMounth="";
+			    $scope.DkAmount="";
+			    $scope.DKLL="";
+			    $scope.AllAccrual="";
+			    $scope.AllAmount="";
+			    $scope.MonthPay="";
+			    
+		}else{
+			$scope.isHasRate=false;
+			$scope.DKType =$scope.HKTypeList[0];
+			var params={
+					"Amount":1000,
+					"Term":$scope.stage.value
+			}
+			$remote.post("/pmobile/RateQry.do",params,function(data){
+				if(data._RejCode){
+					$scope.rate=data.Rate+"%";
+				}
+			});
+			$('.cross').css('color','#0084ff');
+			$('.inner').css('color','black');
+			$('.d3').css('width','54%');
+			    $scope.fdf=false;
+			    $scope.fsf=true;
+			    $scope.stage=$scope.stageList[0];
+			    $scope.Gans="";
+			    $scope.amount="";
+			    $scope.GainsTax="";
+			    $scope.Total="";
+		}
+	}
+	$scope.finishWeb =function(){ 
+		if(!$scope.DKMounth||!$scope.DkAmount||!$scope.DKLL){
+			$scope.ishasDKRate=false;
+			return;
+		}else{
+			$scope.ishasDKRate=true;
+			var payType = $scope.DKType.No;          //还款类型
+			var amount = $scope.DkAmount;            //贷款金额
+			var loanAccrualRate = $scope.DKLL/100;   //年利率
+			var loanTerm=$scope.DKMounth*12;         //还款期限
+			
+			if(payType == "type01"){
+				//等额本息还款:月还款本息 =贷款本金×月利率×（（1＋月利率）＾还款月数）÷（（1＋月利率）＾还款月数－1））
+				$scope.MonthPay = amount*loanAccrualRate/12*Math.pow((1+loanAccrualRate/12),loanTerm)/(Math.pow(1+loanAccrualRate/12, loanTerm)-1);
+			}else if(payType == "type02"){
+				monthPayPrincipal = amount/loanTerm;
+				//月还款额
+				$scope.MonthPay = monthPayPrincipal+(amount-monthPayPrincipal*0)*loanAccrualRate/12;
+				//monthPayAccrual = $scope.MonthPay-monthPayPrincipal;
+			}
+			/* else if(payType == "type03"){
+				$scope.MonthPay = amount*loanAccrualRate;
+				
+			} */
+			var leavingsAmout = amount;
+			var monthPayAccrual = 0;
+			var monthPayPrincipal = 0;
+			var AllMonthAccrual =0;
+			var monthPay=0;
+			$scope.LoanPayList = [];
+			var payObj = new Array();
+			for(var i=0; i<loanTerm; i++){
+				if(payType == "type01"){
+					monthPay=$scope.MonthPay;
+					$scope.ishasDKRate1=false;
+					$scope.ishasDKRate2=true;
+					monthPayAccrual = leavingsAmout*loanAccrualRate/12;//应还利息
+					monthPayPrincipal = monthPay-monthPayAccrual;//应还本金
+				}else if(payType == "type02"){//等额本金还款：每月还款金额 = （贷款本金 ÷ 还款月数）+（本金 — 已归还本金累计额）×月利率
+					$scope.ishasDKRate1=true;
+					$scope.ishasDKRate2=false;
+					monthPayPrincipal = amount/loanTerm;
+					//月还款额
+					monthPay= monthPayPrincipal+(amount-monthPayPrincipal*i)*loanAccrualRate/12;
+					monthPayAccrual = monthPay-monthPayPrincipal;
+				}
+			/* 	else if(payType == "type03"){
+					$scope.ishasDKRate1=true;
+					$scope.ishasDKRate2=false;
+					monthPay=$scope.MonthPay;
+					monthPayAccrual = amount*loanAccrualRate;
+					monthPayPrincipal = 0;
+					if(i ==loanTerm-1){
+						monthPayPrincipal = amount;
+						monthPay=parseFloat(monthPayPrincipal)+parseFloat(monthPay);
+						}
+				} */
+				AllMonthAccrual = AllMonthAccrual+monthPayAccrual;
+				leavingsAmout = leavingsAmout-monthPayPrincipal;//贷款余额
+				payObj[i] = {
+						"LoanTerm":		i+1,
+						"Principal": 	Math.round(monthPayPrincipal*100)/100,
+						"Accrual": 		Math.round(monthPayAccrual*100)/100,
+						"MonthPay": 	Math.round(monthPay*100)/100,
+						"LeavingsAmout":Math.round(leavingsAmout*100)/100
+					};
+					$scope.LoanPayList.push(payObj[i]);
+			}
+			$scope.AllAccrual = AllMonthAccrual;
+			$scope.AllAmount =($scope.AllAccrual*10/10)+($scope.DkAmount*10/10);
+		}
+	}
+	$scope.toDisAble=function(){
+		$scope.isHasRate=true;
+		//利息=存款*（利率/100）*存期/365
+		if($scope.stage.value=="3|M"){
+			term=3;
+		}else if($scope.stage.value=="6|M"){
+			term=6;
+		}else if($scope.stage.value=="1|Y"){
+			term=12;
+		}else if($scope.stage.value=="2|Y"){
+			term=24;
+		}else if($scope.stage.value=="3|Y"){
+			term=36;
+		}else{
+			term=12*5;
+		}
+		switch ($scope.saveType.Code) {
+		case "T1"://整存整取
+			var amount = parseFloat($scope.amount);
+			var rate = parseFloat($scope.rate);
+			var term = parseInt(term) / 12;
+			$scope.Gans = amount * (rate / 100) * term;
+			$scope.Total = $scope.Gans + amount;
+			break;
+		}
+	}
+	$scope.toDisAble1=function(){
+		$scope.ishasDKRate=false;
+		/* if($scope.DKType.No=="type03"){
+			
+		} */
+	}
+	$scope.toDisAble2=function(){
+		$scope.isHasRate=false;
+	}
+	//获取利率
+	$scope.toGetRate=function(){
+		if(!$scope.amount){
+			$scope.isHasRate=false;
+			var params={
+					"Amount":1000,
+					"Term":$scope.stage.value
+			}
+		}else{
+			$scope.isHasRate=false;
+			var params={
+					"Amount":$scope.amount,
+					"Term":$scope.stage.value
+			}
+		}
+			
+		$remote.post("/pmobile/RateQry.do",params,function(data){
+			if(data._RejCode){
+				$scope.rate=data.Rate+"%";
+			}
+		});
+	}
+	$scope.nextweb=function(){
+		$targets("content", "#+1");
+		}
+}
+</script>

@@ -1,0 +1,233 @@
+<div v-view-setup="LossAccountCtrl" v-init="init()">
+	<div  class="bg_box" v-page v-transition="native" title="挂失">
+		<div class="box_cont">
+			<div class="zz_cont">
+			      <ul>
+						<li><em>账号：</em><i>{{lossAcc}}</i></li>
+						<li v-show="cardType=='credit'&&addr">
+							<em>卡片寄送地址：</em>
+							<!-- <i>
+								<input type="text" placeholder="请输入卡片寄送地址" name="rCard" v-model="rCard" class="y_srk" required/>
+							</i> -->
+							<i>
+			            		{{addr}}
+			            	</i>
+						</li>
+						<li v-show="cardType=='credit'&&addr" style="color:red;">
+							&nbsp;&nbsp;请确认卡函寄送地址是否正确，如需修改请致电我行客服热线4009962000进行修改。
+						</li>
+						<li v-show="cardType!='credit'&&Security=='07'">
+							<em>卡密码：</em>
+							<i><input  id="cardpassword" type="password" name="password" class="y_srk" placeholder="请输入密码" v-click="getPW()" readonly/></i>
+						</li>
+						<li v-show="cardType!='credit'&&Security=='07'">
+							<em>手机动态码：</em>
+							<i>
+								<input type="tel" id="dycode" name="dycode" v-model="dycode" maxlength=6 class="y_srk_50" placeholder="请输入动态码"/>
+								<button id="anniu" class="inp_butt" v-sms="getDYcode()">获取动态码</button>
+							</i>
+						</li>
+						<li v-show="cardType!='credit'&&Security=='05'">
+							<em>音频Key密码：</em>
+							<i><input  id="keypassword" type="password" name="keypassword" v-model="keypassword" class="y_srk" placeholder="请输入音频Key密码"/></i>
+						</li>
+				 </ul>
+				 <div v-show="cardType!='credit'&&Security=='07'">
+		     		<input type="submit" class="button_1" name="Submit" v-disabled="!dycode||(buttonDis=='false')" value="确认" v-click="toResult(cardType)">
+		     	 </div>
+		     	 <div v-show="cardType!='credit'&&Security=='05'">
+		     		<input type="submit" class="button_1" name="Submit" v-disabled="!keypassword" value="确认" v-click="toResult(cardType)">
+		     	 </div>
+		     	 <div v-show="cardType!='credit'&&userType!='T'">
+		     		<input type="submit" class="button_1" name="Submit" value="确认" v-click="toResult(cardType)">
+		     	 </div>
+		     	 <div v-show="cardType=='credit'">
+		     		<input type="submit" class="button_1" name="Submit" value="确认" v-click="toResult(cardType)">
+		     	 </div>
+		    </div>
+		    <div style="color:red;text-align:center;width:100%;line-height:30px;"></div>
+		    <div class="zz_cont bor_bott"><img src="images/ts.png" />
+			      <font class="tishi">温馨提示</font><br/>
+			     <div style="font-size:12px; line-height:16px; color:#929292;"> 		
+			     <em v-hide="cardType=='credit'">&nbsp;&nbsp;1、账户挂失后，如需解挂须持有效证件到柜台办理。</br></em>
+				 <em v-show="cardType=='debitCard'">&nbsp;&nbsp;2、请尽快持本人身份证件到我行当地任一营业网点办理正式挂失手续。</br></em>
+				 <em v-show="cardType=='tim'">&nbsp;&nbsp;2、请尽快持本人有效身份证件到存折开户网点办理正式挂失手续。</br></em>
+				 <em v-show="cardType=='credit'">&nbsp;&nbsp;1、挂失卡片需支付50元挂失费，将直接从您的信用卡账号中扣除。</br></em>
+				 <em v-hide="cardType=='debitCard'||cardType=='credit'">&nbsp;&nbsp;3、成功办理挂失后，我行将于7个工作日内为您补发新卡。</br></em>
+				 <em v-show="cardType=='credit'">&nbsp;&nbsp;2、成功办理挂失后，我行将于7个工作日内为您补发新卡。</br></em>
+				 <em v-show="cardType=='credit'">&nbsp;&nbsp;3、您仍可使用现在的信用卡卡号，通过电话银行、网点等方式进行查询及还款，自动还款仍然有效。</br></em>
+				</div>
+		    </div>
+		   
+		    
+		</div>
+	</div>
+</div>
+<script>
+LossAccountCtrl.$inject = ["$scope","$remote","$targets","$context"];
+function LossAccountCtrl($scope,$remote,$targets,$context){
+	
+	$scope.init=function(){
+		$scope.buttonDis="false";
+		$scope.cardType=$context.getJson().lossCardType;
+// 		alert($scope.cardType);
+		$scope.lossAcc=$context.getJson().lossAc;
+		if($scope.cardType=='credit'){
+			//获取信用卡卡片寄送地址,并在页面展示
+			$remote.post("/pmobile/BillSendMethodMgmt.do",{"CreditNo":$scope.lossAcc},function(data){
+				//单位邮寄地址
+				if(data.add1_Type=='H'){
+					$scope.homeAddr=data.add1_1+data.add1_2+data.add1_3+data.add1_4+data.add1_5;
+				}else if(data.add1_Type=='B'){
+					$scope.cpyAddr=data.add1_1+data.add1_2+data.add1_3+data.add1_4+data.add1_5;
+				}
+				//地址
+				if(data.add2_Type=='H'){
+					$scope.homeAddr=data.add2_1+data.add2_2+data.add2_3+data.add2_4+data.add2_5;
+				}else if(data.add2_Type=='B'){
+					$scope.cpyAddr=data.add2_1+data.add2_2+data.add2_3+data.add2_4+data.add2_5;
+				}
+				$scope.postAddrType="B";
+				$scope.addr=$scope.cpyAddr;
+				if($scope.type=="B"){
+					$scope.postAddrType="B";
+					
+				}else if(data.stsMail=="H"){
+					$scope.postAddrType="H";
+					$scope.addr=$scope.homeAddr;
+				}
+			},function(data){
+				return data.jsonError;
+			});
+		}
+		$scope.getClientState(function(response){
+			var resJson=vx.fromJson(response);
+// 			alert(resJson.Userinfo.UserType);
+			$scope.userType=resJson.Userinfo.UserType;	
+				if($scope.userType == "T"){
+					//查询当前认证方式
+					 $remote.post("/pmobile/ChannelAuthTypeQry.do",{},function(data){
+						$scope.Security=data.OldSecurity;
+					});
+					
+				}
+		});
+	}
+	$scope.toResult=function(cardType){
+		if(cardType=="credit"){
+			//获取防重复提交码
+			$remote.post("/pmobile/getNewTokenName.do",{},function(data){
+				var _tokenName=data._tokenName;
+				$remote.post("/pmobile/CreditcardLost.do",{"creditNo":$scope.lossAcc,"_tokenName":_tokenName},function(data){
+					if(data._RejCode=="000000"){
+						$scope.alert("挂失成功！我行将于7个工作日内为您补发新卡。");
+						NativeCall.finishWeb();
+					}
+				});
+			});
+		}else{
+			var params="";//交易参数
+			if($scope.Security=="05"){//音频KEYs
+				//音频PKY制签名需要的数据
+				var inputData={"accountNo":$scope.lossAcc,"accountType":"0"};//账户类型accountType-0
+				var sourceField = "挂失账号#"+inputData.accountNo;
+				//调用音频KEY字段转换xml格式的方法
+				var sinData = $scope.getSignSourceValue(sourceField,"账号类型#"+inputData.accountType);
+				var subData={"sinData":sinData,"YPKPassword":$scope.keypassword};
+				//通过原生调用音频key
+				$scope.getSignData(function(outputdata){
+					var signData=outputdata;
+					if(!signData){
+						$scope.keypassword="";
+						return false;
+					}
+					params={
+							"AcNo":$scope.lossAcc,
+							"accountType":0,//存折/借记卡-0，信用卡-4
+							"registMedium":1,//0：活期账户下挂，1：卡下挂
+							"SignData":signData
+					};
+					$scope.doIt(params);//非信用卡挂失
+				},vx.toJson(subData));
+				
+			}else if($scope.Security=="07"){//手机动态码+卡密码
+				params={
+						"AcNo":$scope.lossAcc,
+						"accountType":0,//存折/借记卡-0，信用卡-4
+						"registMedium":1,//0：活期账户下挂，1：卡下挂
+						"TrsPassword":$scope.miwen,
+						"mobileVerifyCode":$scope.dycode,
+						"mobileCodeSerNo":$scope.msmNo
+				};
+			}else if($scope.userType == "P"){
+				params={
+						"AcNo":$scope.lossAcc,
+						"accountType":0,//存折/借记卡-0，信用卡-4
+						"registMedium":1//0：活期账户下挂，1：卡下挂
+				};
+			}
+			if(($scope.userType == "T"&&$scope.Security!="05")||$scope.userType == "P"){
+				$scope.doIt(params);//非信用卡挂失
+			}
+		}
+		
+	}
+	//非信用卡（借记卡/存折）挂失交易
+	$scope.doIt=function(params){
+		//获取防重复提交码
+		$remote.post("/pmobile/getNewTokenName.do",{},function(data){
+			params._tokenName=data.tokenName;
+			$remote.post("/pmobile/AcctLost.do",params,function(data){
+				if(data._RejCode=="000000"){
+					$scope.alert("挂失成功");
+					NativeCall.goBack();
+				}
+			},function(data){
+				if(data.jsonError){
+					$scope.alert(data.jsonError);
+				}
+				$scope.keypassword="";
+				$("#cardpassword").val("");
+				$scope.miwen="";
+				$scope.getToken();
+				return data.jsonError;
+			});
+		});
+	}
+	//调用密码控件
+	$scope.getPW=function(){
+		$("#cardpassword").val("");
+		$scope.buttonDis="false";
+		var scrollHeight=$scope.getPWPosition($("#cardpassword").get(0));//定位当前密码输入栏位在文档中的位置
+		$scope.getPassword(function(pwResponse){
+			var resJson=vx.fromJson(pwResponse);
+			if(resJson.Flag==0){
+				$("#cardpassword").val(resJson.passWord);
+			}else if(resJson.Flag==1){
+				$scope.miwen=resJson.passWord;
+				$scope.buttonDis = resJson.buttonDis;
+			}
+		},scrollHeight);
+	}
+	//倒计时的回调函数
+	$scope.getDYcode=function(){
+		$scope.getClientState(function(response){
+		var resJson=vx.fromJson(response);
+		var mobileNo=resJson.Userinfo.MobileNo;
+		
+		$scope.businessName="账户挂失";
+		var params={
+				"BusinessName":$scope.businessName,
+				"MobileNo":mobileNo,
+				"ServiceCode":"DCM000009"
+		}
+		//获取手机动态码
+		$remote.post("/pmobile/GenTokenName.do",params,function(data){
+			$scope.msmNo=data.SerialNo;
+		});
+	});
+	}
+	
+	
+}
+</script>

@@ -1,0 +1,148 @@
+<div v-view-setup="PayeeBookCtrl" v-init="init()">
+	<div  class="bg_box" v-page v-transition="native">
+		<div class="box_cont">
+			<div class="zz_cont">
+					<ul>
+						<li>
+							<em>收款人姓名：</em>
+							<i> 
+				
+				<input type="text" name="targetName" v-model="targetName"  placeholder="请输入收款人姓名" class="y_srk">{{targetName}}
+				<span v-click="searchName()"><img src="images/ss_icon.png" width="5%"></span>
+				</i>
+						</li>
+					</ul>
+			</div>
+			</div>
+			</div>
+			<div class="j-heightb"></div>
+			<div v-show="comeFrome=='inner'" class="mingce" v-repeat="payee in payeeList" v-click="backInner(payee)">
+			      <ul>
+						<li><em class="f666">{{payee.PayeeAcName}}</em><i class="f666">{{payee.AcAlias||"未设置别名"}}</i></li>
+						<li class="f18903">{{payee.PayeeAcNo}}</li>
+						<li class="f2f2f2">{{payee.PayeeBankName}}</li>
+				  </ul>
+		    </div>
+		    <div v-show="comeFrome=='cross'" class="mingce" v-repeat="payee in payeeList"  v-click="backCross(payee)">
+			      <ul>
+						<li>
+							<em class="f666">{{payee.PayeeAcName}}</em><i class="f666">{{payee.AcAlias||"未设置别名"}}</i>
+						</li>
+						<li class="f18903">
+							{{payee.PayeeAcNo}}
+						</li>
+						<li class="f2f2f2" v-show="seleBankType==1">{{payee.NormalPayeeBankName}}</li>
+						<li class="f2f2f2" v-show="seleBankType==2">{{payee.QuickPayeeBankName}}</li>
+				  </ul>
+		    </div>
+		    <div v-show="comeFrome=='PRepay'" class="mingce" v-repeat="payee in payeeList"  v-click="backPRepay(payee)">
+			      <ul>
+						<li><em class="f666">{{payee.PayeeAcName}}</em><i class="f666">{{payee.AcAlias||"未设置别名"}}</i></li>
+						<li class="f18903">{{payee.PayeeAcNo}}</li>
+						<li class="f2f2f2">{{payee.PayeeBankName}}</li>
+				  </ul>
+		    </div>
+		    <div v-show="payeeList.length==0" class="mingce">
+			      <ul>
+						<li class="center">未搜索到您要查找的收款人的信息</li>
+				  </ul>
+		    </div>
+
+</div>
+<script>
+PayeeBookCtrl.$inject = ["$scope","$remote","$targets","$context"];
+function PayeeBookCtrl($scope,$remote,$targets,$context){
+	$scope.init=function(){
+		$scope.comeFrome=$context.getJson().whoPBM;
+		$scope.seleBankType=$context.getJson().seleType;
+		if($scope.comeFrome=="inner"){
+			var params={
+					"TransType":0,
+					"pageSize":100,
+					"currentIndex":1
+			}
+			//查询行内收款人
+			$remote.post("/pmobile/TransferPayeeListQry.do",params,function(data){
+					$scope.payeeList=data.List;
+					$scope.allPayeeList=data.List;
+			}); 
+			/* $remote.get("data/InnerTransfer/InnerTransfer.json",params,function(data){
+				$scope.payeeList=data.List;
+				$scope.allPayeeList=data.List;
+			}); */
+		}else if($scope.comeFrome=="cross"){
+			
+			//查询跨行收款人
+			$remote.post("/pmobile/CrossTransferPayeeListQry.do",{},function(data){
+					$scope.payeeList=data.List;
+					$scope.allPayeeList=data.List;
+					vx.forEach($scope.payeeList,function(item){
+						if($scope.seleBankType=="1"&&item.NormalPayeeBankName==""){
+							item.NormalPayeeBankName="未设置开户行";
+						}
+						if($scope.seleBankType=="2"&&item.QuickPayeeBankName==""){
+							item.QuickPayeeBankName="未设置收款银行";
+						}
+// 						if($scope.crossParam.payCardAcNo==item.AcNo){
+// 							$scope.payCard=item;
+// 						}
+					});
+			});
+			/* $remote.get("data/CrossTransfer/CrossTransfer.json",params,function(data){
+				$scope.payeeList=data.List;
+				$scope.allPayeeList=data.List;
+			}); */
+		}else if($scope.comeFrome=="PRepay"){
+			var params={
+					"TransType":5,
+					//"PayeeAcNo":,
+					//"PayeeAcName":,
+					//"PayeeBankName":,
+					//"AcAlias":,
+					"pageSize":100,
+					"currentIndex":1
+			}
+			//还款行内信用卡收款人
+			$remote.post("/pmobile/TransferPayeeListQry.do",params,function(data){
+				var temp=[];
+				vx.forEach(data.List,function(item){
+					if(item.TransType==5){//行内贷记卡-5
+						temp.push(item);	
+					}
+				});
+				$scope.payeeList=temp;
+				$scope.allPayeeList=temp;
+		});
+		}
+	}
+	//返回行内转账页面
+	$scope.backInner=function(obj){
+		$context.setJson({"selectedPayee":obj});
+		$scope.goto("InnerTransfer");
+	}
+	//返回跨行转账页面
+	$scope.backCross=function(obj){
+		$context.setJson({"selectedPayee":obj});
+		$scope.goto("CrossTransfer");
+	}
+	//返回为他人贷记卡还款页面
+	$scope.backPRepay=function(obj){
+		$context.setJson({"selectedPayee":obj});
+		$scope.goto("PRepayment");
+	}
+	//搜索收款人姓名
+	$scope.searchName=function(){
+		if($scope.targetName){
+			var temp=[];
+			vx.forEach($scope.allPayeeList,function(item){
+				if(item.PayeeAcName.indexOf($scope.targetName)>-1){
+					temp.push(item);
+				}
+			});
+			$scope.payeeList=temp;
+		}else{
+			$scope.payeeList=$scope.allPayeeList;
+		}
+	}
+}
+</script>

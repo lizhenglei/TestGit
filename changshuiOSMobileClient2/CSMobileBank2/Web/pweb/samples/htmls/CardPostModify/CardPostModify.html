@@ -1,0 +1,74 @@
+<div v-view-setup="CardPostModifyCtrl" v-init="init()">
+	<!-- 信用卡卡函寄送地址变更 -->
+	<div class="bg_box" v-page v-transition="native" title="我的信用卡">
+		<div class="box_cont">
+			<div class="zz_cont">
+					<ul>
+						<li>
+							<em>寄送地址类型：</em>
+							<i>
+								<div class="radio_cont2" style="margin:0">
+									<span class="radio" style="margin:0;line-height:30px"><input type="radio" v-model="postAddrType" name="postAddrType" value="B" v-click="selected()" class="creditcard_checkbox">单位</span>
+									<span class="radio" style="margin:0;line-height:30px"><input type="radio" v-model="postAddrType" name="postAddrType" value="H" v-click="selected()" class="creditcard_checkbox">住宅</span>
+								</div>
+							</i>
+						</li>
+			            <li>
+			            	<em>寄送地址：</em>
+			            	<i>
+			            		{{addr}}
+			            	</i>
+			            </li>
+					</ul>
+			</div>
+		    
+		    <div class="zz_cont">
+		     		<input type="submit"  class="button_1" name="Submit" value="确认" v-click="toResult()">
+		    </div>
+		    
+		</div>
+	</div>
+</div>
+<script>
+CardPostModifyCtrl.$inject = ["$scope","$remote","$targets","$context"];
+function CardPostModifyCtrl($scope,$remote,$targets,$context){
+	$scope.init=function(){
+		$scope.credit=$context.getJson().CreditNO;
+		$remote.post("/pmobile/BillSendMethodMgmt.do",{"CreditNo":$scope.credit},function(data){
+			//单位邮寄地址
+			$scope.cpyAddr=data.add2_1+data.add2_2+data.add2_3+data.add2_4+data.add2_5;
+			//公司邮寄地址
+			$scope.homeAddr=data.add1_1+data.add1_2+data.add1_3+data.add1_4+data.add1_5;
+			//当前设置的账单地址标志 H:家庭地址 B:单位地址 F户籍嗲至: W:房产地址
+			if(data.stsMail=="B"){
+				$scope.postAddrType="B";
+				$scope.addr=$scope.cpyAddr;
+				
+			}else if(data.stsMail=="H"){
+				$scope.postAddrType="H";
+				$scope.addr=$scope.homeAddr;
+			}
+		});
+	}
+	$scope.selected=function(){
+		$scope.addr=$scope.postAddrType=="B"?$scope.cpyAddr:$scope.homeAddr;
+	}
+	$scope.toResult=function(){
+		$remote.post("/pmobile/getNewTokenName.do",{},function(data){
+			$scope.tokenName=data._tokenName;
+			var params={
+					"CreditNo":$scope.credit,
+					"stsMail":$scope.postAddrType,//H:家庭地址 B:单位地址 F户籍嗲至: W:房产地址
+					"_tokenName":$scope.tokenName
+			};
+			//查询借记卡
+			$remote.post("/pmobile/BillSendAddSet.do",params,function(data){
+				$scope.alert("卡片/函件寄送地址变更成功");
+				NativeCall.goBack();
+			});
+		});
+	}
+	
+	
+}
+</script>

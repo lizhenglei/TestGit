@@ -1,0 +1,372 @@
+<div v-view-setup="MyCreditCardCtrl" v-init="init()">
+	<div style="padding-bottom:0" v-page v-transition="native" title="我的信用卡">
+			<div v-repeat="credit in credList">
+			<div class="creditcard" style="background:white;color:#666;">
+				<div class="radio_cont1" style="color:#666">
+					<b>
+						<i v-click="showMore($index,credit)">
+						<img src="images/kongbaige.png" style="width:15px;height:15px;padding-left:5px;" v-hide="moreInfo==$index" class="upImg"/>
+						<img src="images/huangqueren.png" style="width:5%;padding-left:5px;" v-show="moreInfo==$index"  class="downImg"/>&nbsp;{{credit.creditCardNo}}</i>
+						&nbsp;<input type="text" name="debitCardName" v-model="debitCardName" v-blur="updateName($index,debitCardName)" style="display:none;width:20%" maxlength="10"/>
+						<em class="gzk" style="font-size:12px;">{{credit.TrmAcAlias}}</em>
+						<i class="delete" style="margin-top:0px;right:0;margin-right:30px"><a href="" v-click="editName($index,'creditcard')"><img style="height:18px;width:19px" src="images/xiug_icon.png" /></a></i>
+						<i class="delete" style="margin-top:0px;right:0;"><a href="" v-click="deleteTiedCard(credit)"><img style="padding-left:10px;height:18px;width:14px" src="images/d.png" /></a></i>
+					</b>
+				</div>
+			</div>
+			<div class="creditcard_box" v-show="moreInfo==$index">
+			<div class="zz_cont">
+				<div class="bor_1" style="width:100%;height:35px;line-height:35px;float:left;margin-bottom:0px;background:white;color:#fff;border:#fff 1px solid;">
+					<div class="set_right set1" v-click="optionsCard($index,'funcBtns')" style="background-color:white;color:black;">其他设置</div>
+					<div class="set_left set2 " v-click="optionsCard($index,'detailInfo')" style="background-color:white;color:#0084ff;">综合信息</div>
+				</div>
+				<div class="d1" style="height:10px;width:100%;background:white;float:left;"><div class="d3" style="height:2px;width:6%;background:white;float:left"></div><div class="d2" style="height:2px;width:38%;background:#0084ff;float:left"></div></div>
+				<ul class="detailInfo">
+						<li><em>卡片状态：</em><i style="width:50%;">{{credit.CoreStatus|AccStateFilter}}</i><button v-show="credit.CoreStatus=='A'" class="button_bj" v-click="toActiv($index,credit)">激活</button></li>
+<!-- 						<li><em>币种：</em><i>{{credit.CurrencyName}}</i></li> -->
+						<li><em>当前积分：</em><i>{{pointInfo.availablePoints!=0?pointInfo.availablePoints:0}}分</i></li>
+						<li><em>预留手机号：</em><i style="width:50%;">{{mobilePhone|encryptAcNof}}</i><!-- <button class="button_bj" v-click='toPhoneModify($index,credit)'>变更</button> --></li>
+						<li><em>信用额度：</em><i>{{cardInfo.creditLimitAmt|number:2}}</i></li>
+						<li><em>可用额度：</em><i>{{cardInfo.usableAmount|number:2}}</i></li>
+						<li><em>预借现金额度：</em><i>{{cardInfo.caLimit|number:2}}</i></li>
+						<li><em>账单日：</em><i >每月{{PublicInfo.cyNBR}}日</i></li>
+						<li><em>还款卡尾号：</em><i >{{acLast4}}</i></li>
+						<li><em>还款方式：</em><i style="width:50%;">{{cardInfo.repayCode|repayCodeFilter}}</i><button class="button_bj" v-click="toAutoPay($index,credit)">变更</button></li>
+						<li><em>账单方式：</em><i style="width:50%;line-height:20px;padding-top: 10px;">{{PublicInfo.stmCode|BillStmCodeFilter}}{{BillEmail}}</i><button class="button_bj" v-click="toBillPost($index,credit)">变更</button></li>
+			           <!-- <li><em>卡函寄送地址：</em><i style="width:50%;">{{PublicInfo.add_1}}{{PublicInfo.add_2}}{{PublicInfo.add_3}}{{PublicInfo.add_4}}{{PublicInfo.add_5}}</i><button class="button_bj" v-hide="flag==0" v-click="toPostAddr($index,credit)">变更</button></li> --> 
+				  </ul>
+				  <div class="zz_cont funcBtns" style="display:none">
+				  	<input type="submit" class="button_1" name="qryPswdModify" v-click="toPswdModify($index,credit)" value="查询密码修改" />
+				  	<input type="submit" class="button_1" name="lossCard" v-click="toLossAccount($index,credit)" value="挂失当前卡片" />
+				  </div>
+			</div>
+			
+			</div>
+			</div>
+			<div class="j-heightb"></div>
+			<div class="creditcard_box">
+				<div class="bcfff1 zczl_cont background1" style="text-align:center;padding:10px 0 10px 0"  v-click="toAddCreditCard()">
+		       		<img src="images/tj.png"><span style="font-size:16px; padding-left:10px;"><a href="#" style="color:#666"> 新增信用卡</a></span>
+		      	</div>
+		      	</div>
+	</div>
+</div>
+<script>
+MyCreditCardCtrl.$inject = ["$scope","$remote","$targets","$context","$timeout","$filter"];
+function MyCreditCardCtrl($scope,$remote,$targets,$context,$timeout,$filter){
+	$scope.init=function(){
+		//查询到信用卡账号
+		var param={
+				"Transaction":"MyCreditCard"//用于识别显示未激活的信用卡片
+		};
+		$remote.post("/pmobile/ActListQry.do",param,function(data){
+			$scope.credList=data.CreditList;
+			for(var i = 0 ;i<$scope.credList.length ; i++){
+				if($scope.credList[i].AcAlias.length>=5){
+				 	$scope.credList[i].TrmAcAlias = $scope.credList[i].AcAlias.substring(0,4)+"...";
+				}else{
+					$scope.credList[i].TrmAcAlias = $scope.credList[i].AcAlias;
+				}
+			}
+			var fristcard=$context.getJson().selectedAoNc;//传送点击信用卡的值
+			var f;//点击传送信用卡的下坐标
+			if($scope.credList.length==0){
+				$scope.alert("无信用卡加挂信息");
+				return false;
+			}else if($scope.credList.length==1){
+				$scope.showMore(0,$scope.credList[0]);
+			}else{
+				vx.forEach($scope.credList,function(item,index){
+					if(fristcard==item.creditCardNo){
+						f=index;
+					}
+				});
+				$scope.showMore(f,$scope.credList[f]);
+			}
+			
+			var InfoIndex=$context.getJson().CreditId;//根据保存的信用卡下标，展开对应信用卡
+			var newStatus=$context.getJson().MyCardStatus;//获取新卡片核心状态，确定是否激活
+			if(InfoIndex){
+				$timeout(function(){
+					$scope.showMore(InfoIndex,$scope.credList[InfoIndex]);//展示信用卡信息
+				},100);
+			}
+			//在增加卡片页面新添加的卡片，提示激活
+			if(newStatus=="A"){
+				var indexNew=$scope.credList.length-1;//获取未激活的卡片在信用卡列表中的下标
+				//$scope.showMore(indexNew,$scope.credList[indexNew]);//展开未激活的卡片
+				$scope.confirm("卡片未激活，是否确认激活？",function(){
+					$scope.toActiv(indexNew,$scope.credList[indexNew])//跳转到卡激活页面
+				},function(){
+					$context.clear();
+				});
+			}
+		});
+	}
+	//编辑别名
+	$scope.editName=function(index,id){
+		var accountN=$scope.credList[index].creditCardNo;
+		$context.setJson({"acno":accountN});
+		$scope.od=$scope.credList[index].TrmAcAlias;
+		$context.setJson({"old":$scope.od});
+		$context.setJson({"place":"MyCreditCard"});
+		$scope.goto("MyCreditCard","palias");
+// 		var el=$("."+id+":eq("+index+")");
+// 		el.find("input").show().focus();
+// 		el.find("em").hide();
+// 		el.find("input").on("blur",function(){
+// 			el.find("input").hide();
+// 			el.find("em").show();
+			
+// 		});
+	}
+	//修改别名
+	$scope.updateName=function(index,debitCardName){
+		var accountN=$scope.credList[index].creditCardNo;
+		if(debitCardName){
+			var params={
+					"AcNo":accountN,
+					"channelCode":"01",//00：个人网银，01：手机银行
+					"accountAlias":debitCardName,
+					"flag":5//账户停用-1; 启用-2；删除-3；主账户设置-4；别名设置-5  
+			}
+			$remote.post("/pmobile/AccountNoManager.do",params,function(data){
+				$scope.init();
+			});
+		}
+	}
+	//删除关联信用卡
+	$scope.deleteTiedCard=function(credit){
+		var params={
+				"AcNo":credit.creditCardNo,
+				"channelCode":"01",//00：个人网银，01：手机银行
+				"accountAlias":credit.AcAlias,
+				"flag":3//账户停用-1; 启用-2；删除-3；主账户设置-4；别名设置-5
+		}
+		$scope.confirm("是否确认删除此绑定卡？",function(){
+			$remote.post("/pmobile/AccountNoManager.do",params,function(data){
+					$scope.alert("删除成功");
+					$scope.init();
+			});
+			
+		});
+	}
+	//查询信用卡账户基本信息
+	$scope.go1=function(card){
+		var params={
+				"CreditNo":card.creditCardNo,
+				"flag":0,//是否检查密码 0:不检查 ,1:检查
+				"password":""
+		};
+		$remote.post("/pmobile/CreditcardBasicInfo.do",params,function(data){
+			$scope.cardInfo=data;
+		});
+	}
+	//积分查询
+	$scope.go2=function(card){
+		$remote.post("/pmobile/CreditAccuPointQry.do",{"CreditNo":card.creditCardNo},function(data){
+			$scope.pointInfo=data;
+		});
+	}
+	//信用卡公共服务信息查询
+	$scope.go3=function(card){
+		$remote.post("/pmobile/CreditcardPublicInfo.do",{"CreditNo":card.creditCardNo},function(data){
+			$scope.PublicInfo=data;
+			if($scope.PublicInfo.stmCode=="EM"||$scope.PublicInfo.stmCode=="LE")
+			$scope.BillEmail=$scope.PublicInfo.email;
+		});
+	}
+	//信用卡客户信息查询
+	$scope.go4=function(card){
+		$remote.post("/pmobile/CreditcardCustInfo.do",{"CreditNo":card.creditCardNo},function(data){
+			//预留手机号
+			$scope.mobilePhone=data.mobileNo;
+			$scope.email=data.email;
+		});
+	}
+	$scope.go5=function(card){
+		$remote.post("/pmobile/AutoPayforProtocolQry.do",{"CreditNo":card.creditCardNo},function(data){
+			var payAc=data.accountNo;
+			$context.setJson({"fpay":payAc});
+			$scope.autoCardSet=true;
+			if(payAc){
+				$scope.acLast4=payAc.substr(payAc.length-4);
+			}
+		},function(data){
+			$scope.autoCardSet=false;
+			return data.jsonError;
+		});
+	}
+	//选中账号
+	$scope.showMore=function(index,card){
+		if($scope.moreInfo!=index){
+			$scope.moreInfo=index;//点击，展开对应信用卡信息
+			
+			//初始化，卡片数据
+			$scope.cardInfo="";
+			$scope.pointInfo="";
+			$scope.PublicInfo="";
+			$scope.BillEmail="";
+			$scope.mobilePhone="";
+			$scope.email="";
+			$scope.autoCardSet=false;
+			$scope.acLast4="";
+		}else{
+			$scope.moreInfo=-1;//点击，收起对应信用卡信息
+		}
+		$(".detailInfo:eq("+index+")").css("display","block");
+			var el=$(".upImg:eq("+index+")");
+			var el2=$(".downImg:eq("+index+")");
+			if($scope.moreInfo==index){
+				$scope.compare(card.creditCardNo);//确定是否为老卡
+				el2.css("display","inline");
+				el.css("display","none");
+				if(card.CoreStatus==0&&card.State==0){//判断，若卡片状态不正常，如未激活，则不发送信息查询请求
+					//查询信用卡账户基本信息
+// 					var params={
+// 							"CreditNo":card.creditCardNo,
+// 							"flag":0,//是否检查密码 0:不检查 ,1:检查
+// 							"password":""
+// 					};
+// 					$remote.post("/pmobile/CreditcardBasicInfo.do",params,function(data){
+// 						$scope.cardInfo=data;
+// 					});
+// 					//积分查询
+// 					$remote.post("/pmobile/CreditAccuPointQry.do",{"CreditNo":card.creditCardNo},function(data){
+// 						$scope.pointInfo=data;
+// 					},function(data){
+// 						return data.jsonError;
+// 					});
+// 					//信用卡公共服务信息查询
+// 					$remote.post("/pmobile/CreditcardPublicInfo.do",{"CreditNo":card.creditCardNo},function(data){
+// 						$scope.PublicInfo=data;
+// 						if($scope.PublicInfo.stmCode=="EM"||$scope.PublicInfo.stmCode=="LE")
+// 						$scope.BillEmail=$scope.PublicInfo.email;
+// 					});
+// 					//信用卡客户信息查询
+// 					$remote.post("/pmobile/CreditcardCustInfo.do",{"CreditNo":card.creditCardNo},function(data){
+// 						//预留手机号
+// 						$scope.mobilePhone=data.mobileNo;
+// 						$scope.email=data.email;
+// 					});
+// 					$remote.post("/pmobile/AutoPayforProtocolQry.do",{"CreditNo":card.creditCardNo},function(data){
+// 						var payAc=data.accountNo;
+// 						$context.setJson({"fpay":payAc});
+// 						$scope.autoCardSet=true;
+// 						if(payAc){
+// 							$scope.acLast4=payAc.substr(payAc.length-4);
+// 						}
+// 					},function(data){
+// 						$scope.autoCardSet=false;
+// 						return data.jsonError;
+// 					});
+					$scope.go1(card);
+					$scope.go2(card);
+					$scope.go3(card);
+					$scope.go4(card);
+					$scope.go5(card);
+					
+				}
+			}else{
+				el.css("display","inline");
+				el2.css("display","none");
+			}
+			
+		
+	}
+	//选项卡切换
+	$scope.optionsCard=function(index,id){
+		//$(event.target).addClass(".addBg");
+		if(id=="funcBtns"){
+			$('.set1').css('color','#0084ff');
+			$('.set2').css('color','black');
+			$('.d3').css('width','57%');
+			$(".detailInfo:eq("+index+")").css("display","none");
+			$(".funcBtns:eq("+index+")").css("display","block");
+		}else if(id=="detailInfo"){
+			$('.set2').css('color','#0084ff');
+			$('.set1').css('color','black');
+			$('.d3').css('width','6%');
+			$(".funcBtns:eq("+index+")").css("display","none");
+			$(".detailInfo:eq("+index+")").css("display","block");
+		}
+	}
+	//新增信用卡
+	$scope.toAddCreditCard=function(){
+		$context.setJson({"selectedAcc":'creditFromMyCC'});
+		$scope.goto("MyCreditCard","AddAccount");
+	}
+	//跳转至查询密码修改
+	$scope.toPswdModify=function(index,credit){
+		$context.setJson({"CreditNO":credit.creditCardNo,"CreditId":index});
+		$scope.goto("MyCreditCard","QueryPswdModify");
+	}
+	//跳转至挂失信用卡页面
+	$scope.toLossAccount=function(index,credit){
+		if(credit.CoreStatus=='A'){
+			NativeCall.toast("卡片未激活，不能执行此操作!");
+			return false;
+		}
+		$context.setJson({"lossAc":credit.creditCardNo,"lossCardType":"credit","CreditId":index});
+		$scope.goto("MyCreditCard","LossAccount");
+	}
+	//跳转到卡激活页面
+	$scope.toActiv=function(index,credit){
+		$context.setJson({"CreditNO":credit.creditCardNo,"CreditId":index});
+		$scope.loadPage("htmls/MyCreditCard/MyCreditCard.html","htmls/CreditCardToActiv/CreditCardToActiv.html");
+	}
+	//预留手机号变更
+	$scope.toPhoneModify=function(index,credit){
+		if(credit.CoreStatus==0&&credit.State==0){
+			$context.setJson({"CreditNO":credit.creditCardNo,"CreditId":index});
+			$scope.goto("MyCreditCard","ReservePhoneModify");
+		}else{
+			NativeCall.toast("卡片状态异常，不能执行此操作!");
+		}
+	}
+	//自动还款变更
+	$scope.toAutoPay=function(index,credit){
+		if(credit.CoreStatus==0&&credit.State==0){
+			$context.setJson({"CreditNO":credit.creditCardNo,"autoSet":$scope.autoCardSet,"CreditId":index});
+			if($scope.cardInfo.repayCode=="T"){
+				$context.setJson({"moneychange":"全额还款"});
+			}else if($scope.cardInfo.repayCode=="M"){
+				$context.setJson({"moneychange":"最低额还款"});
+			}
+			$scope.goto("MyCreditCard","AutoPaySetting");
+		}else{
+			NativeCall.toast("卡片状态异常，不能执行此操作!");
+		}
+	}
+	//账单方式
+	$scope.toBillPost=function(index,credit){
+		if(credit.CoreStatus==0&&credit.State==0){
+			$context.setJson({"CreditNO":credit.creditCardNo,"CreditId":index});
+			$context.setJson({"types":$scope.PublicInfo.stmCode},{"eml":$scope.BillEmail});
+			$scope.goto("MyCreditCard","BillPostModify");
+		}else{
+			NativeCall.toast("卡片状态异常，不能执行此操作!");
+		}
+	}
+	//卡函寄送方式
+	/*
+	$scope.toPostAddr=function(index,credit){
+		if(credit.CoreStatus==0&&credit.State==0){
+			$context.setJson({"CreditNO":credit.creditCardNo,"CreditId":index});
+			$scope.goto("MyCreditCard","CardPostModify");
+		}else{
+			NativeCall.toast("卡片状态异常，不能执行此操作!");
+		}
+	}
+	*/
+	//区分信用卡老卡新卡
+	$scope.compare=function(creditNo){
+		if(creditNo.substring(0,6)=="622462"||creditNo.substring(0,6)=="625101"||creditNo.substring(0,6)=="628272"){
+			$scope.flag=0;//0-老卡，1-新卡
+		}else{
+			$scope.flag=1;//0-老卡，1-新卡
+		}
+	}
+	
+}
+</script>

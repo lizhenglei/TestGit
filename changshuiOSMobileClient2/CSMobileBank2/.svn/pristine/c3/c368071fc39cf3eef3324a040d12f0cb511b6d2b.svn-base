@@ -1,0 +1,77 @@
+
+<div v-view-setup="PayeeBankCtrl" v-init="init()">
+	<div  class="bg_box" v-page v-transition="native">
+		<div class="box_cont">
+			<div class="zz_cont">
+					<ul>
+						<li>
+							<em>关键字：</em>
+							<i> 
+								<input type="text"  placeholder="请输入关键字" name="keyWord" v-model="keyWord" class="y_srk"/> 
+							</i>
+						</li>
+					</ul>
+			</div>
+			<div class="zz_cont">
+			<input type="button" class="button_1" name="button" value="查询收款银行" v-click="queryKw()">
+			</div>
+			
+			
+		</div>
+		
+	</div>
+	<div class="khh" v-repeat="bank in bankList" v-click="selectBank(bank)">
+			      <ul>
+						<li><em>银行名称:</em><i>{{bank.PayeeBankName}}</i></li>
+						<li><em>银行号:</em><i>{{bank.EBankNo}}</i></li>
+				  </ul>
+		    </div>
+		    
+		    <div v-show="tempList.length==20" class="center" v-click="queryKHH()">
+		    	点击查看更多
+		    </div>
+		    <div style="height:40px;width:100%"></div>
+</div>
+<script>
+PayeeBankCtrl.$inject = ["$scope","$remote","$targets","$context"];
+function PayeeBankCtrl($scope,$remote,$targets,$context){
+	$scope.init=function(){
+		$scope.cindex=0;
+		$scope.comeFrom=$context.getJson().comeFrom;
+	}
+	//选定收款银行
+	$scope.selectBank=function(obj){
+		if(obj.EBankNo==151000||obj.EBankNo==314305506621){
+			NativeCall.toast("跨行转账不允许转给本行！");
+			return;
+		}
+		$context.setJson({"selectedpayeebank":obj});
+		$scope.goto($scope.comeFrom);
+	}
+	//由查询按钮触发
+	$scope.queryKw=function(){
+		$scope.cindex=0;
+		$scope.bankList=[];
+		$scope.queryKHH();
+	}
+	
+	//查询收款银行
+	$scope.queryKHH=function(){
+		$scope.cindex=$scope.cindex+1;
+		$scope.tempList=[];
+		var params={
+				"PayeeBankName":$scope.keyWord,
+				"pageSize":20,
+				"currentIndex":$scope.cindex
+		}
+		//查询收款银行
+		$remote.post("/pmobile/BankNoQry.do",params,function(data){
+			if(data._RejCode=="000000"){
+				$scope.tempList=data.List;
+				console.log($scope.tempList.length)
+				$scope.bankList=$scope.bankList.concat($scope.tempList);
+			}
+		});
+	}
+}
+</script>

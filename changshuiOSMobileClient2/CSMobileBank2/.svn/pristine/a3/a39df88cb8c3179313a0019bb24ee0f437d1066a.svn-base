@@ -1,0 +1,17 @@
+//
+//  CSIILoanViewController.h
+//  MobileClient
+//
+//  Created by 张海亮 on 13-8-19.
+//  Copyright (c) 2013年 pro. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+#import "CSIISuperViewController.h"
+
+@interface CSIILoanViewController : CSIISuperViewController<UITableViewDelegate, UITableViewDataSource>{
+    UITableView *meonyTable;
+}
+
+
+@end

@@ -1,0 +1,377 @@
+<div v-view-setup="GuaGuaLeCtrl" v-init="init()">
+	<input type="hidden" id="IsLucky" name="IsLucky" v-model="IsLucky"
+		value="" /> <input type="hidden" id="PrizeGrade" name="PrizeGrade"
+		v-model="PrizeGrade" value="" /> <input type="hidden" id="PrizeName"
+		name="PrizeName" v-model="PrizeName" value="" />
+
+	<div style="padding-bottom: 0" v-page v-transition="native">
+		<div id="bg" style="position: absolute; top: 0; left: 0">
+			<img src="images/ggl_zt.png" width="100%" height="100%">
+		</div>
+	</div>
+
+	<div id="bg2"
+		style="top: 80px; width: 260px; height: 130px; margin: 0 auto;">
+		<img id="bg2_img" src="images/ggl_gj.png" width="260" height="27%"
+			style="top: 12%; position: absolute;">
+		<canvas id="front"
+			style="top: 20%; margin-left: 8%; position: absolute;" />
+	</div>
+<!-- 	<input v-hide="IsReward" type="button" v-click="refresh()" -->
+<!-- 		class="button_1" name="button" value="再刮一次" -->
+<!-- 		style="position: absolute; margin-top: 60px; margin-left: 35%; width: 100px"> -->
+
+	<div id="activeRule"
+		style="top: 600px; width: 288px; height: 100px; margin: 0 auto;">
+		<img id="nImg" src="images/ggl_hd.png"
+			style="top: 47%; left: 20px; width: 80px; height: 20px; position: absolute;">
+		<div id="nImg_div"  v-bind-html="activityRule"
+			style="top: 52%; left: 23px; width: 280px; position: absolute; color: white; font-size: 13px; font-family: '黑体'">
+		</div>
+	</div>
+</div>
+<script>
+	GuaGuaLeCtrl.$inject = [ "$scope", "$remote", "$targets", "$context" ];
+	function GuaGuaLeCtrl($scope, $remote, $targets, $context) {
+
+		$scope.init = function() {
+			$scope.o = 0;
+			$scope.IsReward = false;
+			var img = new Image();
+			var imgSrc = 'images/ggl4.png';
+			var imgSrc1 = 'images/ggl1.png';
+			var imgSrc2 = 'images/ggl2.png';
+			var imgSrc3 = 'images/ggl3.png';
+			$scope.wtf = 0;
+			$scope.k = 0;
+			$scope.wtf = $context.getJson().innerParam;
+			if (!$scope.wtf) {
+				$scope.k = 1;
+			} else {
+				$scope.IsReward = $scope.wtf.IsReward;
+			}
+			$remote.post("/pmobile/TransRewardsRuleQry.do", {
+				"gameType" : "2"
+			}, function(data) {
+				$scope.activityRule = data.activityRule
+				$scope.activityRule=$scope.activityRule.replace(/br/g,"</br>")
+			})
+			// 		if ($scope.wtf != "0" || $scope.wtf != "undefind") {
+			// 			if (!$scope.wtf.IsReward) {
+			// 				alert("抱歉，抽奖次数已经用没");
+			// 				$scope.flag = true;
+			// 				return false;
+			// 			} 
+			// 		}
+			// 				$scope.getClientState(function(response) {
+			// 					var vxJson = vx.fromJson(response);
+			// 					if (vxJson.isLogin == true) {
+			// 						$scope.ClientType = 2;
+			// 					} else {
+			// 						$scope.ClientType = 3;
+			// 					}
+			// 				});
+			// 			var params={
+			// 					"ClientType":"2",
+			// 					"GameType":"2",//0:大转盘 1:砸金蛋2:刮刮卡3:摇摇乐
+			// 					"_tokenName":$scope.tokenName
+			// 			}
+			// 			$remote.post("/pmobile/PlayTransRewards.do",params,function(data){
+			// 				if(_RejCode='000000'){
+			// 					$scope.IsLucky=data.IsLucky;			
+			// 					$scope.PrizeGrade=data.PrizeGrade;			
+			// 					$scope.PrizeName=data.PrizeName;	
+			// 					if($scope.IsLucky=="1"){
+			// 						img.src = imgSrc;
+			// 			 		}else if($scope.IsLucky=="0"){
+			// 			 			if($scope.PrizeGrade=="1"){
+			// 			 				img.src = imgSrc1;
+			// 			 			}else if($scope.PrizeGrade=="2"){
+			// 			 				img.src = imgSrc2;
+			// 			 			}else if($scope.PrizeGrade=="3"){
+			// 			 				img.src = imgSrc3;
+			// 			 			}
+			// 			 		}
+			// 				}
+			// 			});
+			$scope.getClientState(function(response) {
+				var resJson = vx.fromJson(response);
+				$scope.userType = resJson.Userinfo.CifNo;
+				$scope.HexinKehuhao = resJson.Userinfo.HexinKehuhao;
+				if ($scope.k == 0) {
+					$remote.post("/pmobile/getNewTokenName.do", {}, function(
+							data) {
+						$scope.tokenName = data._tokenName;
+						params = {
+							"TRANSNAME" : $scope.wtf.TransName,
+							"_tokenName" : $scope.tokenName,
+							"clientNo" : $scope.userType,
+							"hostCustNo" : $scope.HexinKehuhao
+						}
+						// 						if (!$scope.wtf.IsReward) {
+						// 							alert("抱歉，抽奖次数已经用没");
+						// 							return false;
+						// 						}
+						$remote.post("/pmobile/PlayTransRewards.do", params,
+								function(data) {
+									$scope.f1 = data.PrizeGrade;
+									$scope.f2 = data.PrizeName;
+									if ($scope.f1 == "1") {
+										img.src = imgSrc1;
+										return false;
+									}
+									if ($scope.f1 == "2") {
+										img.src = imgSrc2;
+										return false;
+									}
+									if ($scope.f1 == "3") {
+										img.src = imgSrc3;
+										return false;
+									}
+									if ($scope.f1 == "") {
+										img.src = imgSrc;
+										return false;
+									}
+								}, function(data) {
+									alert(data.jsonError);
+									return false;
+								});
+					});
+				} else {
+					$remote.post("/pmobile/getNewTokenName.do", {}, function(
+							data) {
+						$scope.tokenName = data._tokenName;
+						params = {
+							"TRANSNAME" : "aaaaaa",
+							"_tokenName" : $scope.tokenName,
+							"clientNo" : $scope.userType,
+							"hostCustNo" : $scope.HexinKehuhao
+						}
+						// 						if (!$scope.wtf.IsReward) {
+						// 							alert("抱歉，抽奖次数已经用没");
+						// 							return false;
+						// 						}
+						$remote.post("/pmobile/PlayTransRewards.do", params,
+								function(data) {
+									$scope.f1 = data.PrizeGrade;
+									$scope.f2 = data.PrizeName;
+									if ($scope.f1 == "1") {
+										img.src = imgSrc1;
+										return false;
+									}
+									if ($scope.f1 == "2") {
+										img.src = imgSrc2;
+										return false;
+									}
+									if ($scope.f1 == "3") {
+										img.src = imgSrc3;
+										return false;
+									}
+									if ($scope.f1 == "") {
+										img.src = imgSrc;
+										return false;
+									}
+								}, function(data) {
+									alert(data.jsonError);
+									return false;
+								});
+					});
+				}
+			});
+			$("img")
+					.load(
+							function() {
+								var height = 42;
+								var width = 203;
+
+								// 			$("#notify").css({"margin-top":"200px"});
+								$("#bg").width("100%").height(
+										$(window).height() - 1);
+
+								var canvas = document.querySelector('canvas');
+								canvas.style.position = 'absolute';
+								img
+										.addEventListener(
+												'load',
+												function(e) {
+													var ctx;
+													var w = width, h = height;
+													var offsetX = canvas.offsetLeft, offsetY = canvas.offsetTop;
+													var mousedown = false;
+													function layer(ctx) {
+														ctx.fillStyle = 'gray';
+														ctx
+																.fillRect(0, 0,
+																		w, h);
+													}
+													function eventDown(e) {
+														e.preventDefault();
+														mousedown = true;
+													}
+													function eventUp(e) {
+														e.preventDefault();
+														mousedown = false;
+													}
+													function eventMove(e) {
+														e.preventDefault();
+														if (mousedown) {
+															if (e.changedTouches) {
+																e = e.changedTouches[e.changedTouches.length - 1];
+															}
+															var x = (e.clientX
+																	+ document.body.scrollLeft || e.pageX)
+																	- offsetX
+																	|| 0, y = (e.clientY
+																	+ document.body.scrollTop || e.pageY)
+																	- offsetY
+																	|| 0;
+															with (ctx) {
+																beginPath()
+																arc(
+																		x,
+																		y,
+																		15,
+																		0,
+																		Math.PI * 2);
+																fill();
+															}
+														}
+													}
+													canvas.width = w;
+													canvas.height = h;
+
+													canvas.style.backgroundImage = 'url('
+															+ img.src + ')';
+													ctx = canvas
+															.getContext('2d');
+													// 					ctx.fillStyle='b9b9b9';             
+													// 					CTX.FILLRECT(0, 0, W, H);
+
+													layer(ctx);
+													ctx.globalCompositeOperation = 'destination-out';
+													canvas.addEventListener(
+															'touchstart',
+															eventDown);
+													canvas
+															.addEventListener(
+																	'touchend',
+																	eventUp);
+													canvas.addEventListener(
+															'touchmove',
+															eventMove);
+													canvas.addEventListener(
+															'mousedown',
+															eventDown);
+													canvas.addEventListener(
+															'mouseup', eventUp);
+													canvas.addEventListener(
+															'mousemove',
+															eventMove);
+												});
+
+							});
+
+		}
+		$scope.refresh = function() {
+			$targets("content", "#0");
+			// 			<div id="bg2"
+// 				style="top: 80px; width: 260px; height: 130px; margin: 0 auto;">
+			// 				<img id="bg2_img" src="images/ggl_gj.png" width="260" height="130"
+// 					style="top: 80px; position: absolute;">
+			// 				<canvas id="front" style="top: 120px; left: 53px; position: absolute;" />
+			// 			</div>
+			// 			$("img")
+			// 			.load(
+			// 					function() {
+			// 						var height = 42;
+			// 						var width = 203;
+
+			// 						// 			$("#notify").css({"margin-top":"200px"});
+			// 						$("#bg").width("100%").height(
+			// 								$(window).height() - 1);
+
+			// 						var canvas = document.querySelector('canvas');
+			// 						canvas.style.position = 'absolute';
+			// 						img
+			// 								.addEventListener(
+			// 										'load',
+			// 										function(e) {
+			// 											var ctx;
+			// 											var w = width, h = height;
+			// 											var offsetX = canvas.offsetLeft, offsetY = canvas.offsetTop;
+			// 											var mousedown = false;
+			// 											function layer(ctx) {
+			// 												ctx.fillStyle = 'gray';
+			// 												ctx
+			// 														.fillRect(0, 0,
+			// 																w, h);
+			// 											}
+			// 											function eventDown(e) {
+			// 												e.preventDefault();
+			// 												mousedown = true;
+			// 											}
+			// 											function eventUp(e) {
+			// 												e.preventDefault();
+			// 												mousedown = false;
+			// 											}
+			// 											function eventMove(e) {
+			// 												e.preventDefault();
+			// 												if (mousedown) {
+			// 													if (e.changedTouches) {
+			// 														e = e.changedTouches[e.changedTouches.length - 1];
+			// 													}
+			// 													var x = (e.clientX
+			// 															+ document.body.scrollLeft || e.pageX)
+			// 															- offsetX
+			// 															|| 0, y = (e.clientY
+			// 															+ document.body.scrollTop || e.pageY)
+			// 															- offsetY
+			// 															|| 0;
+			// 													with (ctx) {
+			// 														beginPath()
+			// 														arc(
+			// 																x,
+			// 																y,
+			// 																15,
+			// 																0,
+			// 																Math.PI * 2);
+			// 														fill();
+			// 													}
+			// 												}
+			// 											}
+			// 											canvas.width = w;
+			// 											canvas.height = h;
+
+			// 											canvas.style.backgroundImage = 'url('
+			// 													+ img.src + ')';
+			// 											ctx = canvas
+			// 													.getContext('2d');
+			// 											// 					ctx.fillStyle='b9b9b9';             
+			// 											// 					CTX.FILLRECT(0, 0, W, H);
+
+			// 											layer(ctx);
+			// 											ctx.globalCompositeOperation = 'destination-out';
+			// 											canvas.addEventListener(
+			// 													'touchstart',
+			// 													eventDown);
+			// 											canvas
+			// 													.addEventListener(
+			// 															'touchend',
+			// 															eventUp);
+			// 											canvas.addEventListener(
+			// 													'touchmove',
+			// 													eventMove);
+			// 											canvas.addEventListener(
+			// 													'mousedown',
+			// 													eventDown);
+			// 											canvas.addEventListener(
+			// 													'mouseup', eventUp);
+			// 											canvas.addEventListener(
+			// 													'mousemove',
+			// 													eventMove);
+			// 										});
+
+			// 					});
+		}
+	}
+</script>

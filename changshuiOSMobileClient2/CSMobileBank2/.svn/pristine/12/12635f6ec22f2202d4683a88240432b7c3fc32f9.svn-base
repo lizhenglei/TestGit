@@ -1,0 +1,161 @@
+<div v-view-setup="PPasswordSettingCtrl" v-init="init()">
+	<div class="bg_box" v-page v-transition="native">
+		<div class="box_cont">
+			<div class="zz_cont">
+					<ul>
+						<li>
+							<em>查询密码：</em>
+							<i>
+								<input  id="qpassword" type="password" name="qPassword" class="y_srk" placeholder="请输入密码" v-click="getPW('qpassword')" readonly/>
+							</i>
+						</li>
+						<li>
+							<em>确认查询密码：</em>
+							<i>
+								<input  id="rqpassword" type="password" name="rqPassword" class="y_srk" placeholder="请再次输入查询密码" v-click="getPW('rqpassword')" readonly/>
+							</i>
+						</li>
+						<li>
+							<em>交易密码：</em>
+							<i>
+								<input  id="transpassword" type="password" name="transPassword" class="y_srk" placeholder="请输入交易密码" v-click="getPW('transpassword')" readonly/>
+							</i>
+						</li>
+						<li>
+							<em>确认交易密码：</em>
+							<i>
+								<input  id="rtpassword" type="password" name="rtPassword" class="y_srk" placeholder="请再次输入交易密码" v-click="getPW('rtpassword')" readonly/>
+							</i>
+						</li>
+					</ul>
+			</div>
+		    
+		    <div class="zz_cont">
+		     		<input type="submit"  class="button_1" name="Submit" id="subbtn" v-disabled="buttonDis" value="确认" v-click="toResult()">
+		    </div>
+		    
+		</div>
+	</div>
+</div>
+<script>
+PPasswordSettingCtrl.$inject = ["$scope","$remote","$targets","$context"];
+function PPasswordSettingCtrl($scope,$remote,$targets,$context){
+	$scope.init=function(){
+		$scope.buttonDis=true;
+		//卡号
+		$scope.credit=$context.getJson().CreditNO;
+		//身份证号
+		$scope.idNO=$context.getJson().IDCardNO;
+		//家庭号码
+		$scope.telePhone=$context.getJson().telephone;
+	}
+	//调用密码控件
+	$scope.getPW=function(id){
+		$("#"+id).val("");
+		$scope.buttonDis = true;
+		$("#subbtn").attr("disabled",$scope.buttonDis);
+		var scrollHeight=$scope.getPWPosition($("#"+id).get(0));//定位当前密码输入栏位在文档中的位置
+		$scope.getPassword(function(pwResponse){
+			var resJson=vx.fromJson(pwResponse);
+			if(resJson.Flag==0){
+				$("#"+id).val(resJson.passWord);
+			}else if(resJson.Flag==1){
+				if(id=="qpassword"){
+					$scope.miwen1=resJson.passWord;//查询密码密文
+					$scope.buttonDis1 = resJson.buttonDis;
+				}else if(id=="rqpassword"){
+					$scope.miwen2=resJson.passWord;//查询密码确认
+					$scope.buttonDis2 = resJson.buttonDis;
+				}else if(id=="transpassword"){
+					$scope.miwen3=resJson.passWord;//交易密码密文
+					$scope.buttonDis3 = resJson.buttonDis;
+				}else if(id=="rtpassword"){
+					$scope.miwen4=resJson.passWord;//交易密码确认
+					$scope.buttonDis4 = resJson.buttonDis;
+				}
+				if($scope.buttonDis1=="true"&&$scope.buttonDis2=="true"&&$scope.buttonDis3=="true"&&$scope.buttonDis4=="true"){
+					$scope.buttonDis = false;
+					$("#subbtn").attr("disabled",$scope.buttonDis);
+				}
+			}
+		},scrollHeight);
+	}
+	$scope.toResult=function(){
+		//获取完成交易token防重复码
+		$remote.post("/pmobile/getNewTokenName.do",{},function(data){
+			var _tokenName=data._tokenName;
+			var params={
+					"CreditNo":$scope.credit,//卡号
+					"idNo":$scope.idNO,//证件号码410325199109261572
+					"telephone":$scope.telePhone,//电话号
+					"NewCreditTrsPassword":$scope.miwen3,
+					"NewCreditTrsConfirmPassword":$scope.miwen4,
+					"birthday":$scope.idNO.substring(6,14),
+					"_tokenName":_tokenName
+			};
+			//设置交易密码
+			$remote.post("/pmobile/CreditcardTrsPassWordSet.do",params,function(data){
+				if(data._RejCode=="000000"){
+					//设置查询密码
+					$scope.QueryPswdSet();
+				}
+			},function(data){
+				if(data.jsonError){
+					$scope.alert(data.jsonError);
+				}
+				
+				$scope.miwen1="";
+				$scope.miwen2="";
+				$scope.miwen3="";
+				$scope.miwen4="";
+				$("#qpassword").val("");
+				$("#rqpassword").val("");
+				$("#transpassword").val("");
+				$("#rtpassword").val("");
+				$scope.getToken();
+				return data.jsonError;
+			});
+		});
+		
+	}
+	//设置查询密码
+	$scope.QueryPswdSet=function(){
+		//获取完成交易token防重复码
+		$remote.post("/pmobile/getNewTokenName.do",{},function(data){
+			var _tokenName=data._tokenName;
+			var params={
+					"CreditNo":$scope.credit,//卡号
+					"idNo":$scope.idNO,//证件号码410325199109261572
+					"telephone":$scope.telePhone,//电话号
+					"NewPayPassword":$scope.miwen1,
+					"NewPayConfirmPassword":$scope.miwen2,
+					"birthday":$scope.idNO.substring(6,14),
+					"_tokenName":_tokenName
+			};
+			$remote.post("/pmobile/CreditcardPassWordSet.do",params,function(data){
+				//if(data._RejCode=="000000"){
+					$scope.alert("密码设置成功");
+					//NativeCall.goBack();
+					$scope.goto("MyCreditCard");
+				//}
+			},function(data){
+				if(data.jsonError){
+					$scope.alert(data.jsonError);
+				}
+				$scope.miwen1="";
+				$scope.miwen2="";
+				$scope.miwen3="";
+				$scope.miwen4="";
+				$("#qpassword").val("");
+				$("#rqpassword").val("");
+				$("#transpassword").val("");
+				$("#rtpassword").val("");
+				$scope.getToken();
+				return data.jsonError;
+			});
+	});
+	}
+	
+	
+}
+</script>

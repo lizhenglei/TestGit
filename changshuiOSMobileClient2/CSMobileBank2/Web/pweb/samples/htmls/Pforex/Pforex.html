@@ -1,0 +1,62 @@
+<div v-view-setup="PforexCtrl" v-init="init()">
+	<form name="transInput" class="bg_box">
+	<div class="box_cont">
+			<div style="text-align: center;font-size:20px; line-height:35px;height: 40px;border-bottom: 1px solid #f18903;">外汇牌价
+				<div  style="text-align:right;height:40px;float:right;" v-click="ref()"><img width="40px"  height="40px" src="images/ref1.png" /></div>
+			</div>
+			<div></div>
+			<div class="zz_cont">
+				<li><em>更新时间：</em><i>{{t.InfUdtDt}}</i></li>
+		    </div>
+			<div style="  margin-top: 5px;">
+				<div style="float: left;width: 36%;text-align:center;border-bottom: 1px solid #eee;">币种</div>
+				<div style="float: left;width: 23%;text-align:center;border-bottom: 1px solid #eee;">现汇买入价</div>
+				<div style="float: left;width: 23%;text-align:center;border-bottom: 1px solid #eee;">现钞买入价</div>
+				<div style="float: left;width: 18%;text-align:center;border-bottom: 1px solid #eee;">卖出价</div>
+			</div>
+			<div style="  margin-top: 5px;" v-repeat="li in lis">
+				<div v-show="li.CcyNm=='加拿大元'" style="float: left;width: 11%;height:30px;text-align:center;border-bottom: 1px solid #eee;"><img width="100%"  height="20px" src="images/jianada.jpg" /></div>
+				<div v-show="li.CcyNm=='港币'" style="float: left;width: 11%;height:30px;text-align:center;border-bottom: 1px solid #eee;"><img width="100%"  height="20px" src="images/xianggang.jpg" /></div>
+				<div v-show="li.CcyNm=='美元'" style="float: left;width: 11%;height:30px;text-align:center;border-bottom: 1px solid #eee;"><img width="100%"  height="20px" src="images/meiguo.jpg" /></div>
+				<div v-show="li.CcyNm=='欧元'" style="float: left;width: 11%;height:30px;text-align:center;border-bottom: 1px solid #eee;"><img width="100%"  height="20px" src="images/ouyuan1.jpg" /></div>
+				<div v-show="li.CcyNm=='英镑'" style="float: left;width: 11%;height:30px;text-align:center;border-bottom: 1px solid #eee;"><img width="100%"  height="20px" src="images/yingguo.jpg" /></div>
+				<div v-show="li.CcyNm=='日元'" style="float: left;width: 11%;height:30px;text-align:center;border-bottom: 1px solid #eee;"><img width="100%"  height="20px" src="images/riben.jpg" /></div>
+				<div v-show="li.CcyNm=='澳大利亚元'" style="float: left;width: 11%;height:30px;text-align:center;border-bottom: 1px solid #eee;"><img width="100%"  height="20px" src="images/aodaliya.jpg" /></div>
+				<div v-show="li.CcyNm=='新元'" style="float: left;width: 11%;height:30px;text-align:center;border-bottom: 1px solid #eee;"><img width="100%"  height="20px" src="images/xinyuan.jpg" /></div>
+				<div v-show="li.CcyNm=='瑞郎'" style="float: left;width: 11%;height:30px;text-align:center;border-bottom: 1px solid #eee;"><img width="100%"  height="20px" src="images/ruilang.jpg" /></div>
+				<div style="float: left;width: 25%;height:30px;text-align:center;border-bottom: 1px solid #eee;">{{li.CcyNm}}</div>
+				<div style="float: left;width: 23%;height:30px;text-align:center;border-bottom: 1px solid #eee;">{{li.SpotExgBuyPrc|number:2}}</div>
+				<div style="float: left;width: 23%;height:30px;text-align:center;border-bottom: 1px solid #eee;">{{li.CashBuyPrc|number:2}}</div>
+				<div style="float: left;width: 18%;height:30px;text-align:center;border-bottom: 1px solid #eee;">{{li.SpotExgSellPrc|number:2}}</div>
+			</div>
+		</div>
+		</form>
+        <div class="zz_cont"><img src="images/ts.png" />
+		    <font class="tishi">
+				温馨提示</br>
+			</font>
+				&nbsp;&nbsp;如无牌价信息请再次刷新。</br>
+<!-- 				&nbsp;&nbsp;2、账户如有外币资产，将会被折算成人民币资产统计。</br> -->
+<!-- 				&nbsp;&nbsp;3、信用卡如有美元账单，将被折算成人民币负债计入到总负债中。</br> -->
+			<div style="font-size:12px; line-height:16px; color:#929292;"> </div>
+	   </div>
+ 		<div style="width:100%;height:40px"></div>
+</div>
+<script>
+PforexCtrl.$inject = ["$scope","$remote","$targets","$context","$timeout"];
+function PforexCtrl($scope,$remote,$targets,$context,$timeout){
+	
+	$scope.init=function(){
+		$remote.post("/pmobile/forexQuery.do",{"Ccy":""},function(data){
+			$scope.lis=data.List;
+			$scope.t=$scope.lis[0];
+		});
+	}
+	$scope.ref=function(){
+		$remote.post("/pmobile/forexQuery.do",{"Ccy":""},function(data){
+			$scope.lis=data.List;
+			$scope.t=$scope.lis[0];
+		});
+	}
+}
+</script>

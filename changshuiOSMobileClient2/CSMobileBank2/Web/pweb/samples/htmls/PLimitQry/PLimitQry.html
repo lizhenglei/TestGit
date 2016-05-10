@@ -1,0 +1,109 @@
+<div v-view-setup="PLimitQryCtrl" v-init="init()">
+	<div v-page>
+		<div class="bg_box">
+			<div class="box_cont">
+				<div class="zz_cont">
+				      <ul>
+							<li>
+								<em>账号：</em>
+								<i style = "font-style : normal">
+								<select v-change="changeAcNo()" v-model="rCard" name="rCard" v-options="ac.AcNo1 for ac in acList" ></select></i>
+							</li>
+							<li>
+								<em>客户级限额：</em>
+								<i style = "font-style : normal" v-show="cifLimit!=999999999999.00">
+									{{cifLimit|number:2}}
+								</i>
+								<i style = "font-style : normal" v-show="cifLimit==999999999999.00">
+									{{SafetyLimit.bankDayLimit|number:2}}
+								</i>
+								<i style = "font-style : normal" v-show="cifLimit==0.00">
+									{{SafetyLimit.bankDayLimit|number:2}}
+								</i>
+								<i style = "font-style : normal" v-show="cifLimit==''">
+									{{SafetyLimit.bankDayLimit|number:2}}
+								</i>
+							</li>
+							<li>
+								<em>日累计限额：</em>
+								<i style = "font-style : normal" v-show="rCard.AccDayLimit!=999999999999.00">
+									{{rCard.AccDayLimit|number:2}}
+								</i>
+								<i style = "font-style : normal" v-show="rCard.AccDayLimit==999999999999.00">
+									{{SafetyLimit.bankDayLimit|number:2}}
+								</i>
+							</li>
+							<li>
+								<em>单笔限额：</em>
+								<i style = "font-style : normal" v-show="rCard.AccSingleLimit!=999999999999.00">
+									{{rCard.AccSingleLimit|number:2}}
+								</i>
+								<i style = "font-style : normal" v-show="rCard.AccSingleLimit==999999999999.00">
+									{{SafetyLimit.bankSingleLimit|number:2}}
+								</i>
+							</li>
+					 </ul>
+			    </div>
+			    
+			    
+			</div>
+		</div>
+		<div class="zz_cont"><img src="images/ts.png" />
+		    <font class="tishi">
+				温馨提示</br>
+			</font>
+				&nbsp;&nbsp;如果您需要修改限额，可通过柜面或专业版网上银行进行修改。 </br>
+			<div style="font-size:12px; line-height:16px; color:#929292;"> </div>
+	   </div>
+	</div>
+</div>
+<script>
+PLimitQryCtrl.$inject = ["$scope","$remote","$targets","$filter"];
+function PLimitQryCtrl($scope,$remote,$targets,$filter){
+	//页面初始化
+	$scope.init=function(){
+		$remote.post("/pmobile/ActListQry.do",{},function(data){
+			console.log(data);
+			$scope.acList=data.AcList;
+			var filterFn=$filter("filter");
+			$scope.acList=filterFn($scope.acList,function(obj,text){
+				if(obj.AcNo != undefined){
+					obj.AcNo1=obj.AcNo.substring(0,4)+"****"+ obj.AcNo.substring(obj.AcNo.length-4)
+					if(obj.AcAlias.length>4){
+						obj.AcNo1=obj.AcNo1+" / "+obj.AcAlias.substring(0,4)+"...";
+					}else if(obj.AcAlias.length<=4&&obj.AcAlias.length>0){
+						obj.AcNo1=obj.AcNo1+" / "+obj.AcAlias;
+					}else{
+						obj.AcNo1=obj.AcNo1;
+					}
+					return true;
+				}
+			});
+			$scope.rCard=$scope.acList[0];
+			$scope.cifLimit=data.CifLimit;
+			$remote.post("/pmobile/ChannelAuthTypeQry.do",{},function(data){
+ 				$scope.optionSecurityFlag = data.SecurityFlag;
+				$scope.currentSecurity =  data.OldSecurity;  
+				$scope.changeAcNo();
+			});
+			/* $scope.accDayLimit=$scope.acList[0].AccDayLimit;
+			$scope.accSingleLimit=$scope.acList[0].AccSingleLimit; */
+		});
+	}
+	$scope.changeAcNo = function(){
+		$remote.post("/pmobile/SafetyLimitQry.do",{"security":$scope.currentSecurity },function(data){
+			$scope.SafetyLimit = data;
+		});
+	}
+	
+	$scope.getCardInfo=function(){
+		console.log($scope.acList);
+		vx.forEach($scope.acList,function(item,index){
+			$scope.accDayLimit=item.AccDayLimit;
+			$scope.accSingleLimit=item.AccSingleLimit;
+		});
+	}
+
+	
+}
+</script>

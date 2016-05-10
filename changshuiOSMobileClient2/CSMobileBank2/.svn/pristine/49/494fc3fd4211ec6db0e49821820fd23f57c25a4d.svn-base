@@ -1,0 +1,70 @@
+<div v-view-setup="forexCtrl" v-init="init()">
+			<div class="check" id="check" style="  margin-top: 10px;text-align:center;width:95%;padding-bottom:10px;margin-left: 3%">
+				<div style="float:left;  font-size: 15px;padding-left: 7%;">货币种类：</div>
+				<select  v-model="fundgs" name="fundgs" class="fundgs" style="width:75%;  width: 50%;height: 25px; border: 1px solid #cccccc;">
+<!-- 						<option value="" >全部</option> -->
+						<option value="">澳大利亚元</option>
+						<option value="2">加拿大元</option>	
+						<option value="3">欧元</option>			
+						<option value="4">英镑</option>			
+						<option value="5">港币</option>			
+						<option value="6">日元</option>			
+						<option value="7">美元</option>										
+				 </select>
+			</div>	
+			<div style="  text-align: center;border-top: solid 1px #eee;border-bottom: solid 1px #eee;">
+			     	<input  style="  width: 30%; height: 20px;line-height: 20px;" type="submit"  class="button_1" name="Submit" value="查询" v-click="show()"/>
+		 </div>
+		<div class="zz_cont" v-show="flg==1" v-repeat=" l3 in lis" style="background-color: white">
+			<ul>
+				<li><em>现汇买入价：</em><i>{{l3.SpotExgBuyPrc}}</i></li>
+				<li><em>现汇卖出价：</em><i>{{l3.SpotExgSellPrc}}</i></li>
+				<li><em>现钞买入价：</em><i></i>{{l3.CashBuyPrc}}</li>
+				<li><em>基    准   价：</em><i>{{l3.BasePrc}}</i></li>
+				<li><em>中    间   价：</em><i>{{l3.MdlPrc}}</i></li>
+				<li><em>更 新 日 期：</em><i>{{l3.InfUdtDt}}</i></li>
+			</ul>
+		</div>
+        <div class="zz_cont"><img src="images/ts.png" />
+		    <font class="tishi">
+				温馨提示</br>
+			</font>
+				&nbsp;&nbsp;如无牌价信息请再次刷新。</br>
+<!-- 				&nbsp;&nbsp;2、账户如有外币资产，将会被折算成人民币资产统计。</br> -->
+<!-- 				&nbsp;&nbsp;3、信用卡如有美元账单，将被折算成人民币负债计入到总负债中。</br> -->
+			<div style="font-size:12px; line-height:16px; color:#929292;"> </div>
+	   </div>
+ 		<div style="width:100%;height:40px"></div>
+</div>
+<script>
+forexCtrl.$inject = ["$scope","$remote","$targets","$context","$timeout"];
+function forexCtrl($scope,$remote,$targets,$context,$timeout){
+	
+	$scope.init=function(){
+		$scope.flg=0;
+	}
+	$scope.show=function(){
+		if($scope.fundgs==""){
+			$scope.fl="AUD";
+		}else if($scope.fundgs==5){
+			$scope.fl="HKD";
+		}else if($scope.fundgs==2){
+			$scope.fl="CAD";
+		}else if($scope.fundgs==3){
+			$scope.fl="EUR";
+		}else if($scope.fundgs==4){
+			$scope.fl="GBP";
+		}else if($scope.fundgs==6){
+			$scope.fl="JPY";
+		}else if($scope.fundgs==7){
+			$scope.fl="USD";
+		}
+		$remote.post("/pmobile/forexQuery.do",{"Ccy":$scope.fl},function(data){
+			console.log(data);
+			$scope.lis=data.List;
+			console.log($scope.lis);
+			$scope.flg=1;
+		});
+	}
+}
+</script>

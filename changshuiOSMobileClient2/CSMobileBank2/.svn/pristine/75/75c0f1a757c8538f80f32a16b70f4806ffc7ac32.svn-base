@@ -1,0 +1,763 @@
+<div v-view-setup="MyAcInfoCtrl" v-init="init()">
+	<div class="bg_box" v-page v-transition="native" title="我的账户">
+		<div class="box_cont">
+			<!-- 资产总览 -->
+			<div class="bcfff1 zczl_cont">
+				<h2 class="font_title">资产负债表</h2>
+				<ul v-click="todetailsInfo('Asses')" style="padding-top: 0px;">
+					<li><em>总资产：</em><i style="color: #ff6000;" class="size20">{{totalProperty?totalProperty:0|number:2}}元</i></li>
+					<li><em>总负债：</em><i style="color: #40a940;" class="size20">{{totalDebt?totalDebt:0|number:2}}元</i></li>
+				</ul>
+				<div class="xiangq_img" v-click="todetailsInfo('Asses')">
+					<a href=""><img style="margin-top: 50%" src="images/more.png" /></a>
+				</div>
+			</div>
+			<!-- 借记卡-->
+			<div v-repeat="card in debitCardList" v-show="mainAcNo==card.AcNo">
+				<div class="j-heightb">
+					<img src="images/huangtiao.png" style="height: 2px">
+				</div>
+				<div class="bcfff1 zczl_cont"
+					style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">
+
+					<div class="set_ceng debitCardMenu"
+						style="display: none; top: 30px">
+						<a style="font-size: 16px" href=""
+							v-click="deleteTiedCard(card.AcNo,card.accountAlias)">删除</a>&nbsp;&nbsp;|&nbsp;&nbsp;
+						<a style="font-size: 16px" href=""
+							v-click="toLossAccPage(card.AcNo,'debitCard',card)">挂失</a>&nbsp;&nbsp;|&nbsp;&nbsp;
+						<a style="font-size: 16px" href=""
+							v-click="toAccModify(card,'debitCard')">变更</a>&nbsp;&nbsp;
+						<a style="font-size: 16px" href=""
+							v-click="setDefaultAcc(card.AcNo,card.accountAlias,card)"
+							v-hide="mainAcNo==card.AcNo">|&nbsp;&nbsp;设置为主账户</a>
+					</div>
+					<h2 class="font_title debitCard">
+						借记卡
+						<div class="set_img"
+							style="width: 50px; height: 35px; color: #aad957"
+							v-click="accountModify($index,'debitCardMenu',card.AcNo)"
+							v-blur="closeSetMenu($index,'debitCardMenu',card.AcNo)"
+							tabindex="{{$index}}+1">
+							<a><img style="width: 21px;" src="images/set.png" /></a>管理
+						</div>
+						<input type="text" name="debitCardName" v-model="debitCardName"
+							v-blur="updateName($index,'debitCard',debitCardName,card.AcNo)"
+							style="display: none; width: 20%" maxlength="10" /> <span
+							class="gzk" style="font-size: 12px;">
+							{{card.accountAlias}} <img src="images/xiug_icon.png"
+							style="width: 15px; padding-left: 2px; margin-top: -2px;"
+							v-click="editName($index,'debitCard',card.AcNo)" />
+						</span> &nbsp;&nbsp;<span v-show="mainAcNo==card.AcNo"
+							style="font-size: 12px; color: #f18903">主账户</span>
+					</h2>
+
+					<ul v-click="todetailsInfo('debitCard',card)">
+						<li><em>账号：</em><i>{{card.AcNo|accountNo}}</i></li>
+						<li><em>可用余额：</em><i style="color: #ff6000;">{{card.AvailBal|number:2}}元</i></li>
+						<li v-show="LYBAcNo==card.AcNo"><em>乐盈宝：</em><i
+							style="color: #ff6000;">{{LYBbalance|number:2}}元</i></li>
+					</ul>
+
+					<div class="xiangq_img" v-click="todetailsInfo('debitCard',card)">
+						<div v-show="LYBAcNo==card.AcNo" style="height: 15px"></div>
+						<a href=""><img src="images/more.png" /></a>
+					</div>
+					<div class="button_4">
+						<ul>
+							<li>转账汇款 <select class="sel" id="sel" v-model="sel"
+								style="overflow: hidden; font-size: 0px; float: left; background-color: initial; color: initial; width: 100%; height: 150%; margin-top: -25px; position: relative"
+								v-change="toOtherPage(card,this,1)">
+									<option value="InnerTransfer">转给本行</option>
+									<option value="CrossTransfer">转给他行</option>
+									<option value="">取消</option>
+							</select>
+							</li>
+							<!--             <input class="an" id="an" type="button" v-click="toan()" vlaue="ajocjaoijdoic"></input> -->
+							<!--              <span  v-click="toInnerTransfer(card)"><a>转给本行</a></span> -->
+							<!--              <span  v-click="toCrossTransfer(card)"><a>转给他行</a></span> -->
+							<li id="sel11" v-click="toPTransInfoQry(card)"><a>交易明细</a></li>
+							<li>投资理财 <select class="sel" id="sel" v-model="sel"
+								style="overflow: hidden; font-size: 0px; float: left; background-color: initial; color: initial; width: 100%; height: 150%; margin-top: -25px; position: relative"
+								v-change="tomarket(card,this,1)">
+									<option value="PLeYingBao">乐盈宝</option>
+									<option value="PPrdMarket">理财超市</option>
+									<option value="">取消</option>
+							</select>
+							</li>
+							<!--              <li  v-click="openFinancKind($index,'buttonBox1',card.AcNo)" v-blur="closeOptionMenu($index,'buttonBox1',card.AcNo)" tabindex="2*{{$index}}+1"><a>投资理财</a></li> -->
+							<!--    			<label style="background-color:red" for="sel"><span class="font14">转账金额</span></label> -->
+							<!--              <div class="button_ceng1 buttonBox1" style="height:0px"> -->
+							<!--              <span  v-click="toLeYingBao(card)"><a>乐盈宝</a></span> -->
+							<!--              <span  v-click="toPPrdMarket()"><a>理财超市</a></span> -->
+					</div>
+					</ul>
+				</div>
+			</div>
+		</div>
+
+		<!-- 存折-->
+		<div v-repeat="tim in timList">
+			<div class="j-heightb">
+				<div>
+					<img src="images/huangtiao.png" style="height: 2px">
+				</div>
+			</div>
+			<div class="bcfff1 zczl_cont">
+
+				<div class="set_ceng timAccMenu" style="display: none; top: 30px">
+					<a style="font-size: 16px" href=""
+						v-click="deleteTiedCard(tim.contractNo,tim.accountAlias)">删除</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a
+						style="font-size: 16px" href=""
+						v-click="toLossAccPage(tim.contractNo,'tim',tim)">挂失</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a
+						style="font-size: 16px" href=""
+						v-click="toAccModify(tim,'timAcc')">变更</a>&nbsp;&nbsp;<a
+						style="font-size: 16px" href=""
+						v-click="setDefaultAcc(tim.contractNo,tim.accountAlias,tim)"
+						v-hide="mainAcNo==tim.contractNo">|&nbsp;&nbsp;设置为主账户</a>
+				</div>
+				<h2 class="font_title timAcc">
+					存折
+					<div class="set_img"
+						style="width: 50px; height: 35px; color: #aad957"
+						v-click="accountModify($index,'timAccMenu',tim.contractNo)"
+						v-blur="closeSetMenu($index,'timAccMenu',tim.contractNo)"
+						tabindex="{{$index}}+1">
+						<a><img style="width: 21px" src="images/set.png" /></a>管理
+					</div>
+					<input type="text" name="timALias" v-model="timALias"
+						v-blur="updateName($index,'timAcc',timALias,tim.contractNo)"
+						style="display: none; width: 20%" maxlength="10" /> <span
+						class="gzk" style="font-size: 12px;"> {{tim.accountAlias}}
+						<img src="images/xiug_icon.png"
+						style="width: 15px; padding-left: 2px; margin-top: -2px;"
+						v-click="editName($index,'timAcc',tim.contractNo)" />
+					</span> &nbsp;&nbsp;<span id="mainAc" v-show="mainAcNo==tim.contractNo"
+						style="font-size: 12px; color: #f18903">主账户</span>
+				</h2>
+				<ul v-click="todetailsInfo('tim',tim)">
+					<li><em>账号：</em><i>{{tim.contractNo|accountNo}}</i></li>
+					<li><em>可用余额：</em><i style="color: #ff6000;">{{tim.balance|number:2}}元</i></li>
+				</ul>
+				<div class="xiangq_img" v-click="todetailsInfo('tim',tim)">
+					<a href=""><img src="images/more.png" /></a>
+				</div>
+				<div class="button_4">
+					<ul>
+						<li>转账汇款 <select class="sel" id="sel" v-model="sel"
+							style="overflow: hidden; font-size: 0px; float: left; background-color: initial; color: initial; width: 100%; height: 200%; margin-top: -30px; position: relative"
+							v-change="toOtherPage(tim,this,2)">
+								<option value="InnerTransfer">转给本行</option>
+								<option value="CrossTransfer">转给他行</option>
+								<option value="">取消</option>
+						</select>
+						</li>
+						<!--             <input class="an" id="an" type="button" v-click="toan()" vlaue="ajocjaoijdoic"></input> -->
+						<!--              <span  v-click="toInnerTransfer(card)"><a>转给本行</a></span> -->
+						<!--              <span  v-click="toCrossTransfer(card)"><a>转给他行</a></span> -->
+						<!-- 			 <li v-click="toshow()">转账汇款</li> -->
+						<li v-click="toPTransInfoQry(tim)"><a>交易明细</a></li>
+						<!--              <li v-click="openFinancKind($index,'buttonBox4',tim.contractNo)" v-blur="closeOptionMenu($index,'buttonBox4',tim.contractNo)" tabindex="2*{{$index}}+1"><a>投资理财</a></li> -->
+						<!--              <div class="button_ceng1 buttonBox4" style="height:0px"> -->
+						<!--              <span v-click="toLeYingBao()"><a>乐盈宝</a></span> -->
+						<!--              <span v-click="toPPrdMarket()"><a>理财超市</a></span> -->
+						<li>投资理财 <select class="sel" id="sel" v-model="sel"
+							style="overflow: hidden; font-size: 0px; float: left; background-color: initial; color: initial; width: 100%; height: 150%; margin-top: -25px; position: relative"
+							v-change="tomarket(tim,this,2)">
+								<option value="PLeYingBao">乐盈宝</option>
+								<option value="PPrdMarket">理财超市</option>
+								<option value="">取消</option>
+						</select>
+						</li>
+				</div>
+				</ul>
+			</div>
+		</div>
+
+		<!-- 借记卡-->
+		<div v-repeat="card in debitCardList" v-show="mainAcNo!=card.AcNo">
+			<div class="j-heightb">
+				<img src="images/huangtiao.png" style="height: 2px">
+			</div>
+			<div class="bcfff1 zczl_cont"
+				style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">
+
+				<div class="set_ceng debitCardMenu" style="display: none; top: 30px">
+					<a style="font-size: 16px" href=""
+						v-click="deleteTiedCard(card.AcNo,card.accountAlias)">删除</a>&nbsp;&nbsp;|&nbsp;&nbsp;
+					<a style="font-size: 16px" href=""
+						v-click="toLossAccPage(card.AcNo,'debitCard',card)">挂失</a>&nbsp;&nbsp;|&nbsp;&nbsp;
+					<a style="font-size: 16px" href=""
+						v-click="toAccModify(card,'debitCard')">变更</a>&nbsp;&nbsp;
+					<a style="font-size: 16px" href=""
+						v-click="setDefaultAcc(card.AcNo,card.accountAlias,card)"
+						v-hide="mainAcNo==card.AcNo">|&nbsp;&nbsp;设置为主账户</a>
+				</div>
+				<h2 class="font_title debitCard">
+					借记卡
+					<div class="set_img"
+						style="width: 50px; height: 35px; color: #aad957"
+						v-click="accountModify($index,'debitCardMenu',card.AcNo)"
+						v-blur="closeSetMenu($index,'debitCardMenu',card.AcNo)"
+						tabindex="{{$index}}+1">
+						<a><img style="width: 21px;" src="images/set.png" /></a>管理
+					</div>
+					<input type="text" name="debitCardName" v-model="debitCardName"
+						v-blur="updateName($index,'debitCard',debitCardName,card.AcNo)"
+						style="display: none; width: 20%" maxlength="10" /> <span
+						class="gzk" style="font-size: 12px;"> {{card.accountAlias}}
+						<img src="images/xiug_icon.png"
+						style="width: 15px; padding-left: 2px; margin-top: -2px;"
+						v-click="editName($index,'debitCard',card.AcNo)" />
+					</span> &nbsp;&nbsp;<span v-show="mainAcNo==card.AcNo"
+						style="font-size: 12px; color: #f18903">主账户</span>
+				</h2>
+
+				<ul v-click="todetailsInfo('debitCard',card)">
+					<li><em>账号：</em><i>{{card.AcNo|accountNo}}</i></li>
+					<li><em>可用余额：</em><i style="color: #ff6000;">{{card.AvailBal|number:2}}元</i></li>
+					<li v-show="LYBAcNo==card.AcNo"><em>乐盈宝：</em><i
+						style="color: #ff6000;">{{LYBbalance|number:2}}元</i></li>
+				</ul>
+
+				<div class="xiangq_img" v-click="todetailsInfo('debitCard',card)">
+					<div v-show="LYBAcNo==card.AcNo" style="height: 15px"></div>
+					<a href=""><img src="images/more.png" /></a>
+				</div>
+				<div class="button_4">
+					<ul>
+						<li>转账汇款 <select class="sel" id="sel" v-model="sel"
+							style="overflow: hidden; font-size: 0px; float: left; background-color: initial; color: initial; width: 100%; height: 150%; margin-top: -25px; position: relative"
+							v-change="toOtherPage(card,this,1)">
+								<option value="InnerTransfer">转给本行</option>
+								<option value="CrossTransfer">转给他行</option>
+								<option value="">取消</option>
+						</select>
+						</li>
+						<!--             <input class="an" id="an" type="button" v-click="toan()" vlaue="ajocjaoijdoic"></input> -->
+						<!--              <span  v-click="toInnerTransfer(card)"><a>转给本行</a></span> -->
+						<!--              <span  v-click="toCrossTransfer(card)"><a>转给他行</a></span> -->
+						<li id="sel11" v-click="toPTransInfoQry(card)"><a>交易明细</a></li>
+						<li>投资理财 <select class="sel" id="sel" v-model="sel"
+							style="overflow: hidden; font-size: 0px; float: left; background-color: initial; color: initial; width: 100%; height: 150%; margin-top: -25px; position: relative"
+							v-change="tomarket(card,this,1)">
+								<option value="PLeYingBao">乐盈宝</option>
+								<option value="PPrdMarket">理财超市</option>
+								<option value="">取消</option>
+						</select>
+						</li>
+						<!--              <li  v-click="openFinancKind($index,'buttonBox1',card.AcNo)" v-blur="closeOptionMenu($index,'buttonBox1',card.AcNo)" tabindex="2*{{$index}}+1"><a>投资理财</a></li> -->
+						<!--    			<label style="background-color:red" for="sel"><span class="font14">转账金额</span></label> -->
+						<!--              <div class="button_ceng1 buttonBox1" style="height:0px"> -->
+						<!--              <span  v-click="toLeYingBao(card)"><a>乐盈宝</a></span> -->
+						<!--              <span  v-click="toPPrdMarket()"><a>理财超市</a></span> -->
+				</div>
+				</ul>
+			</div>
+		</div>
+
+
+
+		<!-- 信用卡-->
+		<div v-repeat="ccard in creditCardList">
+			<div class="j-heightb">
+				<div>
+					<img src="images/lantiao.png" style="height: 2px">
+				</div>
+			</div>
+			<div class="bcfff1 zczl_cont">
+
+				<div class="set_ceng creditCardMenu"
+					style="display: none; top: 30px">
+					<a style="font-size: 16px" href=""
+						v-click="deleteTiedCard(ccard.creditCardNo,ccard.accountAlias)">删除</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a
+						style="font-size: 16px" href=""
+						v-click="toLossAccPage(ccard.creditCardNo,'credit',ccard)">挂失</a>
+				</div>
+				<h2 class="font_title creditCard">
+					信用卡
+					<div class="set_img"
+						style="width: 50px; height: 35px; color: #aad957"
+						v-click="accountModify($index,'creditCardMenu')"
+						v-blur="closeSetMenu($index,'creditCardMenu')"
+						tabindex="{{$index}}+1">
+						<a><img style="width: 21px" src="images/set.png" /></a>管理
+					</div>
+					<input type="text" name="creditCard" v-model="creditCard"
+						v-blur="updateName($index,'creditCard',creditCard)"
+						style="display: none; width: 20%" maxlength="10" /> <span
+						class="gzk" style="font-size: 12px;">
+						{{ccard.accountAlias}} <img src="images/xiug_icon.png"
+						style="width: 15px; padding-left: 2px; margin-top: -2px;"
+						v-click="editName($index,'creditCard')" />
+					</span>
+				</h2>
+				<ul v-click="todetailsInfo('creditCard',ccard)">
+					<li><em>卡号：</em><i>{{ccard.creditCardNo|accountNo}}</i></li>
+					<li><em>可用额度：</em><i style="color: #ff6000;">{{ccard.usableAmount|number:2}}元</i></li>
+				</ul>
+				<div class="xiangq_img" v-click="todetailsInfo('creditCard',ccard)">
+					<a href=""><img src="images/more.png" /></a>
+				</div>
+				<div class="button_4">
+					<ul>
+						<li style="margin-left: 20%" v-click="toPRepay(ccard)"><a
+							href="">我要还款</a></li>
+
+						<li v-click="toPMyBill(ccard)"><a href="">我的账单</a></li>
+				</div>
+				</ul>
+			</div>
+		</div>
+		<div class="j-heightb"></div>
+		<div class="bcfff1 zczl_cont background1"
+			style="text-align: center; padding: 10px 0 10px 0; vertical-align: middle;"
+			v-click="toAddAccount()">
+			<img src="images/tj.png" /><span
+				style="font-size: 16px; padding-left: 10px; display: inline-block; height: 100%; vertical-align: middle;">新增账户</span>
+		</div>
+
+		<!-- 我的理财 -->
+		<div class="bcfff1 zczl_cont">
+			<div class="j-heightb"></div>
+			<h2 class="font_title">我的理财</h2>
+			<div class="xiangq_img" v-click="todetailsInfo('myFinanc')">
+				<a href=""><img src="images/more.png"
+					style="width: 20%; margin-top: 50%;" /></a>
+			</div>
+			<ul v-click="todetailsInfo('myFinanc')">
+				<li><em>持有金额：</em><i style="color: #ff6000;">{{licai|number:2}}元</i></li>
+			</ul>
+		</div>
+	</div>
+
+
+	<!-- 我的贷款 -->
+	<div class="bcfff1 zczl_cont" v-click="todetailsInfo('myProvide')"
+		v-repeat="loan in myLoanList">
+		<div class="j-heightb"></div>
+		<h2 class="font_title">贷款</h2>
+		<div class="xiangq_img" v-click="todetailsInfo('myFinanc')">
+			<a href=""><img src="images/more.png" /></a>
+		</div>
+		<ul>
+			<li><em>贷款金额：</em><i>{{loan.totalLoan|number:2}}元</i></li>
+			<li><em>贷款期限：</em><i style="color: #ff6000;">{{loan.term|number:2}}元</i></li>
+		</ul>
+
+	</div>
+</div>
+</div>
+<div class="zz_cont">
+	<img style="vertical-align: text-bottom;" src="images/ts.png" /> <font
+		class="tishi"> 温馨提示</br>
+	</font> &nbsp;&nbsp;1、您可以查询您名下的各个账号的信息。</br> &nbsp;&nbsp;2、点击账户可以查询账户详情。</br>
+	<div style="font-size: 12px; line-height: 16px; color: #929292;">
+	</div>
+</div>
+
+<div style="width: 100%; height: 40px;"></div>
+</div>
+<script>
+MyAcInfoCtrl.$inject = ["$scope","$remote","$targets","$context","$timeout"];
+function MyAcInfoCtrl($scope,$remote,$targets,$context,$timeout){
+	$scope.init=function(){
+		//账户概览数据
+		var da;
+		$scope.showfl=false;
+		$remote.post("/pmobile/AccountsInfoQuery.do",{},function(data){
+			console.log(data);
+				//图标显示的可用活期金额
+				$scope.currentAmount=$scope.FloatPrecision(parseFloat(data.CurrentAmount)-parseFloat(data.FrzAmount),2);
+				//定期金额
+				$scope.regularAmount=data.RegularAmount;
+				//贷款负债金额
+				$scope.loanAmount=data.LoanAmount;
+				//信用卡负债金额
+				$scope.debtAmount=data.DebtAmount;
+				//总负债
+				$scope.totalDebt=parseFloat(data.LoanAmount)+parseFloat(data.DebtAmount);
+				console.log($scope.totalDebt);
+				//我的理财持有金额
+				$scope.licai=parseFloat(data.GoldAmount)+parseFloat(data.DayDayAmount);
+				//总资产
+				$scope.totalProperty=parseFloat(data.TotalAmount)+$scope.licai;
+				console.log($scope.totalProperty);
+				//冻结金额,也是图标中的其他金额
+				$scope.frzAmount=parseFloat(data.FrzAmount);
+				//借记卡列表
+				$scope.debitCardList=data.AcList;
+				$scope.numb=$scope.debitCardList.length;
+				//存折列表
+				$scope.timList=data.TimList;
+				//信用卡列表
+				$scope.creditCardList=data.List1;
+				//天天利列表
+				$scope.TianTianList=data.List3;
+				//贷款列表
+				$scope.myLoanList=data.List4;
+				//粒金理财列表
+				$scope.LiJinList=data.List5;
+				//主账号
+				$scope.mainAcNo=data.MainAcNo;
+				//乐赢宝余额
+				vx.forEach(data.List7,function(item){
+					if(item.type=='0'){
+						$scope.LYBbalance = item.vol;
+						$scope.LYBAcNo = item.accountNo;
+					}
+				});
+				if($scope.LYBbalance){
+					$scope.totalProperty=$scope.totalProperty+parseFloat($scope.LYBbalance);
+					
+					
+				}
+		});
+		$scope.getClientState(function(response){
+			var resJson=vx.fromJson(response);
+				$scope.userType=resJson.Userinfo.UserType;	//用户类型：P-大众版
+		});
+	}
+// 	$scope.selec=function(){
+// 		document.getElementById("sel")[1].selected=true;
+// 	}
+	//编辑别名
+	$scope.editName=function(index,id,card){
+		 if(id=="debitCard"){
+			 	if($scope.debitCardList[index].AvailBal=="--"){
+					NativeCall.toast("该卡已作废，请变更卡片");
+					return false;
+				}
+				$scope.accountN=$scope.debitCardList[index].AcNo;
+				$scope.od=$scope.debitCardList[index].accountAlias;
+				$context.setJson({"old":$scope.od});
+			}else if(id=="creditCard"){
+				$scope.accountN=$scope.creditCardList[index].creditCardNo;
+				$scope.od=$scope.creditCardList[index].accountAlias;
+				$context.setJson({"old":$scope.od});
+			}else if(id=="timAcc"){
+			 $scope.accountN=$scope.timList[index].contractNo;
+			 $scope.od=$scope.timList[index].accountAlias;
+				$context.setJson({"old":$scope.od});
+		}
+		$context.setJson({"place":"MyAcInfo"});
+		$context.setJson({"acno":$scope.accountN});
+		$scope.goto("MyAcInfo","palias");
+// 		if($scope.mainAcNo!=card && id=="debitCard"){
+// 			index=index+$scope.numb;
+// 		}
+// 		var el=$("."+id+":eq("+index+")");
+// 		el.find("input").show().focus();
+// 		el.find("span").hide();
+// 		el.find("input").on("blur",function(){
+// 			el.find("input").hide();
+// 			$(".gzk").show();
+// 			if($scope.mainAcNo==card){
+// 				el.find("span").show();
+// 			}
+// 		});
+	}
+	//修改别名
+	$scope.updateName=function(index,id,newname,card){
+		if($scope.mainAcNo!=card && id=="debitCardMenu"){
+			index=index+$scope.numb;
+		}
+		$scope.newAlias=newname;
+		 if(id=="debitCard"){
+			 	if($scope.debitCardList[index].AvailBal=="--"){
+					NativeCall.toast("该卡已作废，请变更卡片");
+					return false;
+				}
+				$scope.accountN=$scope.debitCardList[index].AcNo;
+			}else if(id=="creditCard"){
+				$scope.accountN=$scope.creditCardList[index].creditCardNo;
+			}else if(id=="timAcc"){
+			 $scope.accountN=$scope.timList[index].contractNo;
+			 }
+		 if($scope.newAlias){
+			 var params={
+						"AcNo":$scope.accountN,
+						"channelCode":"01",//00：个人网银，01：手机银行
+						"accountAlias":$scope.newAlias,
+						"flag":5//账户停用-1; 启用-2；删除-3；主账户设置-4；别名设置-5  
+				}
+				$remote.post("/pmobile/AccountNoManager.do",params,function(data){
+					$scope.init();
+				});
+		 }
+	}
+	//跳转借记卡详情
+	$scope.todetailsInfo=function(type,card){
+		if(type=="debitCard"||type=="tim"){//跳转到借记卡/存折详情详情页
+			if(card.AvailBal=="--"){
+				NativeCall.toast("该卡已作废，请变更卡片");
+				return false;
+			}
+			$context.setJson({"selectedAccType":type});
+			$context.setJson({"selectedPayee":card});
+			$scope.goto("MyAcInfo","DebitCardInfo");
+		}else if(type=="creditCard"){//跳转到信用卡详情页
+			$context.setJson({"selectedAoNc":card.creditCardNo});
+			$scope.goto("MyAcInfo","MyCreditCard");
+		}else if(type=="myFinanc"){//跳转到我的理财
+			$scope.goto("MyAcInfo","PMyPrd");
+		}else if(type=="myProvide"){//跳转到贷款页面
+			
+		}else if(type=="Asses"){//跳转到资产透视图
+			$scope.AssesLC = parseFloat($scope.licai)+parseFloat((!$scope.LYBbalance?'0.00':$scope.LYBbalance));
+			$context.setJson({"currentAmount":(!$scope.currentAmount)?'0.00':$scope.currentAmount,
+							"regularAmount":(!$scope.regularAmount)?'0.00':$scope.regularAmount,
+							"licai":(!$scope.AssesLC)?'0.00':$scope.AssesLC,
+							"frzAmount":(!$scope.frzAmount)?'0.00':$scope.frzAmount,
+							"loanAmount":(!$scope.loanAmount)?'0.00':$scope.loanAmount,
+							"debtAmount":(!$scope.debtAmount)?'0.00':$scope.debtAmount,
+							"zichang":$scope.totalProperty?$scope.totalProperty:0,
+							"fuzhai":$scope.totalDebt?$scope.totalDebt:0
+							});
+			$scope.goto("MyAcInfo","AssetPie");
+		}
+	}
+	//弹出联动菜单
+	$scope.accountModify=function(index,id,card){
+		if($scope.mainAcNo!=card && id=="debitCardMenu"){
+			index=index+$scope.numb;
+		}
+		var el=$("."+id+":eq("+index+")");
+		console.log("."+id+":eq("+index+")")
+		el.css("display")=="none"?el.css("display","block"):el.css("display","none");
+	}
+	//删除绑定卡
+	$scope.deleteTiedCard=function(cardNo,alias){
+		var params={
+				"AcNo":cardNo,
+				"channelCode":"01",//00：个人网银，01：手机银行
+				"accountAlias":alias,
+				"flag":3//账户停用-1; 启用-2；删除-3；主账户设置-4；别名设置-5
+		}
+		$scope.confirm("是否确认删除此绑定卡？",function(){
+			$remote.post("/pmobile/AccountNoManager.do",params,function(data){
+				if(data._RejCode=="000000"){
+					$scope.alert("删除成功");
+					$scope.init();
+				}
+			});
+			
+		});
+	}
+	//跳转到挂失页面
+	$scope.toLossAccPage=function(acNo,id,card){
+		if(card.AvailBal=="--"){
+			NativeCall.toast("该卡已作废，请变更卡片");
+			return false;
+		}
+		
+		if(card.CoreStatus==6){
+			NativeCall.toast("账户已挂失");
+			return false;
+		}else if(card.CoreStatus=='A'){
+			NativeCall.toast("卡片未激活，不能执行此操作!");
+			return false;
+		}
+		$context.setJson({"lossCardType":id});	
+		$context.setJson({"lossAc":acNo});
+		$scope.goto("MyAcInfo","LossAccount");
+	}
+	//关闭或展开跨行转账菜单
+	$scope.openTransKind=function(index,id,card){
+		if($scope.mainAcNo!=card && id=="debitCardMenu"){
+			index=index+$scope.numb;
+		}
+		var el=$("."+id+":eq("+index+")");
+		if($scope.animateflg){
+			el.animate({
+				height:"0px"
+			},100);
+			$scope.animateflg=false;
+		}else{
+			el.animate({
+				height:"54px"
+			},100);
+			$scope.animateflg=true;
+		}
+	}
+	//关闭或展开投资理财菜单
+	$scope.openFinancKind=function(index,id,card){
+		if($scope.mainAcNo!=card && id=="debitCardMenu"){
+			index=index+$scope.numb;
+		}
+		var el=$("."+id+":eq("+index+")");
+		if($scope.animateflg1){
+			el.animate({
+				height:"0px"
+			},100);
+			$scope.animateflg1=false;
+		}else{
+			el.animate({
+				height:"54px"
+			},100);
+			$scope.animateflg1=true;
+		}
+	}
+	//跳转至交易明细
+	$scope.toPTransInfoQry=function(card){
+// 		if($scope.userType!="T"&&$scope.userType!=undefined){
+// 			NativeCall.toast("您无权限操作此功能，请到柜台开通专业版手机银行!");
+// 			return false;
+// 		}
+		if(card.AvailBal=="--"){
+			NativeCall.toast("该卡已作废，请变更卡片");
+			return false;
+		}
+		$context.setJson({"selectedAc":card.AcNo})
+		$scope.goto("MyAcInfo","PTransInfoQry");
+	}
+// 	//进入跨行转账
+// 	$scope.toCrossTransfer=function(card){
+// 		if($scope.userType!="T"&&$scope.userType!=undefined){
+// 			NativeCall.toast("您无权限操作此功能，请到柜台开通专业版手机银行!");
+// 			return false;
+// 		}
+// 		if(card.AvailBal=="--"){
+// 			NativeCall.toast("该卡已作废，请变更卡片");
+// 			return false;
+// 		}
+// 		$context.setJson({"toselectAcNo":card.AcNo});
+// 		$scope.goto("MyAcInfo","CrossTransfer");
+// 	}
+	//进入行内转账
+	$scope.toOtherPage=function(card,obj,fl){
+		if($scope.userType!="T"&&$scope.userType!=undefined){
+			NativeCall.toast("您无权限操作此功能，请到柜台开通专业版手机银行!");
+			return false;
+		}
+		if(fl=="1"){
+			$context.setJson({"toselectAcNo":card.AcNo});
+		}else if(fl=="2"){
+			$context.setJson({"toselectAcNo":card.contractNo});
+		}
+		if(fl=="1"){
+			if(card.AvailBal=="--"){
+				NativeCall.toast("该卡已作废，请变更卡片");
+				return false;
+			}
+		}else if(fl="2"){
+			if(card.balance=="--"){
+				NativeCall.toast("该卡已作废，请变更卡片");
+				return false;
+			}
+		}
+		console.log(obj.sel);
+		if(obj.sel==""){
+			return false;
+		}
+		$scope.goto("MyAcInfo",obj.sel);
+	}
+	//理财超时下拉
+	$scope.tomarket=function(card,obj,fl){
+		if(fl=="1"){
+			if(card.AvailBal=="--"){
+				NativeCall.toast("该卡已作废，请变更卡片");
+				return false;
+			}
+		}else if(fl="2"){
+			if(card.balance=="--"){
+				NativeCall.toast("该卡已作废，请变更卡片");
+				return false;
+			}
+		}
+		console.log(obj.sel);
+		if(obj.sel==""){
+			return false;
+		}
+		$scope.goto("MyAcInfo",obj.sel);
+	}
+	//进入乐盈宝
+	$scope.toLeYingBao=function(card){
+		if(card.AvailBal=="--"){
+			NativeCall.toast("该卡已作废，请变更卡片");
+			return false;
+		}
+		$scope.goto("MyAcInfo","PLeYingBao");
+	}
+	//进入理财超市
+	$scope.toPPrdMarket=function(){
+		$scope.goto("MyAcInfo","PPrdMarket");
+	}
+	//进入新增账户
+	$scope.toAddAccount=function(){
+		$scope.goto("MyAcInfo","AddAccount");
+	}
+	//进入我要还款页面
+	$scope.toPRepay=function(card){
+		if($scope.userType!="T"&&$scope.userType!=undefined){
+			NativeCall.toast("您无权限操作此功能，请到柜台开通专业版手机银行!");
+			return false;
+		}
+		//console.log(card);
+		$context.setJson({"selectedAcc":card.creditCardNo});
+		$scope.goto("MyAcInfo","PRepayment");
+	}
+	//进入我的信用卡账单
+	$scope.toPMyBill=function(card){
+		if($scope.userType!="T"&&$scope.userType!=undefined){
+			NativeCall.toast("您无权限操作此功能，请到柜台开通专业版手机银行!");
+			return false;
+		}
+		$context.setJson({"selectedNum":card.creditCardNo});
+		$scope.goto("MyAcInfo","PMybill");
+		
+	}
+	//进入变更页面
+	$scope.toAccModify=function(card,id){
+		if(id=="debitCard"){
+			$context.setJson({"selectedAcc":card.AcNo});
+		}else if(id=="creditCard"){
+			$context.setJson({"selectedAcc":card.creditCardNo});
+		}else if(id=="timAcc"){
+			$context.setJson({"selectedAcc":card.contractNo});
+		}
+		$scope.goto("MyAcInfo","AccNoModify");
+	}
+	//设置默认主账户
+	$scope.setDefaultAcc=function(cardNo,alias,card){
+		if(card.CoreStatus==6){
+			NativeCall.toast("已挂失账户不能设置默认主账户");
+			return false;
+		}
+		if(card.AvailBal=="--"){
+			NativeCall.toast("该卡已作废，请变更卡片");
+			return false;
+		}
+		var params={
+				"AcNo":cardNo
+			};
+		$remote.post("/pmobile/MainAcNoSet.do",params,function(data){
+			$scope.alert("设置成功");
+			$scope.init();
+		});
+	}
+	//“设置按钮”在失去焦点后隐藏对应项
+	$scope.closeSetMenu=function(index,id,card){
+		if($scope.mainAcNo!=card && id=="debitCardMenu"){
+			index=index+$scope.numb;
+		}
+		var el=$("."+id+":eq("+index+")");
+		$timeout(function(){
+			el.css("display","none");
+		},10);
+		
+	}
+	//下拉菜单在失去焦点后隐藏对应项
+	$scope.closeOptionMenu=function(index,id,card){
+		if($scope.mainAcNo!=card && id=="debitCardMenu"){
+			index=index+$scope.numb;
+		}
+		var el=$("."+id+":eq("+index+")");
+		el.animate({
+			height:"0px"
+		},100);
+		$scope.animateflg=false;
+		$scope.animateflg1=false;
+	}
+}
+</script>

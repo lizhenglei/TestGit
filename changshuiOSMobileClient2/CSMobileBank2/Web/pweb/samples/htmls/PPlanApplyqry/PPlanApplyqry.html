@@ -1,0 +1,123 @@
+<div v-view-setup="PPlanApplyqryCtrl" v-init="init()">
+	<!-- 转账录入页面 -->
+	<div v-page v-transition="native">
+		<form  name="transInput" class="bg_box">
+			<div class="box_cont">
+				<div class="zz_cont">
+					<ul>
+						<li class="ft1" style="border:none">
+							<em>贷款名称：</em>
+							<i>薪易贷</i>
+						</li>
+						<li class="ft1">
+							<em>授信额度：</em>
+							<i class="colff6">200,000.00元</i>
+						</li>
+						<li style="border:none">
+							<div class="jindu">
+								<div class="jindu_top">
+									<div class="w25">申请提交<br/>2015-3-20</div><div class="w25">&nbsp;</div><div class="w25">贷款审批<br/>2015-3-20</div><div class="w25">&nbsp;</div>
+								</div>
+								<div class="jindu_center">
+									<div class="w25 c4242ff"><img src="images/a1.png" /></div>
+									<div class="w25 cccccc"><img src="images/b2.png" /></div>
+									<div class="w25 cccccc"><img src="images/b3.png" /></div>
+									<div class="w25 cccccc"><img src="images/b4.png" /></div>
+								</div>
+								<div class="jindu_bottom">
+									<div class="w25">&nbsp;</div><div class="w25">申请受理<br/>2015-3-20</div><div class="w25">&nbsp;</div><div class="w25">审批结果<br/>2015-3-20</div>
+								</div>
+							</div>
+						</li>
+						
+					</ul>
+				</div>
+				<div class="zz_cont">
+					<input type="button" class="button_2" name="button" value="我要评价" v-disabled="" v-click="toConfirm()">
+				</div>
+				
+			</div>
+			
+		</form>
+		<div class="j-heightb"></div>
+		<form  name="transInput" class="bg_box">
+			<div class="box_cont">
+				<div class="zz_cont">
+					<ul>
+						<li class="ft1" style="border:none">
+							<em>贷款名称：</em>
+							<i>小农贷</i>
+						</li>
+						<li class="ft1">
+							<em>授信额度：</em>
+							<i class="colff6">200,000.00元</i>
+						</li>
+						<li style="border:none">
+							<div class="jindu">
+								<div class="jindu_top">
+									<div class="w25">申请提交<br/>2015-3-20</div><div class="w25">&nbsp;</div><div class="w25">贷款审批<br/>2015-3-20</div><div class="w25">&nbsp;</div>
+								</div>
+								<div class="jindu_center">
+									<div class="w25 c4242ff"><img src="images/a1.png" /></div>
+									<div class="w25 cccccc"><img src="images/b2.png" /></div>
+									<div class="w25 cccccc"><img src="images/b3.png" /></div>
+									<div class="w25 cccccc"><img src="images/b4.png" /></div>
+								</div>
+								<div class="jindu_bottom">
+									<div class="w25">&nbsp;</div><div class="w25">申请受理<br/>2015-3-20</div><div class="w25">&nbsp;</div><div class="w25">审批结果<br/>2015-3-20</div>
+								</div>
+							</div>
+						</li>
+						
+					</ul>
+				</div>
+				<div class="zz_cont">
+					<input type="button" class="button_2" name="button" value="我要评价" v-disabled="" v-click="toConfirm()">
+				</div>
+				
+			</div>
+			
+		</form>
+	</div>
+
+</div>
+<script>
+PPlanApplyqryCtrl.$inject = ["$scope","$remote","$targets","$filter","$context"];
+function PPlanApplyqryCtrl($scope,$remote,$targets,$filter,$context){
+	$scope.init=function(){
+		$scope.ccardList=[{"AcNo":"62322456300000001"},{"AcNo":"62322456300000002"},{"AcNo":"62322456300000003"}];
+		$scope.dcardList=[{"AcNo":"63364456300056780"},{"AcNo":"63364456300056781"},{"AcNo":"63364456300056782"}];
+		$scope.creditCard=$scope.ccardList[0];
+		$scope.debitCard=$scope.dcardList[0];
+		
+	}
+	//调用密码控件
+	$scope.getPW=function(){
+		$("#cardpassword").val("");
+		var scrollHeight=$scope.getPWPosition($("#cardpassword").get(0));//定位当前密码输入栏位在文档中的位置
+		$scope.getPassword(function(pwResponse){
+			var resJson=vx.fromJson(pwResponse);
+			if(resJson.Flag==0){
+				$("#cardpassword").val(resJson.passWord);
+			}else if(resJson.Flag==1){
+				$scope.miwen=resJson.passWord;
+			}
+		},scrollHeight);
+	}
+	//获取信用卡信息
+	$scope.getCardInfo=function(){
+	}
+	//跳转到确认页面
+	$scope.toConfirm=function(){
+		$targets("content","#2");
+	}
+	//跳转到结果页面
+	$scope.toResult=function(id){
+		$scope.resultData={
+				"TransDate":"2015.04.02 00：00"
+				};
+		$targets("content","#3");
+	}
+	
+}
+</script>

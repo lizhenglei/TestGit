@@ -1,0 +1,120 @@
+//
+//  HelpCenterViewController.m
+//  MobileClient
+//
+//  Created by xiaoxin on 15/4/28.
+//  Copyright (c) 2015年 pro. All rights reserved.
+//
+
+#import "HelpCenterViewController.h"
+#import "HelpDetailViewController.h"
+@interface HelpCenterViewController ()<UITableViewDataSource,UITableViewDelegate>
+{
+    NSMutableArray*textArray;
+}
+@property(nonatomic,strong)UITableView*tableView;
+@end
+
+@implementation HelpCenterViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    
+    textArray = [[NSMutableArray alloc]initWithObjects:@"注册与签约",@"等录相关",@"关于转账汇款",@"个人贷款与信用卡",@"生活服务",@"安全问题", nil];
+    
+    _tableView = [[UITableView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height) style:UITableViewStyleGrouped];
+    _tableView.dataSource = self;
+    _tableView.delegate = self;
+    _tableView.backgroundColor=[UIColor clearColor];
+    _tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    _tableView.showsVerticalScrollIndicator = NO;
+    _tableView.scrollEnabled = NO;
+    [self.view addSubview:_tableView];
+    
+    
+    // Do any additional setup after loading the view.
+}
+
+-(void)viewWillAppear:(BOOL)animated{
+    
+    [super viewWillAppear:animated];
+    
+    ((UILabel*)[self.navigationController.navigationBar viewWithTag:99]).text = @"帮助中心";
+}
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+    return 1;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return textArray.count;
+}
+
+
+- (UITableViewCell *) tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    NSString *cellID = [NSString stringWithFormat:@"Cell%ld",(long)indexPath.row];
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellID];
+    if (cell == nil) {
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellID];
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+        UIImageView* backgroundView = nil;
+        
+        UIView*bg = [[UIView alloc]initWithFrame:CGRectMake(0, 0, tableView.frame.size.width, CellHeight)];
+        bg.backgroundColor = [UIColor colorWithRed:1.00f green:1.00f blue:1.00f alpha:1.00f];
+        
+        [cell.contentView addSubview:bg];
+
+        cell.backgroundView = backgroundView;
+        cell.textLabel.text = textArray[indexPath.row];
+        cell.textLabel.font = [UIFont systemFontOfSize:14];
+        cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+        
+        UIView*line = [[UIView alloc]initWithFrame:CGRectMake(5, CellHeight-1, tableView.frame.size.width-10, 1)];
+        line.backgroundColor = [UIColor colorWithRed:0.97f green:0.97f blue:0.97f alpha:1.00f];
+        if (indexPath.row!=textArray.count-1) {
+            [cell.contentView addSubview:line];
+        }
+        
+    }
+    return cell;
+}
+
+-(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+    HelpDetailViewController*helpDetailView = [[HelpDetailViewController alloc]init];
+    [self.navigationController pushViewController:helpDetailView animated:YES];
+}
+
+-(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
+    return CellHeight;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
+    return 10.0;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section {
+    return 0.0;
+}
+
+- (UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section {
+    UIView* footer = [[UIView alloc]initWithFrame:CGRectMake(0, 0, tableView.frame.size.width, [self tableView:tableView heightForFooterInSection:section])];
+    return footer;
+}
+
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+/*
+ #pragma mark - Navigation
+ 
+ // In a storyboard-based application, you will often want to do a little preparation before navigation
+ - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+ // Get the new view controller using [segue destinationViewController].
+ // Pass the selected object to the new view controller.
+ }
+ */
+
+@end

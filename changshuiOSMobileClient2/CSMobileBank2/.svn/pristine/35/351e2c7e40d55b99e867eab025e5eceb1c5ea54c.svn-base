@@ -1,0 +1,406 @@
+<div v-view-setup="LYBTransInCtrl" v-init="init()">
+	<!-- 乐赢宝录入页面 -->
+	<div v-page v-transition="native" title="乐盈宝购买">
+		<form  name="transInput" class="bg_box">
+			<div class="box_cont">
+	
+				<div class="selected">
+					<span><img class="jindu" src="images/u1.png" /></span> <span><img
+						class="jindu" src="images/u2_1.png" /></span> <span><img class="jindu" src="images/u3_1.png" /></span>
+				</div>
+				<div class="zz_cont">
+					<ul>
+						<li>
+							<em>账号：</em>
+							<i v-show ="isFirstBuy==1">
+								<select  v-change="getCardInfo()"  v-model="payCard" name="payCard" v-options="ac.AcNo1 for ac in acList" ></select>
+							</i>
+							<i v-show ="isFirstBuy!=1">
+								{{AccNo}}							
+							</i>
+						</li>
+						<li>
+							<em>可用金额：</em>
+							<i class="colff6" ui-money='{"amounts":"balance"}'></i>
+						</li>
+						<li>
+							<em>金额：</em>
+							<i class="colff6">
+								<input type="text" placeholder="请输入购买金额" name="amount" v-model="amount"  ui-num='{"maxlength":11,"hasDot":true,"tip":"金额"}' class="y_srk" required>
+							</i>
+						</li>
+						<li v-show="isFirstBuy==1&&refCodeFlag != 0 ">
+							<em>邀请码：</em>
+							<i class="colff6">
+								<input type="tel" placeholder="请输入邀请码" name="refCode" v-model="refCode" class="y_srk" required>
+							</i>
+						</li>
+					</ul>
+				</div>
+				<div class="zz_cont" v-show="isFirstBuy==1">
+					<input type="checkbox" name="agree" v-model="agree"/>
+					已阅读并同意<a style="color:blue" v-click="toXieYiPage()">《乐盈宝协议》</a>
+				</div>
+				<div class="zz_cont">
+					<input type="button" class="button_1" name="button" value="确认" v-disabled="!agree||!amount||refCodeFlag==3||DisBool" v-click="toConfirm()">
+				</div>
+			</div>
+		</form>
+	</div>
+	
+	<!-- 乐赢宝确认页面 -->
+	<div  v-page v-transition="native" title="乐盈宝购买">
+		 <form name="transConfirm" class="bg_box">
+		    <div class="box_cont">
+		      <div class="selected">
+		        <span><img class="jindu" src="images/u1.png" /></span>
+		         <span><img class="jindu" src="images/u2.png" /></span>
+		          <span><img class="jindu" src="images/u3_1.png" /></span>
+		      </div>
+		      <div class="zz_cont">
+			      <ul>
+						<li><em>账号：</em><i>{{payCard.AcNo1}}</i></li>
+						<li><em>金额：</em><i>{{amount}}元</i></li>
+						<li  v-show="refCode">
+							<em>邀请码：</em><i>{{refCode}}</i>
+						</li>
+				  </ul>
+		       </div>
+		       <div class="zz_cont">
+			      <ul>
+						<li>
+							<em>验证码：</em>
+							<i><input type="tel" name="imgcode" v-model="imgcode" class="y_srk" maxlength=4 placeholder="请输入验证码" style="width:50%"/></i>
+							<img id="img" name="img" v-model="img" src="data:image/png;base64,{{TokenImg}}" data-ke-src="data:image/png;base64,{{TokenImg}}" style="position:relative;left:40%;margin-top:3%" v-click="freshCode('img')">
+<!-- 							<img id="img" name="img" v-model="img" src="/pmobile/GenTokenImg.do?r" style="position:relative;left:40%" v-click="freshCode('img')"> -->
+						</li>
+				  </ul>
+		     	</div>
+		     	<div>
+		     		<input type="submit"  class="button_1" name="Submit"  v-disabled="!imgcode" value="确认" v-click="toResult('img')">
+		     	</div>
+		 </div>
+		 </form>
+		 
+		<div class="zz_cont"><img src="images/ts.png" />
+		    <font class="tishi">
+				温馨提示</br>
+			</font>
+				&nbsp;&nbsp;首次购买会自动签约乐盈宝，请阅读乐盈宝协议后勾选协议进行购买。
+			<div style="font-size:12px; line-height:16px; color:#929292;"> </div>
+	   </div>
+		 
+	</div>
+
+	
+	<!-- 乐赢宝结果页面 -->
+	<div v-page  v-transition="native" data-back="false" title="乐盈宝购买">
+		<div class="bg_box">
+		    <div class="box_cont">
+			      <div class="selected">
+			        <span><img class="jindu" src="images/u1.png" /></span>
+			        <span><img class="jindu" src="images/u2.png" /></span>
+			        <span><img class="jindu" src="images/u3.png" /></span>
+			      </div>
+				  <div class="zz_cont">
+				    <div v-show="IsReward=='true'" class="maind" style="margin:0px">
+						<div class="d1" style="float:left;padding-left:5px;width:20%;padding-top:20px"><img src="images/cg_img.png" style="width:60px;height:60px"/></div>
+						<div class="d2" style="float:left;width:50%;height:70px;  padding-top:9%;">
+							 <div style="  text-align: center;font-size:x-large;color:#0069c9"> 交易成功</div>
+							<div class="transtime" style="padding-bottom:0px;padding-top:10px;font-size:inherit;">{{resultData.TransDate}}</div>
+						</div>
+						<div class="d3"  style="padding-top: 25px;float:left;width:20%;margin-left:-3%"><img  v-click="gotoRewardPage()" src="images/img_reward.gif" style="width:100px;height:60px;"/></div>
+					</div>
+					<div v-hide="IsReward=='true'">
+						<div class="d1" style="float:left;padding-left:50px;;width:20%;padding-top:20px"><img src="images/cg_img.png" style="width:60px;height:60px"/></div>
+						<div class="d2" style="float:right;width:50%;height:70px;  padding-top:9%;padding-right:30px">
+							 <div style="  text-align: center;font-size:x-large;color:#0069c9"> 交易成功</div>
+							<div class="transtime" style="padding-bottom:0px;padding-top:10px;font-size:inherit;">{{resultData.TransDate}}</div>
+						</div>
+					</div>
+				     <div class="resultForm">
+						<ul>
+							<li><em>账号：</em><i>{{payCard.AcNo2}}</i></li>
+							<li><em>金额：</em><i>{{amount}}元</i></li>
+				  		</ul>
+				     </div>
+				  </div>
+				  <div class="zz_cont"><img src="images/ts.png" />
+		    		<font class="tishi">
+						温馨提示</br>
+					</font>
+					<div id="QXInfo" >
+					<table border="1" align="center" cellpadding="0" cellspacing="0"   style="width:100%;">
+						<tr>
+							<td>购买时间</td>
+							<td>起息时间</td>
+							<td>收益查看时间	</td>
+						</tr>
+						<tr>
+							<td>周一15:00至周二15:00</td>
+							<td>周三开始</td>
+							<td>周四开始</td>
+						</tr>
+						<tr>
+							<td>周二15:00至周三15:00</td>
+							<td>周四开始</td>
+							<td>周五开始</td>
+						</tr>
+						<tr>
+							<td>周三15:00至周四15:00</td>
+							<td>周五开始</td>
+							<td>周六开始</td>
+						</tr>
+						<tr>
+							<td>周四15:00至周五15:00</td>
+							<td>周一开始</td>
+							<td>周二开始</td>
+						</tr>
+						<tr>
+							<td>周五15:00至周一15:00</td>
+							<td>周二开始</td>
+							<td>周三开始</td>
+						</tr>
+					</table>
+					</div>
+					<div style="font-size:12px; line-height:16px; color:#929292;"> </div>
+	   			</div>
+		 	</div>
+ 		</div>
+	</div>
+	
+	<!-- 协议页面 -->
+	<div v-page v-transition="native" title="乐盈宝签约协议">
+		 <div class="bg_box">
+		    <div class="box_cont">
+		    		<div>
+		    			<b style="font-size:15px;margin-left:10%;">江苏常熟农村商业银行股份有限公司</b><br>
+		    			<b style="font-size:15px;margin-left:25%;">乐盈宝服务协议条款</b>
+						<p style="font-size:15px;">特别提示：尊敬的客户，为了维护您的权益，请在签署本协议前，仔细阅读本协议各条款，关注并理解您在本协议中的权利及义务。如对本协议有任何疑问，请咨询经办行。</p>
+						<span>甲方（申请人）：{{UserName}}</span><br>
+						<span>（身份证号码：{{IdNo}}）</span><br>
+						<span>乙方：江苏常熟农村商业银行股份有限公司</span></div>
+			     	<div id="LYBFileId" style="width:100%;height:auto"></div>
+			     <div>
+			     	<input type="submit"  class="button_1" name="Submit" value="同意" v-click="backInputPage()">
+			     </div>
+		 	</div>
+		 </div>
+	</div>
+	  <div style="width:100%;height:40px;"></div>
+</div>
+<script>
+LYBTransInCtrl.$inject = ["$scope","$remote","$targets","$filter","$context"];
+function LYBTransInCtrl($scope,$remote,$targets,$filter,$context){
+	$scope.init=function(){
+		$scope.isFirstBuy=$context.getJson().firstFlag;
+		if($scope.isFirstBuy==0){
+			$scope.agree=true;
+		}
+		$scope.DisBool = false;
+		//查询卡列表
+		$remote.post("/pmobile/ActListQry.do",{},function(data){
+			$scope.acListInfo=data;
+			$scope.acList=data.AcList;
+			var filterFn=$filter("filter");
+			$scope.acList=filterFn($scope.acList,function(obj,text){
+				if(obj.AcNo != undefined){
+					obj.AcNo1=obj.AcNo.substring(0,4)+"****"+ obj.AcNo.substring(obj.AcNo.length-4)
+					obj.AcNo2=obj.AcNo1;
+					if(obj.AcAlias.length>4){
+						obj.AcNo1=obj.AcNo1+" / "+obj.AcAlias.substring(0,4)+"...";
+					}else if(obj.AcAlias.length<=4&&obj.AcAlias.length>0){
+						obj.AcNo1=obj.AcNo1+" / "+obj.AcAlias;
+					}else{
+						obj.AcNo1=obj.AcNo1;
+					}
+					return true;
+				}
+			});
+			if($scope.isFirstBuy!=1){
+				vx.forEach($scope.acList,function(item){
+					if(item.AcNo == $context.getJson().acNo){
+						$scope.AccNo = $context.getJson().acNo;
+						$scope.payCard = item;
+						$scope.DisBool = false;
+					}	
+				});
+				if(!vx.isDefined($scope.AccNo)){
+					$scope.AccNo = "--"
+					NativeCall.toast("签约帐号未加挂到手机银行");
+					$scope.DisBool = true;
+				}
+			}else{
+				$scope.payCard=$scope.acList[0];
+			}
+			//查询卡信息
+			$scope.getCardInfo();
+		});
+	}
+	
+	$scope.gotoRewardPage=function(){
+		$context.clear();
+		$scope.TransName="PLeYingBao";
+		$remote.post("/pmobile/TransRewardsQry.do",{"TRANSNAME":$scope.TransName},function(data){
+			if(data.GAMETYPE=="0"){
+				var param={
+						"ReWardCount":data.REWARDCOUNT,"TransName":data.TRANSNAME,
+						"Count":data.COUNT,
+						"GameType":data.GAMETYPE,
+						"IsReward":data.ISREWARD,
+						
+						"UpDateTime":data.UPDATETIME
+				}
+				$context.setJson({"innerParam":param});
+				$scope.goto("LotteryDraw");
+			}else if(data.GAMETYPE=="2"){
+				var param={
+						"ReWardCount":data.REWARDCOUNT,"TransName":data.TRANSNAME,
+						"Count":data.COUNT,
+						"GameType":data.GAMETYPE,
+						"IsReward":data.ISREWARD,
+						
+						"UpDateTime":data.UPDATETIME
+				}
+				$context.setJson({"innerParam":param});
+				$scope.goto("GuaGuaLe");
+			}else if(data.GAMETYPE=="3"){
+				var param={
+						"ReWardCount":data.REWARDCOUNT,"TransName":data.TRANSNAME,
+						"Count":data.COUNT,
+						"GameType":data.GAMETYPE,
+						"IsReward":data.ISREWARD,
+						
+						"UpDateTime":data.UPDATETIME
+				}
+				$context.setJson({"innerParam":param});
+				$scope.goto("YaoYiYao");
+			}
+		});
+	}
+	//查询支付卡余额
+	$scope.getCardInfo=function(){
+		var cardNo=$scope.payCard.AcNo;
+		//查询余额
+		$remote.post("/pmobile/ActBalQry.do",{"AcNo":cardNo},function(data){
+			$scope.cardInfo=data;
+			$scope.balance=data.AvailBal;
+			if($scope.isFirstBuy==1){
+				$scope.refCodeQry(cardNo);
+			}
+		});
+	}
+	//邀请码查询
+	$scope.refCodeQry = function(cardNo){
+		$remote.post("/pmobile/refCodeQry.do",{"cardNo":cardNo,"amount":$scope.amount,"tranType":"0"},function(data){
+			$scope.refCodeFlag = data.flag;
+			if($scope.refCodeFlag=='3'){
+				$scope.alert("当前卡号禁止购买乐盈宝！");
+			}
+			
+		});
+	}
+	//刷新验证码
+	$scope.freshCode=function(id){
+		$remote.post("/pmobile/GenTokenImg.do?r"+Math.random(),{},function(data){
+			$scope.TokenImg=data.imgKey;
+		});
+	}
+	//跳转到确认页面
+	$scope.toConfirm=function(){
+		if($scope.isFirstBuy==1&&$scope.refCodeFlag=='2'){
+			if($scope.refCode==null||$scope.refCode==""||$scope.refCode==undefined){
+				NativeCall.toast("邀请码不能为空");
+				return;
+			}
+		}
+		if(parseFloat($scope.amount)>parseFloat($scope.balance)){
+			NativeCall.toast("支付卡可用余额不足");
+			$scope.amount="";
+		}else{
+			$targets("content","#2");
+			$scope.freshCode('img');
+		}
+	}
+	//跳转到结果页
+	$scope.toResult=function(id){
+		$remote.post("/pmobile/TransRewardsQry.do",{"TRANSNAME":"PLeYingBao"},function(data){
+			$scope.IsReward=data.ISREWARD;
+		});
+		var params={
+				"cardNo":$scope.payCard.AcNo,
+				"prdCode":"000771",
+				"tranAmount":$scope.amount,
+				"flag":$scope.isFirstBuy,
+				"_vTokenName":$scope.imgcode
+		};
+		if($scope.isFirstBuy==1&&$scope.refCode!=null&&$scope.refCode!=""&&$scope.refCode!=undefined){
+			$remote.post("/pmobile/refCodeResult.do",{"operationType":0,"refCode":$scope.refCode},function(data){
+				if(data.flag=="000001"){
+					$scope.alert("邀请码已被使用！");
+					return;
+				}else if (data.flag=="000002"){
+					$scope.alert("邀请码已过期！");
+					return;
+				}else{
+					$remote.post("/pmobile/QueryLYBZrInfo.do",params,function(data){
+						if(data._RejCode=="000000"){
+							$context.setJson({"isFirstBuy":0});
+							$scope.isFirstBuy=0;
+							$scope.resultData=data;
+							if($scope.isFirstBuy==1&&$scope.refCode!=null&&$scope.refCode!=""&&$scope.refCode!=undefined){
+								$remote.post("/pmobile/refCodeResult.do",{"operationType":1,"refCode":$scope.refCode},function(data){
+									$scope.refCode="";
+								});
+							}
+							$targets("content","#3");
+						}
+					},function(data){ 
+						if(data.jsonError&&data.jsonError[0]){
+							$scope.alert(data.jsonError);
+						}
+						$scope.freshCode(id);
+						return data.jsonError;
+					});
+				}
+			});
+		}else{
+			$remote.post("/pmobile/QueryLYBZrInfo.do",params,function(data){
+				if(data._RejCode=="000000"){
+					$context.setJson({"isFirstBuy":0});
+					$scope.isFirstBuy=0;
+					$scope.resultData=data;
+					$targets("content","#3");
+				}
+			},function(data){ 
+				if(data.jsonError&&data.jsonError[0]){
+					$scope.alert(data.jsonError);
+				}
+				$scope.freshCode(id);
+				return data.jsonError;
+			});
+		}
+	}
+	//校验邀请码
+// 	$scope.refCodeResult = function(data){
+	
+// 	}
+	//返回录入页面
+	$scope.backInputPage=function(){
+		$scope.agree=true;
+		$targets("content","#1");
+	}
+	//跳转到协议页面
+	$scope.toXieYiPage=function(){
+		$scope.getClientState(function(response){
+			var resJson=vx.fromJson(response);
+			$scope.UserName = resJson.Userinfo.CifName;
+			$scope.IdNo = resJson.Userinfo.IdNo;
+		});
+		$remote.post("/pmobile/TreatyContent.do",{"TreatyType":"08"},function(data){
+			document.getElementById("LYBFileId").innerHTML=data.Content;
+			$targets("content","#4");
+		});
+	}
+}
+</script>

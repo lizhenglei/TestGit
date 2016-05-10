@@ -1,0 +1,163 @@
+<div v-view-setup="AddPayeeCtrl" v-init="init()">
+	<div v-page v-transition="native">
+		<div class="bg_box">
+			<div class="box_cont">
+				<div class="zz_cont">
+				      <ul>
+							<li>
+								<em>转账类型：</em>
+								<i>
+									<select v-model="transType" name="transType" v-options="tl.name for tl in typeList" >
+									</select>
+								</i>
+							</li>
+							<li>
+								<em>收款人姓名：</em>
+								<i>
+									<input type="text" placeholder="请输入收款人姓名" name="payeeName"  v-model="payeeName" class="y_srk">
+								</i>
+							</li>
+							<li>
+								<em>别名：</em>
+								<i>
+									<input type="text" placeholder="请输入账号别名" name="AcAlias" v-model="AcAlias" class="y_srk" maxlength="10">
+								</i>
+							</li>
+							<li>
+								<em>收款人账号：</em>
+								<i>
+									<input type="text" placeholder="请输入收款人账号"name="payeeAcNo" v-model="payeeAcNo" ui-num='{"maxlength":22,"hasDot":false,"tip":"收款人账号"}' class="y_srk">
+								</i>
+							</li>
+							<li v-show="transType.code==6">
+								<em>收款银行：</em>
+								<i>
+									<input type="text" name="payeeBank" placeholder="请查询收款银行" v-model="payeeBank" class="y_srk" readOnly>
+									<span v-click="queryPayeeBank()"><img src="images/ss_icon.png" /></span>
+								</i>
+							</li>
+							<li v-show="transType.code==1">
+								<em>收款开户行：</em>
+								<i>
+									<input type="text" placeholder="请查询收款开户行" name="payeeKBank" v-model="payeeKBank" class="y_srk" readOnly>
+									<span v-click="queryKHbank()"><img src="images/ss_icon.png" /></span>
+								</i>
+							</li>
+							
+					 </ul>
+					<div>
+			     		<input v-show="transType.code==6" v-disabled="!payeeName||!payeeAcNo||!payeeBank" type="submit"  class="button_1" name="Submit" value="确认" v-click="addPayee()">
+			     		<input v-show="transType.code==1" v-disabled="!payeeName||!payeeAcNo||!payeeKBank" type="submit"  class="button_1" name="Submit" value="确认" v-click="addPayee()">
+			     		<input v-show="transType.code==0" v-disabled="!payeeName||!payeeAcNo" type="submit"  class="button_1" name="Submit" value="确认" v-click="addPayee()">
+			     		<input v-show="transType.code==5" v-disabled="!payeeName||!payeeAcNo" type="submit"  class="button_1" name="Submit" value="确认" v-click="addPayee()">
+			     	</div>
+			    </div>
+			</div>
+		</div>
+	</div>
+</div>
+<script>
+AddPayeeCtrl.$inject = ["$scope","$remote","$targets","$context"];
+function AddPayeeCtrl($scope,$remote,$targets,$context){
+	$scope.init=function(){
+		$scope.HostCustNo=$context.getJson().HostCustNo;
+		$scope.titleName = $context.getJson().titleName; 
+		$scope.typeList=[{"name":"行内转账","code":"0"},{"name":"跨行快速","code":"6"},{"name":"跨行普通","code":"1"},{"name":"信用卡","code":"5"}];
+		$scope.rBank=$context.getJson().selectedpayeebank;
+		$scope.rkBank=$context.getJson().selectedKHbank;
+		$scope.addParam=$context.getJson().addParam;
+		if($scope.titleName=="cross"){
+			$scope.transType=$scope.typeList[1];
+		}else if($scope.titleName=="credit"){
+			$scope.transType=$scope.typeList[3];
+		}else{
+			$scope.transType=$scope.typeList[0];
+		}
+		if($scope.addParam){
+			vx.forEach($scope.typeList,function(item){
+				if($scope.addParam.transType&&$scope.addParam.transType.code==item.code){
+					$scope.transType=item;
+				}
+			});
+			$scope.payeeName=$scope.addParam.payeeName;
+			$scope.AcAlias=$scope.addParam.AcAlias;
+			$scope.payeeAcNo=$scope.addParam.payeeAcNo
+		};
+		//判断是否选择了开户行
+		if($scope.rkBank){
+			$scope.payeeKBank=$scope.rkBank.BankName;
+		}else if($scope.addParam){//判断是否存在已保留的参数
+			$scope.rkBank=$scope.addParam.rkBank;
+			$scope.payeeKBank=$scope.rkBank?$scope.rkBank.BankName:"";
+		}
+		
+		//判断是否选择了收款银行
+		if($scope.rBank){
+			$scope.payeeBank=$scope.rBank.PayeeBankName;
+		}else if($scope.addParam){
+			$scope.rBank=$scope.addParam.rBank;
+			$scope.payeeBank=$scope.rBank?$scope.rBank.PayeeBankName:"";
+		}
+	}
+	
+	//查询开户行
+	$scope.queryKHbank=function(){
+		var param={
+				"transType":$scope.transType,
+				"payeeName":$scope.payeeName,
+				"AcAlias":$scope.AcAlias,
+				"payeeAcNo":$scope.payeeAcNo,
+				"rBank":$scope.rBank?$scope.rBank:"",
+				"rkBank":$scope.rkBank?$scope.rkBank:""
+		}
+		$context.setJson({"addParam":param});
+		$context.setJson({"comeFrom":"AddPayee"});
+		$scope.goto("AddPayee","KHbank");
+// 		NativeCall.goBack();
+	}
+	
+	//查询收款银行
+	$scope.queryPayeeBank=function(){
+		var param={
+				"transType":$scope.transType,
+				"payeeName":$scope.payeeName,
+				"AcAlias":$scope.AcAlias,
+				"payeeAcNo":$scope.payeeAcNo,
+				"rBank":$scope.rBank?$scope.rBank:"",
+				"rkBank":$scope.rkBank?$scope.rkBank:""
+		}
+		$context.setJson({"addParam":param});
+		$context.setJson({"comeFrom":"AddPayee"});
+		$scope.goto("AddPayee","PayeeBank");
+	}
+	
+	//添加收款人
+	$scope.addPayee=function(){
+		var bankName,bankNo;
+		if($scope.transType.code==1){//普通
+			bankName=$scope.rkBank.BankName;
+			bankNo=$scope.rkBank.BankNo;
+		}else if($scope.transType.code==6){//快速
+			bankName=$scope.rBank.PayeeBankName;
+			bankNo=$scope.rBank.EBankNo;
+		};
+  		var params={
+				"PayeeAcNo":$scope.payeeAcNo,
+				"PayeeAcName":$scope.payeeName,
+				"PayeeBankName":bankName,
+				"PayeeBankNo":bankNo,
+				"AcAlias":$scope.AcAlias,
+				"TransType":$scope.transType.code,
+				"HostCustNo":$scope.HostCustNo,
+				"OperationType":1
+		}
+		$remote.post("/pmobile/PayeeBookManage.do",params,function(data){
+				if(data._RejCode=="000000"){
+					$context.clear();
+					$context.setJson({"transType":$scope.transType.code});
+					$scope.goto("PPayeeBookMgmt");
+				}
+		});
+	}
+}
+</script>

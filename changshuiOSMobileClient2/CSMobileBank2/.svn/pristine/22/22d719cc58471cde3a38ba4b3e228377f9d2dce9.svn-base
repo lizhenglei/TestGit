@@ -1,0 +1,67 @@
+//
+//  CSIIMenuScrollView.m
+//  MobileClient
+//
+//  Created by 杨楠 on 14/8/26.
+//  Copyright (c) 2014年 pro. All rights reserved.
+//
+
+#import "CSIIMenuScrollView.h"
+#import "CSIIUtility.h"
+#import "CSIILabel.h"
+#import "SkinManager.h"
+
+@implementation CSIIMenuScrollView
+
+- (id)initWithFrame:(CGRect)frame items:(NSArray *)items target:(id)target {
+    self = [super initWithFrame:frame];
+    if (self) {
+        self.backgroundColor = [UIColor clearColor];
+        self.userInteractionEnabled = YES;
+        
+        int column = 0;
+        int row = 0;
+        for (int i = 0; i < items.count; i++) {
+            NSDictionary* dict = items[i];
+            if (column == 4) {
+                column = 0;
+                row++;
+            }
+            UIView* background = [[UIView alloc]initWithFrame:CGRectMake(11 + 76 * column,24 + 98 * row, 73, 79)];
+            background.backgroundColor = [UIColor clearColor];
+            
+            NSString* imageName = dict[@"ActionImage"];
+            if ([[SkinManager sharedInstance]currentSkinKey] > 0) {
+                imageName = [NSString stringWithFormat:@"%@5",imageName];
+            }
+            UIImage* iconImage = [UIImage imageNamed:imageName];
+            UIButton* icon = [[UIButton alloc]initWithFrame:[CSIIUtility getCentreRect:background.frame innerSize:iconImage.size top:0]];
+            icon.frame = CGRectMake(icon.frame.origin.x + 2 , icon.frame.origin.y + 1, icon.frame.size.width, icon.frame.size.height); //图片不居中，坐标修正
+            [icon setImage:iconImage forState:UIControlStateNormal];
+
+            [icon addTarget:target action:@selector(menuButtonAction:) forControlEvents:UIControlEventTouchUpInside];
+            icon.tag = i;
+            icon.backgroundColor = [UIColor clearColor];
+            [background addSubview:icon];
+            
+            UILabel* title = [[CSIILabel alloc]initWithFrame:CGRectMake(0, icon.frame.origin.y + icon.frame.size.height, background.frame.size.width, background.frame.size.height - icon.frame.size.height)];
+            title.textAlignment = NSTextAlignmentCenter;
+            title.text = dict[@"ActionName"];
+            [background addSubview:title];
+            
+            [self addSubview:background];
+            column++;
+//            NSLog(@"%@",NSStringFromCGRect(background.frame));
+        }
+        self.userInteractionEnabled = YES;
+        row++;
+        self.contentSize = CGSizeMake(self.frame.size.width, (24 + 98) * row);
+        self.showsHorizontalScrollIndicator = NO;
+        self.showsVerticalScrollIndicator = NO;
+//        self.pagingEnabled = YES;
+    }
+    return self;
+}
+
+
+@end

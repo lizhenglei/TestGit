@@ -1,0 +1,36 @@
+<div v-view-setup="feiyongCtrl" v-init="init()">
+	<form name="transInput" class="bg_box" style="  background:none">
+	<div class="box_cont" style="  background:none">
+			<div style="  margin-top: 5px;">
+				<div style="float: left;width: 24%;text-align:center;border: 1px solid #ccc;">费用月份</div>
+				<div style="float: left;width: 24%;text-align:center;border: 1px solid #ccc;">账目类型</div>
+				<div style="float: left;width: 24%;text-align:center;border: 1px solid #ccc;">欠费金额</div>
+				<div style="float: left;width: 24%;text-align:center;border: 1px solid #ccc;">滞纳金</div>
+			</div>
+			<div style="  margin-top: 5px;" v-repeat="li in lis">
+				<div style="float: left;width: 24%;line-height: 30px;height:30px;background-color: white;text-align:center;border: 1px solid #ccc;">{{li.month}}</div>
+				<div style="float: left;width: 24%;line-height: 30px;height:30px;background-color: white;text-align:center;border: 1px solid #ccc;">{{li.name}}</div>
+				<div style="float: left;width: 24%;line-height: 30px;height:30px;background-color: white;text-align:center;border: 1px solid #ccc;">{{li.arrearage|number:2}}</div>
+				<div style="float: left;width: 24%;line-height: 30px;height:30px;background-color: white;text-align:center;border: 1px solid #ccc;">{{li.overdueFine|number:2}}</div>
+			</div>
+		</div>
+		</form>
+<!--         <div class="zz_cont"><img src="images/ts.png" /> -->
+<!-- 		    <font class="tishi"> -->
+<!-- 				温馨提示</br> -->
+<!-- 			</font> -->
+<!-- 				&nbsp;&nbsp;如无牌价信息请再次刷新。</br> -->
+<!-- 				&nbsp;&nbsp;2、账户如有外币资产，将会被折算成人民币资产统计。</br> -->
+<!-- 				&nbsp;&nbsp;3、信用卡如有美元账单，将被折算成人民币负债计入到总负债中。</br> -->
+<!-- 			<div style="font-size:12px; line-height:16px; color:#929292;"> </div> -->
+<!-- 	   </div> -->
+ 		<div style="width:100%;height:40px"></div>
+</div>
+<script>
+feiyongCtrl.$inject = ["$scope","$remote","$targets","$context","$timeout"];
+function feiyongCtrl($scope,$remote,$targets,$context,$timeout){
+	$scope.init=function(){
+		$scope.lis=$context.getJson().da;
+	}
+}
+</script>

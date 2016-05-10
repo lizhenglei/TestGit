@@ -1,0 +1,89 @@
+<div v-view-setup="PSetMessageCtrl" v-init="init()">
+	<div v-page>
+		<div class="bg_box">
+			<div class="box_cont">
+				<div class="zz_cont">
+				      <ul>
+							<li>
+								<em>原预留信息：</em>
+								<i style = "font-style : normal">{{oldSafeText}}</i>
+							</li>
+							
+							<li>
+								<em>新预留信息：</em>
+								<i>
+									<input type="text"  placeholder="请输入预留信息" name="rMessage" v-model="rMessage" maxlength="10" class="y_srk" required/> 
+								</i>
+							</li>
+					 </ul>
+			    </div>
+			    
+				<div class="zz_cont">
+					<input type="button" class="button_1" name="button" value="设置"  v-click="toConfirm()">
+				</div>
+			    
+			</div>
+		</div>
+		<div class="zz_cont"><img src="images/ts.png" />
+		    <font class="tishi">
+				温馨提示</br>
+			</font>
+				&nbsp;&nbsp; 1、若发现预留信息与设置不符，请立即停止手机银行交易并及时与我行联系； </br>
+				&nbsp;&nbsp; 2、设置的“预留信息”可以是数字、字母或汉字，长度在10个字符以内。</br>
+			<div style="font-size:12px; line-height:16px; color:#929292;"> </div>
+	   </div>
+	</div>
+	
+	<!-- 设置预留信息确认页面 -->
+	<div v-page>
+		<div class="box_cont">
+		      <div class="zz_cont ">
+			      <ul>
+						<li><em>新预留信息：</em><i style = "font-style : normal">{{newMessage}}</i></li>
+				  </ul>
+		       </div>
+		 </div>
+	</div>
+</div>
+<script>
+PSetMessageCtrl.$inject = ["$scope","$remote","$targets"];
+function PSetMessageCtrl($scope,$remote,$targets){
+	
+	//页面初始化
+	$scope.init=function(){
+		 /* $scope.getClientState(function(response){
+				var resJson=vx.fromJson(response);
+				$scope.oldSafeText=resJson.Userinfo.SecreNotice;
+			});  */
+		$remote.post("/pmobile/SecreNoticeQry.do",{},function(data){
+			$scope.oldSafeText=data.CurrentSecreNotice;
+		});
+	}
+	
+	//跳转到确认页面
+	$scope.toConfirm=function(){
+		if (!$scope.rMessage ){
+			NativeCall.toast("请设置预留信息");
+			return false;
+		}else if($scope.rMessage.length > 10 ){
+			NativeCall.toast("预留信息的长度不能大于10个字符");
+			return false;
+		}
+		
+		$scope.confirm("您是否确认修改预留信息",function(){
+			$remote.post("/pmobile/SecreNoticeSet.do",{"NewSecreNotice":$scope.rMessage},function(data){
+				if(data._RejCode == "000000"){
+					$scope.newMessage=$scope.rMessage;
+					$scope.changeClientInfo(vx.toJson({"SecreNotice":$scope.rMessage}));
+					$scope.alert("预留信息修改成功");
+					NativeCall.finishWeb();
+				}
+			});
+					
+		},null);
+		
+		
+	}
+	
+}
+</script>

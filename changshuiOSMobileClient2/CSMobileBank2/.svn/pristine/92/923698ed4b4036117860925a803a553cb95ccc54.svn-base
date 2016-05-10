@@ -1,0 +1,594 @@
+<div v-view-setup="LiJinBuyCtrl" v-init="init()">
+	<!-- 粒金理财录入页面 -->
+	<div  v-page v-transition="native" title="理财产品购买">
+		<form  name="transInput" class="bg_box">
+			<div class="box_cont">
+	
+				<div class="selected">
+					<span><img class="jindu" src="images/u1.png" /></span> <span><img
+						class="jindu" src="images/u2_1.png" /></span> <span><img class="jindu" src="images/u3_1.png" /></span>
+				</div>
+				<div class="zz_cont">
+					<ul>
+						<li>
+							<em>账号：</em>
+							<i>
+								<select  v-change="getCardInfo()" v-model="payCard" name="payCard" v-options="ac.AcNo1 for ac in acList" >
+								</select>
+							</i>
+						</li>
+						<li>
+							<em>可用余额：</em>
+							<i class="colff6" ui-money='{"amounts":"balance"}' style="height:35px;line-height:35px"></i>
+						</li>
+						<li>
+							<em>产品名称：</em>
+							<i>
+								{{ljInfo.PrdctNm}}
+							</i>
+						</li>
+						<li>
+							<em>产品类型：</em>
+							<i>
+								{{ljInfo.PrdctTp|financFilter}}
+							</i>
+						</li>
+						<li>
+							<em>预期收益率：</em>
+							<i>
+								{{ljInfo.ExpcPftRateTxt}}
+							</i>
+						</li>
+						<li v-show="ljInfo.Rmk!=''">
+							<em>收益率说明：</em>
+							<i>
+								{{ljInfo.Rmk}}
+							</i>
+						</li>
+<!-- 						<li v-show="ljInfo.Rmk!=''"> -->
+<!-- 							<div Style="text-align:center;"> -->
+<!-- 								{{ljInfo.Rmk}}11111111111111111111111111 -->
+<!-- 							</div> -->
+<!-- 						</li> -->
+						<li>
+							<em>金额：</em>
+							<i class="colff6">
+								<input type="text" placeholder="请输入金额" name="amount" v-model="amount"  ui-num='{"maxlength":11,"hasDot":true,"tip":"金额"}' class="y_srk" v-change="getIncome()">
+							</i>
+						</li>
+<!-- 						<li> -->
+<!-- 							<em>试算收益：</em> -->
+<!-- 							<i style="color:#ff6000;font-size:14px;"> -->
+<!-- 								{{Eincome|FloatOnlyTwo|number:2}}元 -->
+<!-- 								<i style="float:right;width:50%;text-align: right;font-size: 1px;">期限{{CycDays}}天</i> -->
+<!-- 							</i> -->
+<!-- 						</li> -->
+						<li v-show="refCodeFlag == 1 ">
+							<em>邀请码：</em>
+							<i class="colff6">
+								<input type="text" placeholder="请输入邀请码" name="refCode" v-model="refCode" class="y_srk" required>
+							</i>
+						</li>
+						<li>
+							<em>推荐经理号：</em>
+							<i class="colff6">
+								<input type="text" placeholder="选填" name="custMngNo" v-model="custMngNo"  ui-num='{"maxlength":11,"hasDot":false,"tip":"推荐经理号"}' class="y_srk" >
+							</i>
+						</li>
+					</ul>
+				</div>
+				<div class="zz_cont">
+					<input type="button" class="button_1" name="button" value="确认"  v-disabled="!amount" v-click="toConfirm(ljInfo)">
+				</div>
+			</div>
+		</form>
+		<div class="zz_cont" v-show="FirstBuy=='1'"><img src="images/ts.png" />
+		    <font class="tishi">
+				温馨提示</br>
+			</font>
+				&nbsp;&nbsp;当前理财产品购买金额最低为{{ljInfo.PrsnFrstMinIvsAmt|number:2}}元.</br>
+			<div style="font-size:12px; line-height:16px; color:#929292;"> </div>
+	   </div>
+	   <div class="zz_cont" v-show="FirstBuy=='0'"><img src="images/ts.png" />
+		    <font class="tishi">
+				温馨提示</br>
+			</font>
+				&nbsp;&nbsp;累加金额为{{ljInfo.PrsnAddMinIvsAmt|number:2}}的整数倍</br>
+			<div style="font-size:12px; line-height:16px; color:#929292;"> </div>
+	   </div>
+	</div>
+	
+	<!-- 粒金理财确认页面 -->
+	<div   v-page v-transition="native" title="理财产品购买">
+		 <form name="transConfirm" class="bg_box">
+		    <div class="box_cont">
+		      <div class="selected">
+		        <span><img class="jindu" src="images/u1.png" /></span>
+		         <span><img class="jindu" src="images/u2.png" /></span>
+		          <span><img class="jindu" src="images/u3_1.png" /></span>
+		      </div>
+		     <div class="zz_cont">
+					<ul>
+						<li>
+							<em>账号：</em>
+							<i>
+								{{payCard.AcNo1}}
+							</i>
+						</li>
+						<li>
+							<em>产品名称：</em>
+							<i>
+								{{ljInfo.PrdctNm}}
+							</i>
+						</li>
+						<li>
+							<em>产品类型：</em>
+							<i>
+								{{ljInfo.PrdctTp|financFilter}}
+							</i>
+						</li>
+						<li>
+							<em>金额：</em>
+							<i class="colff6">
+								{{amount|number:2}}元
+							</i>
+						</li>
+						<li  v-show="refCode">
+							<em>邀请码：</em><i>{{refCode}}</i>
+						</li>
+						<li>
+							<em>预期收益率：</em>
+							<i>
+								{{CstPftRate|number:2}}%
+							</i>
+						</li>
+						<li>
+							<em>推荐经理号：</em>
+							<i class="colff6">
+								{{custMngNo}}
+							</i>
+						</li>
+					</ul>
+				</div>
+		       <div class="zz_cont">
+			      <ul>
+						<li>
+							<em>验证码：</em>
+							<i><input type="text" name="imgcode" v-model="imgcode" maxlength=4 class="y_srk" placeholder="请输入验证码" style="width:50%"/></i>
+							<img id="img" name="img" v-model="img" src="data:image/png;base64,{{TokenImg}}" data-ke-src="data:image/png;base64,{{TokenImg}}" style="position:relative;left:40%;margin-top:3%" v-click="freshCode('img')">
+<!-- 								<img id="img" name="img" v-model="img" src="/pmobile/GenTokenImg.do"  style="position:relative;left:40%;margin-top: 2%" v-click="freshCode('img')"> -->
+						</li>
+				  </ul>
+		     	</div>
+		     	<div>
+		     		<input type="submit"  class="button_1" name="Submit" value="确认" v-disabled="!imgcode" v-click="toResult('img')">
+		     	</div>
+		 </div>
+		 </form>
+		 <div class="zz_cont"><img src="images/ts.png" />
+		    <font class="tishi">
+				温馨提示</br>
+			</font>
+				&nbsp;&nbsp;客户点击“确认”提交本页面后，若因通讯等问题未能正常跳转至交易成功页面，客户应通过【我的理财】查看委托是否成功。
+			<div style="font-size:12px; line-height:16px; color:#929292;"> </div>
+	   </div>
+	</div>
+	
+	
+	<!-- 粒金理财结果页面 -->
+	<div v-page v-transition="native" data-back="false" title="理财产品购买">
+		<div class="bg_box">
+		    <div class="box_cont">
+			      <div class="selected">
+			        <span><img class="jindu" src="images/u1.png" /></span>
+			        <span><img class="jindu" src="images/u2.png" /></span>
+			        <span><img class="jindu" src="images/u3.png" /></span>
+			      </div>
+				  <div class="zz_cont">
+				  <div v-show="IsReward=='true'" class="maind" style="margin:0px">
+						<div class="d1" style="float:left;padding-left:5px;width:20%;padding-top:20px"><img src="images/cg_img.png" style="width:60px;height:60px"/></div>
+						<div class="d2" style="float:left;width:50%;height:70px;  padding-top:9%;">
+							 <div style="  text-align: center;font-size:x-large;color:#0069c9"> 交易成功</div>
+							 <div class="transtime" style="padding-bottom:0px;padding-top:10px;font-size:inherit;">{{resultData.TransDate}}</div>
+						</div>
+						<div class="d3"  style="padding-top: 25px;float:left;width:20%;margin-left:-3%"><img  v-click="gotoRewardPage()" src="images/img_reward.gif" style="width:100px;height:60px;"/></div>
+					</div>
+					<div v-hide="IsReward=='true'">
+						<div class="d1" style="float:left;padding-left:50px;;width:20%;padding-top:20px"><img src="images/cg_img.png" style="width:60px;height:60px"/></div>
+						<div class="d2" style="float:right;width:50%;height:50px;  padding-top:15%;padding-right:30px">
+							 <div style="  text-align: center;font-size:x-large;color:#0069c9"> 交易成功</div>
+							 <div class="transtime" style="padding-bottom:0px;padding-top:10px;font-size:inherit;">{{resultData.TransDate}}</div>
+						</div>
+					</div>
+				    	<div class="resultForm" style="margin-bottom:0px">
+				   	  <ul>
+			            	<li><em style="width: 40%;" >理财产品：</em><i style="width: 60%;">{{ljInfo.PrdctNm}}</i></li>
+							<li><em style="width: 40%;" >购买金额：</em><i style="width: 60%;">{{amount|number:2}}元</i></li>
+			          </ul>
+			          </div>
+				      <div class="resultForm">
+				      <div class="timeline">
+			          <div class="timeline1 hang3"></div>
+			          <div class="timemain">
+			            	<div class="timeline_top" style="background:#f5f5f5"></div>
+			                <div class="timeline_img"><img class="sjhengjian" src="images/c001.png"/></div>
+			                <div class="timeline_top"></div>
+			                <div class="timeline_img2"><img class="sjyuan" src="images/b2.png"/></div>
+			                <div class="timeline_img3"><img class="sjyuan" src="images/b3.png"/></div>
+<!-- 			                <div class="timeline_img4"><img class="sjyuan" src="images/b4.png"/></div> -->
+			                </div>
+			            </div>
+						<ul >
+<!-- 							<li><em style="width:40%;" >购买日：</em><i style="width:60%;">{{resultData.TransDate}}</i></li> -->
+							<li><em style="width:40%;">产品成立日：</em><i style="width: 60%;">{{ljInfo.FndPrdctDt|formatDate}}</i></li>
+							<li><em style="width:40%;">到期日：</em><i style="width: 60%;">{{ljInfo.PrdctEndDt|formatDate}}</i></li>
+							<li><em style="width:40%;">最迟兑付日：</em><i style="width: 60%;">{{ljInfo.lastDate|formatDate}}</i></li>
+				  		</ul>
+				     </div>
+				     <div>
+		     			<input type="button" class="button_6" name="button" value="理财超市"  v-click="toMarket()">&nbsp;<input type="button"" class="button_6 fright" name="button" value="我的理财"  v-click="toMyPrd()">
+		    	 	</div>
+				  </div>
+		 	</div>
+ 		</div>
+	</div>
+	<div style="width:100%;height:40px"></div>
+</div>
+<script>
+LiJinBuyCtrl.$inject = ["$scope","$remote","$targets","$filter","$context"];
+function LiJinBuyCtrl($scope,$remote,$targets,$filter,$context){
+	$scope.init=function(){
+		$scope.f1=false;
+		$scope.f2=false;
+		$scope.IsTrue = false;
+		$scope.ljInfo=$context.getJson().LJproduct;
+		$scope.passAmount=false;
+		$scope.Eincome=0;
+		$scope.CycDays=$scope.ljInfo.CycDays;
+		if($scope.ljInfo.CntlLblFld.length >= 99){
+			$scope.refCodeFlag = $scope.ljInfo.CntlLblFld.substr(98,1);
+		}else{
+			$scope.refCodeFlag = 0;
+		}
+		//获取服务器当前时间
+		$remote.post("/pmobile/GenTimeStamp.do",{},function(data){
+			var serviceTime=data._sysDate;
+			$scope.nowdate=$scope.formartDate(serviceTime,0);
+		});
+		//查询账户列表
+		$remote.post("/pmobile/ActListQry.do",{},function(data){
+			$scope.acList=data.AcList;
+			var filterFn=$filter("filter");
+			$scope.acList=filterFn($scope.acList,function(obj,text){
+				if(obj.AcNo != undefined){
+					obj.AcNo1=obj.AcNo.substring(0,4)+"****"+ obj.AcNo.substring(obj.AcNo.length-4)
+					obj.AcNo2=obj.AcNo1;
+					if(obj.AcAlias.length>4){
+						obj.AcNo1=obj.AcNo1+" / "+obj.AcAlias.substring(0,4)+"...";
+					}else if(obj.AcAlias.length<=4&&obj.AcAlias.length>0){
+						obj.AcNo1=obj.AcNo1+" / "+obj.AcAlias;
+					}else{
+						obj.AcNo1=obj.AcNo1;
+					}
+					return true;
+				}
+			});
+			$scope.payCard=$scope.acList[0];
+			$scope.getCardInfo();
+		});
+	}
+	$scope.gotoRewardPage=function(){
+		$context.clear();
+		$scope.TransName="理财超市";
+		$remote.post("/pmobile/TransRewardsQry.do",{"TRANSNAME":$scope.TransName},function(data){
+			if(data.GAMETYPE=="0"){
+				var param={
+						"ReWardCount":data.REWARDCOUNT,"TransName":data.TRANSNAME,
+						"Count":data.COUNT,
+						"GameType":data.GAMETYPE,
+						"IsReward":data.ISREWARD,
+						
+						"UpDateTime":data.UPDATETIME
+				}
+				$context.setJson({"innerParam":param});
+				$scope.goto("LotteryDraw");
+			}else if(data.GAMETYPE=="2"){
+				var param={
+						"ReWardCount":data.REWARDCOUNT,"TransName":data.TRANSNAME,
+						"Count":data.COUNT,
+						"GameType":data.GAMETYPE,
+						"IsReward":data.ISREWARD,
+						
+						"UpDateTime":data.UPDATETIME
+				}
+				$context.setJson({"innerParam":param});
+				$scope.goto("GuaGuaLe");
+			}else if(data.GAMETYPE=="3"){
+				var param={
+						"ReWardCount":data.REWARDCOUNT,"TransName":data.TRANSNAME,
+						"Count":data.COUNT,
+						"GameType":data.GAMETYPE,
+						"IsReward":data.ISREWARD,
+						
+						"UpDateTime":data.UPDATETIME
+				}
+				$context.setJson({"innerParam":param});
+				$scope.goto("YaoYiYao");
+			}
+		});
+	}
+	//改变支付卡
+	$scope.getCardInfo=function(){
+		var cardNo=$scope.payCard.AcNo;
+// 		$scope.QueryLJLCFxpgInfo(cardNo);
+		//查询余额
+		$remote.post("/pmobile/ActBalQry.do",{"AcNo":cardNo},function(data){
+			$scope.cardInfo=data;
+			$scope.balance=data.AvailBal;
+		});
+		$scope.RiskQuery();
+	}
+// 	$scope.QueryLJLCFxpgInfo = function(cardNo){
+// 		$remote.post("/pmobile/QueryLJLCFxpgInfo.do",{"accountNo":cardNo},function(data){
+// 			if(data.flag==0){
+// 				$scope.alert("该卡号示在理财系统签约！");
+// 				return;
+// 			}
+// 		});
+// 	}
+	$scope.ExpcPftRateQry=function(){
+		if($scope.ljInfo.ExpcPftRateTxt.indexOf("-")>=0||$scope.ljInfo.ExpcPftRateTxt.indexOf("~")>=0){
+			if($scope.FirstBuy=="0"){
+				var params={
+						"PrdctCd":$scope.ljInfo.PrdctCd,
+						"TACd":$scope.ljInfo.TACd,
+						"amount":$scope.amount,
+						"FirstBuy":$scope.FirstBuy
+				}
+			}else{
+				var params={
+						"PrdctCd":$scope.ljInfo.PrdctCd,
+						"TACd":$scope.ljInfo.TACd,
+						"amount":$scope.amount,
+						"FirstBuy":$scope.FirstBuy
+				}
+			}
+			$remote.post("/pmobile/ExpcPftRateQry.do",params,function(data){
+				$scope.CstPftRate=data.List[0].CstPftRate;
+				$scope.CstPftRate = parseFloat($scope.CstPftRate)*100
+			});
+		}else{
+			$scope.ExpcPftRateTxt=$scope.ljInfo.ExpcPftRateTxt.split('%');
+			$scope.CstPftRate = $scope.ExpcPftRateTxt[0];
+		}
+		
+	}
+	//查询客户经理所属机构
+	$scope.custMngNoQry = function(custMngNo){
+		$remote.post("/pmobile/CustMngNoQry.do",{"tellerId":custMngNo},function(data){
+// 			if(data._RejCode!="000000"){
+// 				$scope.alert("客户经理号输入不存在！");
+// 			}else{
+				$scope.subBrcNo = data.subBrcNo;	
+// 			}
+			
+		});
+	}
+// 	//邀请码查询
+// 	$scope.refCodeQry = function(cardNo){
+// 		$remote.post("/pmobile/LiJinrefCodeQry.do",{"amount":$scope.amount,"prdCode":$scope.ljInfo.PrdctCd},function(data){
+// 			$scope.refCodeFlag = data.flag;
+// 			if($scope.refCodeFlag=='3'){
+// 				$scope.alert("当前卡号禁止购买乐盈宝！");
+// 			}
+// 		},function(data){
+// 			return data.jsonError;
+// 		});
+// 	}
+	//试计算收益
+	$scope.getIncome=function(){
+		if($scope.amount){
+			$scope.ExpcPftRate = $scope.ljInfo.ExpcPftRateTxt.split('%');
+			$scope.passAmount=true;
+			$scope.Eincome=($scope.amount*$scope.ExpcPftRate[0]/100)/365*$scope.CycDays;
+		}else{
+			$scope.Eincome=0;
+		}
+	}
+	//刷新验证码
+	$scope.freshCode=function(id){
+		$remote.post("/pmobile/GenTokenImg.do?r"+Math.random(),{},function(data){
+			$scope.TokenImg=data.imgKey;
+		});
+	}
+	//跳转至理财超市
+	$scope.toMarket=function(){
+		$scope.goto("PPrdMarket");
+	}
+	//跳转至我的理财
+	$scope.toMyPrd=function(){
+		$scope.goto("PMyPrd");
+	}
+	/**
+	*跳转到确认页面
+	*1.若客户未在柜面签约，则在客户点击“认购”时提示客户先至柜面签约
+	*2.若客户风险评估已过期或风险评估等级小于所要购买的理财产品时，提示客户需重新进行风险评估或弹出提示“您的风险等级低于产品风险等级”
+	*/
+	$scope.toConfirm=function(LiJinPrd){
+		//初始化确认页数据
+		$scope.imgcode="";
+		
+		if($scope.refCodeFlag==1){
+			if(vx.isEmpty($scope.refCode)){
+				$scope.alert("邀请码不能为空！");
+				return;
+			}
+		}
+// 		if($scope.refCodeFlag=='2'){
+// 			if($scope.refCode==null||$scope.refCode==""||$scope.refCode==undefined){
+// 				NativeCall.toast("邀请码不能为空");
+// 				return false;
+// 			}
+// 		}
+		if($scope.FirstBuy=="1"){
+			if(LiJinPrd.PrsnFrstMinIvsAmt && parseFloat($scope.amount)<parseFloat(LiJinPrd.PrsnFrstMinIvsAmt)){
+				NativeCall.toast("购买金额不能低于"+LiJinPrd.PrsnFrstMinIvsAmt+"元");
+				return false;
+			}
+		}
+		if(LiJinPrd.PrsnAddMinIvsAmt && parseFloat($scope.amount-LiJinPrd.PrsnFrstMinIvsAmt)%parseFloat(LiJinPrd.PrsnAddMinIvsAmt)!=0){
+			NativeCall.toast("累加金额应为"+LiJinPrd.PrsnAddMinIvsAmt+"的整数倍");
+			return false;
+		}
+		if(parseFloat($scope.amount)>parseFloat($scope.balance)){
+			NativeCall.toast("账户余额不足");
+			return false;
+		}
+		$scope.ExpcPftRateQry();
+		$scope.freshCode();//验证码图片
+		if(!vx.isEmpty($scope.custMngNo)){
+			$scope.custMngNoQry($scope.custMngNo);
+		}
+		$targets("content","#2");//跳转到确认页面
+		//查询客户是否签约，以及风险等级
+// 		$remote.post("/pmobile/QueryLJLCFxpgInfo.do",{"AcNo":$scope.payCard.AcNo},function(data){
+// 			if(data.flag==1){
+// 				if(data.expiryDate<$scope.nowdate){
+// 					$scope.confirm("您的风险评估已过期,暂时不能购买本产品，是否重新评估风险等级？",function(){
+// 						$context.setJson({"comefrom":"LiJinBuy","riskCard":$scope.payCard});
+// 						$scope.loadPage("htmls/LiJinBuy/LiJinBuy.html","htmls/PRiskAssess/PRiskAssess.html");
+// 					},function(){
+// 						NativeCall.goBack();
+// 					});
+// 				}else if(data.riskLevel<$scope.ljInfo.riskLevel){
+// 					$scope.confirm("您的风险等级低于产品风险等级,确认购买本产品？",function(){
+// 						$targets("content","#2");
+// 					},function(){
+// 						NativeCall.goBack();
+// 					});
+// 				}else if(parseFloat($scope.amount)<parseFloat($scope.ljInfo.PrsnFrstMinIvsAmt)){
+// 					$scope.alert("购买金额不能少于"+$scope.ljInfo.PrsnFrstMinIvsAmt+"元");
+// 				}else if(parseFloat($scope.amount)>parseFloat($scope.balance)){
+// 					$scope.alert("账户余额不足");
+// 				}else{
+// 						$targets("content","#2");
+// 				}
+// 			}else{
+// 				$scope.alert("您的账户尚未签约，请至柜台签约");
+// 			}
+// 		});
+		//查询客户是否签约，以及风险等级
+		
+	}
+	$scope.RiskQuery =function(){
+		var params={
+				"accountNo":$scope.payCard.AcNo,
+				"prdCode":$scope.ljInfo.PrdctCd,//产品代码
+				"prdType":$scope.ljInfo.PrdctTp//产品类别
+		};
+		$remote.post("/pmobile/RiskQuery.do",params,function(data){
+			var params3={
+					"accountNo":$scope.payCard.AcNo,
+					"prdCode":$scope.ljInfo.PrdctCd,
+					"pageSize":20,
+					"currentIndex":1
+			}
+			$remote.post("/pmobile/QueryFirstBuy.do",params3,function(data){
+//		 			vx.forEach(data.List,function(item){
+//		 				if(item.contractNo!="null"||item.contractNo!=""){
+							$scope.FirstBuy=data.flag;
+							if(vx.isEmpty($scope.FirstBuy)){
+								NativeCall.toast("未查询到客户追加资格！");
+								return;
+							}
+//		 				}
+//		 			});
+//		 		},function(){
+//		 			$scope.f1=true;
+//		 			$scope.f2=false;
+			});
+// 			if(data._RejCode=="2007"){
+// 				$scope.confirm(data.ReturnMsg,function(){
+// 						$context.setJson({"comefrom":"LiJinBuy","riskCard":$scope.payCard});
+// 						$scope.loadPage("htmls/LiJinBuy/LiJinBuy.html","htmls/PRiskAssess/PRiskAssess.html");
+// 					},function(){
+// 						NativeCall.goBack();
+// 					});
+// 			}else if(data._RejCode=="2005"){
+// 				$scope.confirm(data.ReturnMsg,function(){
+// 						$targets("content","#2");
+// 					},function(){
+// 						NativeCall.goBack();
+// 					});
+// 			}else{
+// 			}
+		});
+	}
+	//跳转到结果页
+	$scope.toResult=function(id){
+		$remote.post("/pmobile/TransRewardsQry.do",{"TRANSNAME":"理财超市"},function(data){
+			$scope.IsReward=data.ISREWARD;
+		});
+		var params={
+				"AcNo":$scope.payCard.AcNo,
+				"prdCode":$scope.ljInfo.PrdctCd,
+				"tranAmount":$scope.amount,
+				"_vTokenName":$scope.imgcode,
+				"custMngNo":$scope.custMngNo,
+				"branchId":$scope.subBrcNo,
+				"ReservationCode":$scope.refCode
+		}
+// 		if($scope.refCode!=null&&$scope.refCode!=""&&$scope.refCode!=undefined){
+// 			$remote.post("/pmobile/refCodeResult.do",{"operationType":0,"refCode":$scope.refCode},function(data){
+// 				if(data.flag=="000001"){
+// 					$scope.alert("邀请码已被使用！");
+// 					return;
+// 				}else if (data.flag=="000002"){
+// 					$scope.alert("邀请码已过期！");
+// 					return;
+// 				}else{
+					$remote.post("/pmobile/TestLJLCBuyInfo.do",params,function(data){
+						$scope.resultData=data;
+// 						if($scope.refCode!=null&&$scope.refCode!=""&&$scope.refCode!=undefined){
+// // 							$remote.post("/pmobile/refCodeResult.do",{"operationType":1,"refCode":$scope.refCode},function(data){
+// // 								$scope.refCode="";
+// // 							});
+// 						}
+						$targets("content","#3");
+					},function(data){ 
+						if(data.jsonError&&data.jsonError[0]){
+							$scope.alert(data.jsonError);
+						}
+						$scope.freshCode(id);
+						return data.jsonError;
+					});
+// 				}
+// 			});
+// 		}else{
+// 			$remote.post("/pmobile/TestLJLCBuyInfo.do",params,function(data){
+// 				$scope.resultData=data;
+// 				$targets("content","#3");
+// 			},function(data){ 
+// 				if(data.jsonError&&data.jsonError[0]){
+// 					$scope.alert(data.jsonError);
+// 				}
+// 				$scope.freshCode(id);
+// 				return data.jsonError;
+// 			});
+// 		}
+	}
+	//校验邀请码
+// 	$scope.refCodeResult = function(data){
+// 		$remote.post("/pmobile/refCodeResult.do",{"operationType":data,"refCode":$scope.refCode},function(data){
+
+	// 			if(data.flag=="000001"){
+// 				$scope.alert("邀请码已被使用！");
+// 				return;
+// 			}else if (data.flag=="000002"){
+// 				$scope.alert("邀请码已过期！");
+// 				return;
+// 			}
+// 		});
+// 	}
+}
+</script>

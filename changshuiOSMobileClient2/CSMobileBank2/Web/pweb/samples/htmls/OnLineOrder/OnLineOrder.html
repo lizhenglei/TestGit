@@ -1,0 +1,334 @@
+<div v-view-setup="OnLineOrderCtrl" v-init="init()">
+	<!-- 预约录入页面 -->
+	<div v-page v-transition="native" title="在线预约">
+		<form name="orderInput" class="bg_box">
+			<div class="box_cont">
+				<div class="selected">
+					<span> <img class="jindu" src="images/u1.png" />
+					</span> <span> <img class="jindu" src="images/u2_1.png" />
+					</span> <span> <img class="jindu" src="images/u3_1.png" />
+					</span>
+				</div>
+				<div class="zz_cont">
+				<ul id="detailInfo">
+						<li v-show="!IsShow"><em>姓名：</em><i><input type="text" id="UserName" name="UserName" v-model="UserName" class="y_srk" placeholder="请输入姓名"/></i></li>
+						<li v-show="!IsShow"><em>身份证号：</em><i><input type="text" id="IdNo" name="IdNo" v-model="IdNo" class="y_srk" placeholder="请输入身份证号码"/></i></li>
+						<li v-show="!IsShow"><em>手机号：</em><i><input type="tel" id="MobileNo" name="MobileNo" v-model="MobileNo" class="y_srk" placeholder="请输入手机号" ui-num='{"maxlength":11,"hasDot":false,"tip":"手机号"}'/></i></li>
+						<li v-show="!IsShow"><em>手机动态码：</em><i>
+								<input type="tel" id="SmsCode" name="SmsCode" v-model="SmsCode" v-focus="windowScroll()" maxlength=6 class="y_srk_50" placeholder="请输入动态码" />
+								<button class="inp_butt" v-sms="getDYcode()">获取动态码</button>
+						</i></li>
+						<li>
+							<em>预约网点：</em>
+							<i>
+								{{OrderArea.branchName}}
+							</i>
+						</li>	
+						<li><em>办理业务：</em><i>
+							<select v-model="work" name="work" id="work" class="y_srk" placeholder="请选择办理业务" v-options="item.Name for item in WorkList" v-change="changeSelect(this)">
+						    </select>
+						</i></li>
+						
+						<li id="orderLi" style="display: none"><em>预约金额：</em><i>
+							<input type="number" id="OrderAmount" name="OrderAmount" v-model="OrderAmount" class="y_srk" placeholder="最低预约金额为5万" ui-num='{"maxlength":11,"hasDot":true,"tip":"预约金额"}'/>
+						</i></li>	
+							
+						<li><em>预约日期：</em><i>
+								<select v-model="OrderDate" name="OrderDate" id="OrderDate" class="y_srk" placeholder="请选择办理业务" v-options="item.tranDate for item in OrderDateList" v-change="changeTranDateSelect(this)">
+								</select>
+						</i></li>
+						<li><em>预约时间：</em><i>
+							<select v-model="OrderTime" name="OrderTime" id="OrderTime" class="y_srk" placeholder="请选择办理业务" v-options="item.value for item in OrderTimeList">
+								</select>
+						</i></li>
+						
+				  </ul>
+			</div>
+			 <div class="zz_cont">
+		     		<input type="submit"  class="button_1" name="Submit" v-disabled="!OrderTime" value="下一步" v-click="toConfirm()">
+		    </div>
+			</div>
+		</form>
+	</div>
+
+	<!-- 预约确认页面 -->
+	<div v-page v-transition="native" title="在线预约">
+		<form name="orderConfirm" class="bg_box">
+			<div class="box_cont">
+				<div class="selected">
+					<span><img class="jindu" src="images/u1.png" /></span> <span><img
+						class="jindu" src="images/u2.png" /></span> <span><img class="jindu" src="images/u3_1.png" /></span>
+				</div>
+				<div class="zz_cont">
+					<ul>
+							<li v-show="!IsShow"><em>姓名：</em><i>{{UserName}}</i></li>
+							<li v-show="!IsShow"><em>身份证号：</em><i>{{IdNo}}</i></li>
+							<li v-show="!IsShow"><em>手机号：</em><i>{{MobileNo}}</i></li>
+							<li v-show="!IsShow"><em>预约网点：</em><i>{{OrderArea.branchName}}</i></li>
+							<li><em>办理业务：</em><i>{{work.Name}}</i></li>
+							<li v-show="IsHaveAmount"><em>预约金额：</em><i>{{OrderAmount}}元</i></li>
+							<li><em>预约日期：</em><i>{{OrderDate.tranDate}}</i></li>
+							<li><em>预约时间：</em><i>{{OrderTime.value}}</i></li>
+							<li><em>验证码：</em><i>
+								<input  type="tel" id="imgcode" name="imgcode" maxlength=4	v-model="imgcode" class="y_srk"	placeholder="请输入验证码" style="width: 50%" /></i>
+								<img id="img" 	name="img" v-model="img" src="data:image/png;base64,{{TokenImg}}"	data-ke-src="data:image/png;base64,{{TokenImg}}" style="position:relative;left:40%;margin-top:3%" v-click="freshCode('img')">
+<!-- 								<img id="img" name="img" v-model="img" src="/pmobile/GenTokenImg.do"  style="position:relative;left:40%;margin-top: 2%" v-click="freshCode('img')">  -->
+							</li>
+					</ul>
+				</div>
+				<div class="zz_cont">
+		     		<input type="submit"  class="button_1" name="Submit" v-disabled="!imgcode" value="确认" v-click="toResult()">
+		    	</div>
+			</div>
+		</form>
+	</div>
+
+
+	<!-- 预约结果页面 -->
+	<div v-page v-transition="native" data-back="false" title="在线预约">
+		<div class="bg_box">
+			<div class="box_cont">
+				<div class="selected">
+					<span><img class="jindu" src="images/u1.png" /></span> <span><img
+						class="jindu" src="images/u2.png" /></span> <span><img class="jindu" src="images/u3.png" /></span>
+				</div>
+				<div class="zz_cont">
+					<div class="maind" style="margin:0px">
+						<div class="d1" style="float:left;padding-left:45px;width:20%;padding-top:20px"><img src="images/u24.png" style="width:100%;height:100%"/></div>
+						<div class="d2" style="float:left;width:50%;height:70px;  padding-top:9%;">
+							 <div style="text-align: center;font-size:x-large;color:#0069c9">预约成功</div>
+							<div class="transtime" style="padding-bottom:0px;padding-top:10px;font-size:inherit;">{{OrderDate.tranDate|formatDate}}</div>
+						</div>
+					</div>
+					<div class="resultForm">
+						<ul>
+							<li><em>预约编号：</em><i>{{OrderSeq}}</i></li>
+							<li><em>预约网点：</em><i>{{OrderArea.branchName}}</i></li>
+							<li><em>办理业务：</em><i>{{work.Name}}</i></li>
+							<li v-show="IsHaveAmount"><em>预约金额：</em><i>{{OrderAmount}}元</i></li>
+							<li><em>预约日期：</em><i>{{OrderDate.tranDate|formatDate}}</i></li>
+							<li><em>预约时间：</em><i>{{OrderTime.value}}</i></li>
+						</ul>
+					</div>
+					<div>
+						<input type="submit"  v-show="!IsShow" class="button_1" name="Submit" value="查看预约记录" v-click="queryOrder()">
+					</div>
+				</div>
+
+			</div>
+		</div>
+		
+		<div class="zz_cont">
+			<div style="font-size: 12px; line-height: 16px; color: #929292;">
+			</div>
+		</div>
+		
+	</div>
+
+</div>
+<div style="width:100%;height:40px"></div>
+
+<script>
+OnLineOrderCtrl.$inject = ["$scope","$remote","$targets","$filter","$context","$timeout","$window"];
+function OnLineOrderCtrl($scope,$remote,$targets,$filter,$context,$timeout,$window){
+	$scope.init=function(){
+		$scope.WorkList = [{"Name" : "普通业务",	"Value" : "0"},{"Name" : "大额现金业务","Value" : "1"},];
+		$scope.work=$scope.WorkList[0];
+		$scope.getBranch(function(pwResponse){
+			var data=vx.fromJson(pwResponse);
+			$scope.OrderArea=data;
+			//银行网点信息
+			var params={
+					"branchCode":$scope.OrderArea.branchId
+			}
+			//获取可预约的时间
+			$remote.post("/pmobile/OrderTimeQry.do",params,function(data){
+				$scope.OrderDateList=data.OrderDateList;
+				$scope.OrderDate=$scope.OrderDateList[0];
+			});
+// 			//进行模拟已经登录的情况
+// 			$scope.IsShow=true;
+			$remote.post("/pmobile/UserIsLogin.do",{},function(data){
+				if(data.isLogin == 0){
+					$scope.IsShow = true;
+					$scope.getClientState(function(response){
+						var vxJson = vx.fromJson(response);
+							$scope.Userinfo = vxJson.Userinfo;
+						});
+				}else{
+					$scope.IsShow = false;
+				}
+			});
+			//默认获取预约时间
+			$scope.changeTranDateSelect();
+		});
+
+	}
+	
+	//预约日期变化联动获得预约时间
+	$scope.changeTranDateSelect=function(){
+		//默认设置预约的机构
+		var params={
+				"branchCode":$scope.OrderArea.branchId
+		}
+		
+		//获取可预约的时间
+		$remote.post("/pmobile/OrderTimeQry.do",params,function(data){
+			//使用过滤器统一过滤特殊条件   去掉非选择的日期的信息
+			var filterFn=$filter("filter");
+			$scope.OrderTimeList=data.OrderTimeList;
+			$scope.OrderTimeList=filterFn($scope.OrderTimeList,function(obj,text){
+				if(obj.tranDate==$scope.OrderDate.tranDate){
+					return true;
+				}
+			});
+			$scope.OrderTime=$scope.OrderTimeList[0];
+		});
+	}
+	
+	
+	//获取手机动态码
+	$scope.getDYcode=function(){
+		$scope.businessName="在线预约";
+		var params={
+				"BusinessName":$scope.businessName,
+				"MobileNo":$scope.MobileNo,
+				"ServiceCode":"PUM001001"
+		}
+		//未登录的情况发送短信验证码
+		$remote.post("/pmobile/GenTokenNameV1.do",params,function(data){
+			$scope.msmNo=data.SerialNo;
+		});
+	}
+	
+	//刷新验证码
+	$scope.freshCode=function(id){
+		$remote.post("/pmobile/GenTokenImg.do?r"+Math.random(),{},function(data){
+			$scope.TokenImg=data.imgKey;
+		});
+		
+	}
+	//跳转到确认页面
+	$scope.toConfirm=function(){
+		//判断是否登录如果登录则不进行短信验证码验证
+		if($scope.IsShow){
+			if(document.getElementById("work").value=="1"){
+				$scope.IsHaveAmount=true;
+				if(!parseFloat($scope.OrderAmount)){
+					NativeCall.toast("预约金额不能为空");
+					return false;
+				}
+				if(parseFloat($scope.OrderAmount)<50000){
+					NativeCall.toast("预约金额不少于50000!");
+					return false;
+				}
+			}
+			$scope.freshCode("img");
+			$targets("content","#2");
+		}else{
+			$remote.post("/pmobile/SmsCodeValidateV1.do",{"SmsCode":$scope.SmsCode,"SerialNo":$scope.msmNo},function(data){
+				if (!$scope.IdNo){
+					NativeCall.toast("请输入身份证号");
+					return false;
+				}
+				else if($scope.IdNo.length!=18){
+					NativeCall.toast("输入的身份证号格式不正确");
+					return false;
+				}
+				if(document.getElementById("work").value=="1"){
+					$scope.IsHaveAmount=true;
+					if(!parseFloat($scope.OrderAmount)){
+						NativeCall.toast("预约金额不能为空");
+						return false;
+					}
+					if(parseFloat($scope.OrderAmount)<50000){
+						NativeCall.toast("预约金额不少于50000!");
+						return false;
+					}
+				}
+				$scope.freshCode("img");
+				$targets("content","#2");
+			});		
+		}
+	}
+	
+	//跳转到结果页
+	$scope.toResult=function(){
+			if($scope.IsShow){
+				var mobileNo=$scope.Userinfo.MobileNo;
+				var IdNo=$scope.Userinfo.IdNo;
+				var AcNo=$scope.Userinfo.MainAcNo;
+				var CustName=$scope.Userinfo.UserName;
+				var params={
+						"BranchCode":$scope.OrderArea.branchId,
+						"TranDate":$scope.OrderDate.tranDate,
+						"BkgTmRng":$scope.OrderTime.AvBkgTmRngNo,
+						"IdType":"01",
+						"IdNo":IdNo,
+						"AccountType":"1",
+						"AcNo":AcNo,
+						"MobileNo":mobileNo,
+						"Flag":"1",
+						"CustName":CustName,
+						"TranAmount":$scope.OrderAmount,
+						"_vTokenName":$scope.imgcode
+				}
+//		 		大额预约
+				if(document.getElementById("work").value=="1"){
+					$remote.post("/pmobile/LargeOrder.do",params,function(data){
+// 						$scope.OrderSeq=data.SerialNo;
+						$targets("content","#3");
+					});
+					$scope.IsHaveAmount=true;
+				}else{
+//		 			普通预约业务
+					$remote.post("/pmobile/GeneralOrder.do",params,function(data){
+						$scope.OrderSeq=data.SerialNo;
+						$targets("content","#3");
+					});
+				}
+			}else{
+				var params={
+						"BranchCode":$scope.OrderArea.branchId,
+						"TranDate":$scope.OrderDate.tranDate,
+						"BkgTmRng":$scope.OrderTime.AvBkgTmRngNo,
+						"IdType":"01",
+						"IdNo":$scope.IdNo,
+						"AccountType":"1",
+						"MobileNo":$scope.MobileNo,
+						"Flag":"1",
+						"CustName":$scope.UserName,
+						"TranAmount":$scope.OrderAmount,
+						"_vTokenName":$scope.imgcode
+				}
+//		 		大额预约
+				if(document.getElementById("work").value=="1"){
+					$remote.post("/pmobile/LargeOrder.do",params,function(data){
+						$scope.OrderSeq=data.SerialNo;
+						$targets("content","#3");
+					});
+					$scope.IsHaveAmount=true;
+				}else{
+//		 			普通预约业务
+					$remote.post("/pmobile/GeneralOrder.do",params,function(data){
+						$scope.OrderSeq=data.SerialNo;
+						$targets("content","#3");
+					});
+				}
+			}
+	}
+// 	查看我的预约
+	$scope.queryOrder=function(){
+		$scope.goto("OnLineOrder","MyOrder");
+	}
+// 	业务类型变更联动事件
+	$scope.changeSelect=function(obj){
+		if(document.getElementById("work").value=="1"){
+			$("#orderLi").show();
+		}else{
+			$("#orderLi").hide();
+		}
+	}
+	
+}
+</script>

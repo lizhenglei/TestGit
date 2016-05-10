@@ -1,0 +1,149 @@
+<div v-view-setup="TtlProfitQryCtrl" v-init="init()">
+	<!-- 天天利收益明细 -->
+	<div class="bg_box" v-page v-transition="native" title="收益明细">
+		<div class="box_cont">
+			<div class="zz_cont">
+			      <ul>
+						<li>
+							<em>账号：</em>
+							<i>
+								<select v-model="queryAc" name="queryAc" v-options="ac.AcNo1 for ac in acList" >
+								</select>
+							</i>
+						</li>
+						<li>
+								<em>开始日期：</em>
+								<i style="padding-top:8px">
+									<input type="date" name="beginDate" id="beginDate" placeholder="请选择开始日期" v-model="beginDate"  style="height:20px;margin-top:10px" class="y_srk" >
+								</i>
+						</li>
+						<li>
+								<em>结束日期：</em>
+								<i style="padding-top:8px">
+									<input type="date" name="endDate" id="endDate" placeholder="请选择结束日期" v-model="endDate" style="height:20px;margin-top:10px" class="y_srk">
+								</i>
+						</li>
+				 </ul>
+				<div style="margin-bottom:15px;">
+		     		<input type="submit"  class="button_1" name="Submit" value="查询" v-click="toQuery()">
+		     	</div>
+		    </div>
+		</div>
+	<!-- 查看收益表格  -->
+	<table border="1" align="center" cellpadding="0" cellspacing="0" style="width:100%" v-show="detailList && detailList.length>0">
+			<tr align="center">
+				<td>日期</td>
+				<td>持有份额</td>
+				<td>当日收益</td>
+				<td>收益率</td>			
+			</tr>
+			<tr align="center" v-more-page="detail in detailList">
+					<td>{{detail.tranDate|formatDate}}</td>
+					<td>{{detail.FndPrdctLot}}元</td>
+					<td>{{detail.amount|number:2}}元</td>
+					<td>{{detail.ExpcPftRate}}%</td>
+			</tr>
+	</table>
+	
+	
+	<div >
+	     <input type="submit" id="nextButton"  class="button_1" name="Submit" value="查看更多" v-click="PAGE.moreNextPage()">
+	</div>
+	
+	</div>
+<!-- 	<div class="zz_cont"><img src="images/ts.png" /> -->
+<!-- 		    <font class="tishi"> -->
+<!-- 				温馨提示</br> -->
+<!-- 			</font> -->
+<!-- 				&nbsp;&nbsp;1、您可查询近一年指定时间段内的理财交易明细。</br> -->
+<!-- 				&nbsp;&nbsp;2、可查询的时间间隔为90天内的理财产品。</br> -->
+<!-- 			<div style="font-size:12px; line-height:16px; color:#929292;"> </div> -->
+<!-- 	 </div> -->
+	 <div style="width:100%;height:40px;"></div>
+</div>
+<script>
+TtlProfitQryCtrl.$inject = ["$scope","$remote","$targets","$filter","$context"];
+function TtlProfitQryCtrl($scope,$remote,$targets,$filter,$context){
+	$scope.init=function(){
+		$scope.ttlPro=$context.getJson().selectedTTL;
+		//查询借记卡
+		$remote.post("/pmobile/ActListQry.do",{},function(data){
+			$scope.acList=data.AcList;
+			var filterFn=$filter("filter");
+			$scope.acList=filterFn($scope.acList,function(obj,text){
+				if(obj.AcNo != undefined){
+					obj.AcNo1=obj.AcNo.substring(0,4)+"****"+ obj.AcNo.substring(obj.AcNo.length-4)
+					if(obj.AcAlias.length>4){
+						obj.AcNo1=obj.AcNo1+" / "+obj.AcAlias.substring(0,4)+"...";
+					}else if(obj.AcAlias.length<=4&&obj.AcAlias.length>0){
+						obj.AcNo1=obj.AcNo1+" / "+obj.AcAlias;
+					}else{
+						obj.AcNo1=obj.AcNo1;
+					}
+					if($scope.ttlPro.AcNo){
+						if($scope.ttlPro.AcNo==obj.AcNo1){
+							$scope.queryAc=obj;
+						}
+					}
+					return true;
+				}
+			});
+			//$scope.queryAc.AcNo=$scope.ttlPro.AcctNo;
+		});
+		
+		$remote.post("/pmobile/GenTimeStampAdd.do",{"type":"M","amount":"-3"},function(data){
+			var serviceTime=data._sysDate;
+			$scope.beginDate=$scope.formartDate(serviceTime,0,"-");
+		});
+		
+		//获取服务器当前时间
+		$remote.post("/pmobile/GenTimeStamp.do",{},function(data){
+			var serviceTime=data._sysDate;
+			$scope.endDate=$scope.formartDate(serviceTime,0,"-");
+		});
+	}
+	
+	//查询交易明细
+	$scope.toQuery=function(){
+		if($scope.beginDate>$scope.endDate){
+			NativeCall.toast("开始日期不能大于结束日期");
+			return false;
+		}
+		var params1={
+				"CstId":$scope.queryAc.AcNo,
+				"PrdctCd":$scope.ttlPro.PrdctCd,
+				"BegDt":$scope.formartDate($scope.beginDate,0),
+				"EndDt":$scope.formartDate($scope.endDate,0),
+				"pageSize":10,
+				"currentIndex":1
+			};
+			$remote.post("/pmobile/ProfitQry.do",params1,function(data){
+				$scope.detailList=data.List;
+				$scope.totalnumber = data.totalNum;
+			},function(data){
+					$scope.alert(data.jsonError);
+					$scope.detailList=[];
+					return data.jsonError;
+			});
+	}
+	//查看更多
+	$scope.morepage = function(qishi,zhongzhi,zengliang,list){
+		$scope.start=1;//不是第一次进入
+			var params1={
+				"CstId":$scope.queryAc.AcNo,
+				"PrdctCd":$scope.ttlPro.PrdctCd,
+				"BegDt":$scope.formartDate($scope.beginDate,0),
+				"EndDt":$scope.formartDate($scope.endDate,0),
+				"pageSize":10,
+				"currentIndex":qishi/10+1
+			};
+			$remote.post("/pmobile/ProfitQry.do",params1,function(data){
+				$scope.detailList=data.List;
+			},function(data){
+					$scope.alert(data.jsonError);
+					$scope.detailList=[];
+					return data.jsonError;
+			});
+	};
+}
+</script>
